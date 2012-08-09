@@ -29,8 +29,6 @@ import java.util.Set;
  */
 public class ClassPrinter {
 
-
-
     public static void printClass(ClassModel classModel, Printer p) {
         if (!classModel.getPackageFqName().isEmpty()) {
             p.println("package ", classModel.getPackageFqName(), ";");
@@ -53,7 +51,8 @@ public class ClassPrinter {
     }
 
     private final Printer p;
-    private Set<TypeModel> importedTypes = new THashSet<TypeModel>(new TObjectHashingStrategy<TypeModel>() {
+
+    private final Set<TypeModel> importedTypes = new THashSet<TypeModel>(new TObjectHashingStrategy<TypeModel>() {
         @Override
         public int computeHashCode(TypeModel model) {
             return model.getPackageFqName().hashCode() + 13 * model.getClassName().hashCode();
@@ -65,6 +64,7 @@ public class ClassPrinter {
                    && model.getClassName().equals(model1.getClassName());
         }
     });
+
     private final StringBuilder body = new StringBuilder();
 
     private ClassPrinter() {
