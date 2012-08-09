@@ -17,8 +17,10 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.All;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.AllImpl;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.Visibility;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.FieldBean;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.MethodBean;
 
 import java.util.Collection;
 
@@ -32,17 +34,17 @@ public class MutableBeanGenerator extends EntityRepresentationGenerator {
     }
 
     @Override
-    protected void generateClassMembers(AllImpl.ClassBean bean, Entity entity) {
+    protected void generateClassMembers(ClassBean bean, Entity entity) {
         for (Relation<?> relation : entity.getRelations()) {
-            bean.getFields().add(new AllImpl.FieldBean()
-                                         .setVisibility(All.Visibility.PRIVATE)
+            bean.getFields().add(new FieldBean()
+                                         .setVisibility(Visibility.PRIVATE)
                                          .setType(relationToType(relation))
                                          .setName(getFieldName(relation)));
         }
         for (Relation<?> relation : entity.getRelations()) {
-            bean.getMethods().add(new AllImpl.MethodBean()
+            bean.getMethods().add(new MethodBean()
                                           .addAnnotation(OVERRIDE)
-                                          .setVisibility(All.Visibility.PUBLIC)
+                                          .setVisibility(Visibility.PUBLIC)
                                           .setReturnType(relationToType(relation))
                                           .setName(getGetterName(relation))
             );

@@ -17,8 +17,10 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.All;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.AllImpl;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassKind;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.Visibility;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.MethodBean;
 
 import java.util.Collection;
 
@@ -42,15 +44,15 @@ public class ReadOnlyBeanGenerator extends EntityRepresentationGenerator {
 
     @NotNull
     @Override
-    protected All.ClassKind getClassKind() {
-        return All.ClassKind.INTERFACE;
+    protected ClassKind getClassKind() {
+        return ClassKind.INTERFACE;
     }
 
     @Override
-    protected void generateClassMembers(@NotNull AllImpl.ClassBean bean, @NotNull Entity entity) {
+    protected void generateClassMembers(@NotNull ClassBean bean, @NotNull Entity entity) {
         for (Relation<?> relation : entity.getRelations()) {
-            bean.getMethods().add(new AllImpl.MethodBean()
-                                          .setVisibility(All.Visibility.PUBLIC)
+            bean.getMethods().add(new MethodBean()
+                                          .setVisibility(Visibility.PUBLIC)
                                           .setAbstract(true)
                                           .setReturnType(relationToType(relation))
                                           .setName(getGetterName(relation))

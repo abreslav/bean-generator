@@ -19,8 +19,9 @@ package org.jetbrains.jet.lang.descriptors.builders.generator;
 import com.google.common.collect.Maps;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.All;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.AllImpl;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.TypeBean;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -34,18 +35,18 @@ import java.util.Set;
  */
 public abstract class EntityRepresentationGenerator {
 
-    public static All.TypeModel OVERRIDE = new AllImpl.TypeBean()
+    public static TypeModel OVERRIDE = new TypeBean()
             .setPackageFqName("java.lang")
             .setClassName("Override");
 
-    private final Map<Entity, AllImpl.ClassBean> map = Maps.newIdentityHashMap();
+    private final Map<Entity, ClassBean> map = Maps.newIdentityHashMap();
 
     protected EntityRepresentationGenerator(@NotNull Collection<Entity> entities, @NotNull String targetPackageFqName) {
         for (Entity entity : entities) {
             String readableBeanClassName = getEntityRepresentationName(entity);
-            AllImpl.ClassBean classBean = new AllImpl.ClassBean()
+            ClassBean classBean = new ClassBean()
                     .setPackageFqName(targetPackageFqName)
-                    .setVisibility(All.Visibility.PUBLIC)
+                    .setVisibility(Visibility.PUBLIC)
                     .setKind(getClassKind())
                     .setName(readableBeanClassName);
             map.put(entity, classBean);
@@ -53,11 +54,11 @@ public abstract class EntityRepresentationGenerator {
     }
 
     @NotNull
-    protected All.ClassKind getClassKind() {
-        return All.ClassKind.CLASS;
+    protected ClassKind getClassKind() {
+        return ClassKind.CLASS;
     }
 
-    public Collection<All.ClassModel> generate() {
+    public Collection<ClassModel> generate() {
         for (Entity entity : map.keySet()) {
             generateEntity(entity);
         }
@@ -65,24 +66,24 @@ public abstract class EntityRepresentationGenerator {
     }
 
     public void generateEntity(@NotNull Entity entity) {
-        AllImpl.ClassBean classBean = map.get(entity);
+        ClassBean classBean = map.get(entity);
 
         generateSupertypes(classBean, entity);
 
         generateClassMembers(classBean, entity);
     }
 
-    protected void generateSupertypes(AllImpl.ClassBean classBean, Entity entity) {
+    protected void generateSupertypes(ClassBean classBean, Entity entity) {
         for (Entity superEntity : entity.getSuperEntities()) {
             classBean.getSuperInterfaces().add(simpleType(map.get(superEntity)));
         }
     }
 
-    protected abstract void generateClassMembers(AllImpl.ClassBean bean, Entity entity);
+    protected abstract void generateClassMembers(ClassBean bean, Entity entity);
 
     public abstract String getEntityRepresentationName(@NotNull Entity entity);
 
-    protected <T> All.TypeModel relationToType(@NotNull Relation<T> relation) {
+    protected <T> TypeModel relationToType(@NotNull Relation<T> relation) {
         T target = relation.getTarget();
         if (target instanceof Entity) {
             Entity entity = (Entity) target;
@@ -95,7 +96,7 @@ public abstract class EntityRepresentationGenerator {
         throw new IllegalArgumentException("Unsupported target type:" + target);
     }
 
-    protected All.TypeModel typeWithMultiplicity(Multiplicity multiplicity, All.TypeModel elementType) {
+    protected TypeModel typeWithMultiplicity(Multiplicity multiplicity, TypeModel elementType) {
         switch (multiplicity) {
             case ZERO_OR_ONE:
             case ONE:
@@ -110,18 +111,18 @@ public abstract class EntityRepresentationGenerator {
         throw new IllegalStateException("Unknown multiplicity: " + multiplicity);
     }
 
-    protected static All.TypeModel reflectionType(@NotNull Type type) {
+    protected static TypeModel reflectionType(@NotNull Type type) {
         return reflectionTypeBean(type);
     }
 
-    protected static AllImpl.TypeBean reflectionTypeBean(Type type) {
+    protected static TypeBean reflectionTypeBean(Type type) {
         if (type instanceof Class<?>) {
             Class<?> theClass = (Class<?>) type;
             return classToTypeBean(theClass);
         }
         if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
-            AllImpl.TypeBean typeBean = classToTypeBean((Class<?>) parameterizedType.getRawType());
+            TypeBean typeBean = classToTypeBean((Class<?>) parameterizedType.getRawType());
             Type[] arguments = parameterizedType.getActualTypeArguments();
             for (Type arg : arguments) {
                 typeBean.getArguments().add(reflectionType(arg));
@@ -131,9 +132,9 @@ public abstract class EntityRepresentationGenerator {
         throw new IllegalArgumentException("Unsupported reflection type: " + type);
     }
 
-    private static AllImpl.TypeBean classToTypeBean(Class<?> theClass) {
+    private static TypeBean classToTypeBean(Class<?> theClass) {
         Package aPackage = theClass.getPackage();
-        return new AllImpl.TypeBean()
+        return new TypeBean()
                     .setPackageFqName(aPackage == null ? "" : aPackage.getName())
                     .setClassName(theClass.getSimpleName());
     }
@@ -154,8 +155,8 @@ public abstract class EntityRepresentationGenerator {
         return target == Boolean.TYPE ? "is" : "get";
     }
 
-    protected static All.TypeModel simpleType(@NotNull All.ClassModel classModel) {
-        return new AllImpl.TypeBean()
+    protected static TypeModel simpleType(@NotNull ClassModel classModel) {
+        return new TypeBean()
                 .setClassName(classModel.getName())
                 .setPackageFqName(classModel.getPackageFqName());
     }

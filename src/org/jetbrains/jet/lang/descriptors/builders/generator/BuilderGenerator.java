@@ -19,8 +19,8 @@ package org.jetbrains.jet.lang.descriptors.builders.generator;
 import com.google.common.collect.Sets;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.descriptors.annotations.Annotated;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.All;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.ClassPrinter;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassModel;
 import org.jetbrains.jet.utils.Printer;
 
 import java.util.Collection;
@@ -53,10 +53,10 @@ public class BuilderGenerator {
         StringBuilder out = new StringBuilder();
         Printer p = new Printer(out);
 
-        Collection<All.ClassModel> classes = new MutableBeanGenerator(entities, "p").generate();
+        Collection<ClassModel> classes = new MutableBeanGenerator(entities, "p").generate();
         //Collection<All.ClassModel> classes = new ReadOnlyBeanGenerator(entities, "p").generate();
 
-        for (All.ClassModel classModel : classes) {
+        for (ClassModel classModel : classes) {
             ClassPrinter.printClass(classModel, p);
             p.println();
             p.println("==============");

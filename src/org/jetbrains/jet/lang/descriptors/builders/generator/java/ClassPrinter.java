@@ -18,6 +18,7 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java;
 
 import gnu.trove.THashSet;
 import gnu.trove.TObjectHashingStrategy;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
 import org.jetbrains.jet.utils.Printer;
 
 import java.util.Iterator;
@@ -27,7 +28,10 @@ import java.util.Set;
  * @author abreslav
  */
 public class ClassPrinter {
-    public static void printClass(All.ClassModel classModel, Printer p) {
+
+
+
+    public static void printClass(ClassModel classModel, Printer p) {
         if (!classModel.getPackageFqName().isEmpty()) {
             p.println("package ", classModel.getPackageFqName(), ";");
         }
@@ -35,7 +39,7 @@ public class ClassPrinter {
         classPrinter.printClass(classModel);
 
         p.println();
-        for (All.TypeModel importedType : classPrinter.importedTypes) {
+        for (TypeModel importedType : classPrinter.importedTypes) {
             String packageFqName = importedType.getPackageFqName();
             if (!packageFqName.isEmpty()
                     && !packageFqName.equals("java.lang")
@@ -49,14 +53,14 @@ public class ClassPrinter {
     }
 
     private final Printer p;
-    private Set<All.TypeModel> importedTypes = new THashSet<All.TypeModel>(new TObjectHashingStrategy<All.TypeModel>() {
+    private Set<TypeModel> importedTypes = new THashSet<TypeModel>(new TObjectHashingStrategy<TypeModel>() {
         @Override
-        public int computeHashCode(All.TypeModel model) {
+        public int computeHashCode(TypeModel model) {
             return model.getPackageFqName().hashCode() + 13 * model.getClassName().hashCode();
         }
 
         @Override
-        public boolean equals(All.TypeModel model, All.TypeModel model1) {
+        public boolean equals(TypeModel model, TypeModel model1) {
             return model.getPackageFqName().equals(model1.getPackageFqName())
                    && model.getClassName().equals(model1.getClassName());
         }
@@ -67,7 +71,7 @@ public class ClassPrinter {
         this.p = new Printer(body);
     }
 
-    private void printClass(All.ClassModel classModel) {
+    private void printClass(ClassModel classModel) {
         printAnnotations(classModel, true);
 
         p.print(classModel.getVisibility().getRepresentation());
@@ -78,19 +82,19 @@ public class ClassPrinter {
         p.printWithNoIndent(" ", classModel.getKind().getRepresentation(), " ", classModel.getName());
 
         if (classModel.getSuperClass() != null) {
-            assert classModel.getKind() != All.ClassKind.INTERFACE : "Interfaces can't have superclasses: " + classModel.getName();
+            assert classModel.getKind() != ClassKind.INTERFACE : "Interfaces can't have superclasses: " + classModel.getName();
             p.printWithNoIndent(" extends ", renderType(classModel.getSuperClass()));
         }
 
         if (!classModel.getSuperInterfaces().isEmpty()) {
-            if (classModel.getKind() == All.ClassKind.CLASS) {
+            if (classModel.getKind() == ClassKind.CLASS) {
                 p.printWithNoIndent(" implements ");
             }
             else {
                 p.printWithNoIndent(" extends ");
             }
-            for (Iterator<All.TypeModel> iterator = classModel.getSuperInterfaces().iterator(); iterator.hasNext(); ) {
-                All.TypeModel typeModel = iterator.next();
+            for (Iterator<TypeModel> iterator = classModel.getSuperInterfaces().iterator(); iterator.hasNext(); ) {
+                TypeModel typeModel = iterator.next();
                 p.printWithNoIndent(renderType(typeModel));
                 if (iterator.hasNext()) {
                     p.printWithNoIndent(", ");
@@ -101,13 +105,13 @@ public class ClassPrinter {
         p.printlnWithNoIndent(" {");
         p.pushIndent();
 
-        for (All.FieldModel fieldModel : classModel.getFields()) {
-            printField(fieldModel, classModel.getKind() == All.ClassKind.INTERFACE);
+        for (FieldModel fieldModel : classModel.getFields()) {
+            printField(fieldModel, classModel.getKind() == ClassKind.INTERFACE);
         }
         p.println();
 
-        for (All.MethodModel methodModel : classModel.getMethods()) {
-            printMethod(methodModel, classModel.getKind() == All.ClassKind.INTERFACE);
+        for (MethodModel methodModel : classModel.getMethods()) {
+            printMethod(methodModel, classModel.getKind() == ClassKind.INTERFACE);
             p.println();
         }
 
@@ -115,7 +119,7 @@ public class ClassPrinter {
         p.println("}");
     }
 
-    private void printField(All.FieldModel model, boolean inInterface) {
+    private void printField(FieldModel model, boolean inInterface) {
         printAnnotations(model, true);
         if (!inInterface) {
             p.print(model.getVisibility().getRepresentation());
@@ -129,7 +133,7 @@ public class ClassPrinter {
         p.printlnWithNoIndent(" ", renderType(model.getType()), " ", model.getName(), ";");
     }
 
-    private void printMethod(All.MethodModel model, boolean inInterface) {
+    private void printMethod(MethodModel model, boolean inInterface) {
         printAnnotations(model, true);
         if (!inInterface) {
             p.print(model.getVisibility().getRepresentation());
@@ -141,8 +145,8 @@ public class ClassPrinter {
             p.print();
         }
         p.printWithNoIndent(" ", renderType(model.getReturnType()), " ", model.getName(), "(");
-        for (Iterator<All.ParameterModel> iterator = model.getParameters().iterator(); iterator.hasNext(); ) {
-            All.ParameterModel parameterModel = iterator.next();
+        for (Iterator<ParameterModel> iterator = model.getParameters().iterator(); iterator.hasNext(); ) {
+            ParameterModel parameterModel = iterator.next();
             printParameter(parameterModel);
             if (iterator.hasNext()) {
                 p.printWithNoIndent(", ");
@@ -160,25 +164,25 @@ public class ClassPrinter {
         }
     }
 
-    private void printParameter(All.ParameterModel model) {
+    private void printParameter(ParameterModel model) {
         printAnnotations(model, false);
 
         p.printWithNoIndent(renderType(model.getType()), " ", model.getName());
     }
 
-    private String renderType(All.TypeModel type) {
+    private String renderType(TypeModel type) {
         StringBuilder sb = new StringBuilder();
         doRenderType(type, sb);
         return sb.toString();
     }
 
-    private void doRenderType(All.TypeModel type, StringBuilder sb) {
+    private void doRenderType(TypeModel type, StringBuilder sb) {
         importedTypes.add(type);
         sb.append(type.getClassName());
         if (!type.getArguments().isEmpty()) {
             sb.append("<");
-            for (Iterator<All.TypeModel> iterator = type.getArguments().iterator(); iterator.hasNext(); ) {
-                All.TypeModel arg = iterator.next();
+            for (Iterator<TypeModel> iterator = type.getArguments().iterator(); iterator.hasNext(); ) {
+                TypeModel arg = iterator.next();
                 doRenderType(arg, sb);
                 if (iterator.hasNext()) {
                     sb.append(", ");
@@ -188,8 +192,8 @@ public class ClassPrinter {
         }
     }
 
-    private void printAnnotations(All.AnnotatedModel annotatedModel, boolean eachOnANewLine) {
-        for (All.TypeModel annotationType : annotatedModel.getAnnotations()) {
+    private void printAnnotations(AnnotatedModel annotatedModel, boolean eachOnANewLine) {
+        for (TypeModel annotationType : annotatedModel.getAnnotations()) {
             p.print("@", renderType(annotationType));
             if (eachOnANewLine) {
                 p.printlnWithNoIndent();
