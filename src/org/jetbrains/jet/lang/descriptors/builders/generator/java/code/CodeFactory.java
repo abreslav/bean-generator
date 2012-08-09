@@ -31,7 +31,10 @@ public interface CodeFactory<E> {
     E statement(@NotNull E expression);
 
     @NotNull
-    E fieldReference(@Nullable E receiver, @NotNull FieldModel field);
+    E fieldReference(@NotNull E receiver, @NotNull FieldModel field);
+
+    @NotNull
+    E variableReference(@NotNull String name);
 
     @NotNull
     E methodCall(@Nullable E receiver, @NotNull MethodModel method, @NotNull List<E> arguments);

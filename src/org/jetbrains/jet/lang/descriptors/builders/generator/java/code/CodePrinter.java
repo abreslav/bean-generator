@@ -43,14 +43,23 @@ public class CodePrinter implements CodeFactory<PrintAction> {
     }
 
     @Override
-    public PrintAction fieldReference(@Nullable final PrintAction receiver, @NotNull final FieldModel field) {
+    public PrintAction fieldReference(@NotNull final PrintAction receiver, @NotNull final FieldModel field) {
         return new PrintAction() {
             @Override
             public void print(Printer p) {
-                if (receiver != null) {
-                    receiver.print(p);
-                }
+                receiver.print(p);
                 p.printWithNoIndent(".", field.getName());
+            }
+        };
+    }
+
+    @NotNull
+    @Override
+    public PrintAction variableReference(@NotNull final String name) {
+        return new PrintAction() {
+            @Override
+            public void print(Printer p) {
+                p.printWithNoIndent(name);
             }
         };
     }
