@@ -39,6 +39,14 @@ public abstract class EntityRepresentationGenerator {
             .setPackageFqName("java.lang")
             .setClassName("Override");
 
+    public static TypeModel NULLABLE = new TypeBean()
+            .setPackageFqName("org.jetbrains.annotations")
+            .setClassName("Nullable");
+
+    public static TypeModel NOT_NULL = new TypeBean()
+            .setPackageFqName("org.jetbrains.annotations")
+            .setClassName("NotNull");
+
     private final Map<Entity, ClassBean> map = Maps.newIdentityHashMap();
 
     protected EntityRepresentationGenerator(@NotNull Collection<Entity> entities, @NotNull String targetPackageFqName) {
