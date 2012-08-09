@@ -26,7 +26,7 @@ import java.util.Map;
 /**
 * @author abreslav
 */
-public abstract class DataHolderImpl implements DataHolder {
+public abstract class DataHolderImpl<T extends DataHolderImpl<T>> implements DataHolder {
     private Map<DataHolderKey<?>, Object> map;
 
     private Map<DataHolderKey<?>, Object> getMap() {
@@ -42,7 +42,8 @@ public abstract class DataHolderImpl implements DataHolder {
         return (V) getMap().get(key);
     }
 
-    public <V> void put(@NotNull DataHolderKey<V> key, @NotNull V value) {
+    public <V> T put(@NotNull DataHolderKey<V> key, @NotNull V value) {
         getMap().put(key, value);
+        return (T) this;
     }
 }

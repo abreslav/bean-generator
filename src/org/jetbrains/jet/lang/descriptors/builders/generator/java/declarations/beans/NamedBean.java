@@ -22,7 +22,7 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.N
 /**
 * @author abreslav
 */
-public abstract class NamedBean<T extends NamedBean<T>> extends DataHolderImpl implements NamedModel {
+public abstract class NamedBean<T extends NamedBean<T>> extends DataHolderImpl<T> implements NamedModel {
     private String name;
 
     @NotNull
