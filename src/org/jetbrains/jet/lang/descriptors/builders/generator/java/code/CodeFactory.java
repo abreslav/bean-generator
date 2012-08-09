@@ -31,6 +31,9 @@ public interface CodeFactory<E> {
     E statement(@NotNull E expression);
 
     @NotNull
+    E block(@NotNull List<E> block);
+
+    @NotNull
     E fieldReference(@NotNull E receiver, @NotNull FieldModel field);
 
     @NotNull

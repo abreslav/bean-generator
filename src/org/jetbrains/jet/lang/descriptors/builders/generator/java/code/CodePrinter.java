@@ -42,6 +42,19 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         };
     }
 
+    @NotNull
+    @Override
+    public PrintAction block(@NotNull final List<PrintAction> block) {
+        return new PrintAction() {
+            @Override
+            public void print(Printer p) {
+                for (PrintAction action : block) {
+                    action.print(p);
+                }
+            }
+        };
+    }
+
     @Override
     public PrintAction fieldReference(@NotNull final PrintAction receiver, @NotNull final FieldModel field) {
         return new PrintAction() {
