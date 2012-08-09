@@ -16,6 +16,7 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans;
 
+import com.google.common.collect.Maps;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.DataHolder;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.DataHolderKey;
@@ -26,15 +27,22 @@ import java.util.Map;
 * @author abreslav
 */
 public abstract class DataHolderImpl implements DataHolder {
-    private static Map<DataHolderKey<?>, Object> map;
+    private Map<DataHolderKey<?>, Object> map;
+
+    private Map<DataHolderKey<?>, Object> getMap() {
+        if (map == null) {
+            map = Maps.newHashMap();
+        }
+        return map;
+    }
 
     @Override
     public <V> V getData(@NotNull DataHolderKey<V> key) {
         //noinspection unchecked
-        return (V) map.get(key);
+        return (V) getMap().get(key);
     }
 
     public <V> void put(@NotNull DataHolderKey<V> key, @NotNull V value) {
-        map.put(key, value);
+        getMap().put(key, value);
     }
 }
