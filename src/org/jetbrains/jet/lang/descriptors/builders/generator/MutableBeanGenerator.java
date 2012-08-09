@@ -16,13 +16,19 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
+import com.google.common.collect.Maps;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.ClassPrinter;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeFactory;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.PieceOfCode;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.FieldModel;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.Visibility;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.FieldBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.MethodBean;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
 * @author abreslav
@@ -35,18 +41,33 @@ public class MutableBeanGenerator extends EntityRepresentationGenerator {
 
     @Override
     protected void generateClassMembers(ClassBean bean, Entity entity) {
+        final Map<Relation<?>, FieldModel> fields = Maps.newHashMap();
         for (Relation<?> relation : entity.getRelations()) {
-            bean.getFields().add(new FieldBean()
-                                         .setVisibility(Visibility.PRIVATE)
-                                         .setType(relationToType(relation))
-                                         .setName(getFieldName(relation)));
+            FieldBean field = new FieldBean()
+                    .setVisibility(Visibility.PRIVATE)
+                    .setType(relationToType(relation))
+                    .setName(getFieldName(relation));
+            fields.put(relation, field);
+            bean.getFields().add(field);
         }
-        for (Relation<?> relation : entity.getRelations()) {
+        for (final Relation<?> relation : entity.getRelations()) {
             bean.getMethods().add(new MethodBean()
                                           .addAnnotation(OVERRIDE)
                                           .setVisibility(Visibility.PUBLIC)
                                           .setReturnType(relationToType(relation))
                                           .setName(getGetterName(relation))
+                                          .put(
+                                              ClassPrinter.METHOD_BODY,
+                                              new PieceOfCode() {
+                                                  @NotNull
+                                                  @Override
+                                                  public <E> E create(@NotNull CodeFactory<E> f) {
+                                                      return f._return(
+                                                          f.fieldReference(f._this(), fields.get(relation))
+                                                      );
+                                                  }
+                                              }
+                                          )
             );
         }
     }
