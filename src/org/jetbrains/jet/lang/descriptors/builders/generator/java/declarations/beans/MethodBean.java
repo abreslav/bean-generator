@@ -60,4 +60,9 @@ public final class MethodBean extends MemberBean<MethodBean> implements MethodMo
     public List<ParameterModel> getParameters() {
         return parameters;
     }
+
+    public MethodBean addParameter(@NotNull ParameterModel parameter) {
+        parameters.add(parameter);
+        return this;
+    }
 }
