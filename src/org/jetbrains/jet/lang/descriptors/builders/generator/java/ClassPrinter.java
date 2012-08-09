@@ -207,12 +207,11 @@ public class ClassPrinter {
 
     private void printAnnotations(AnnotatedModel annotatedModel, boolean eachOnANewLine) {
         for (TypeModel annotationType : annotatedModel.getAnnotations()) {
-            p.print("@", renderType(annotationType));
             if (eachOnANewLine) {
-                p.printlnWithNoIndent();
+                p.println("@", renderType(annotationType));
             }
             else {
-                p.printWithNoIndent(" ");
+                p.printWithNoIndent("@", renderType(annotationType), " ");
             }
         }
     }
