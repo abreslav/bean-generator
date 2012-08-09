@@ -18,7 +18,10 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java;
 
 import gnu.trove.THashSet;
 import gnu.trove.TObjectHashingStrategy;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodePrinter;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.PieceOfCode;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.DataHolderKeyImpl;
 import org.jetbrains.jet.utils.Printer;
 
 import java.util.Iterator;
@@ -28,6 +31,8 @@ import java.util.Set;
  * @author abreslav
  */
 public class ClassPrinter {
+
+    public static final DataHolderKey<PieceOfCode> METHOD_BODY = DataHolderKeyImpl.create("METHOD_BODY");
 
     public static void printClass(ClassModel classModel, Printer p) {
         if (!classModel.getPackageFqName().isEmpty()) {
@@ -158,7 +163,15 @@ public class ClassPrinter {
         else {
             p.printlnWithNoIndent(") {");
             p.pushIndent();
-            // Body
+
+            PieceOfCode methodBody = model.getData(METHOD_BODY);
+            if (methodBody != null) {
+                methodBody.create(new CodePrinter()).print(p);
+            }
+            else {
+                throw new IllegalStateException("No body for method " + model.getName());
+            }
+
             p.popIndent();
             p.println("}");
         }
