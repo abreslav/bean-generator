@@ -36,7 +36,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
             public void print(Printer p) {
                 p.print();
                 expression.print(p);
-                p.printlnWithNoIndent();
+                p.printlnWithNoIndent(";");
             }
         };
     }
@@ -98,6 +98,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
                         p.printWithNoIndent(", ");
                     }
                 }
+                p.printWithNoIndent(")");
             }
         };
     }
