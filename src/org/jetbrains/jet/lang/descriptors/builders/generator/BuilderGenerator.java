@@ -17,12 +17,14 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import com.google.common.collect.Lists;
+import com.intellij.openapi.util.io.FileUtil;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.descriptors.annotations.Annotated;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.ClassPrinter;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassModel;
 import org.jetbrains.jet.utils.Printer;
 
+import java.io.*;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,7 +33,7 @@ import java.util.List;
  */
 public class BuilderGenerator {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         List<Class<?>> classesWithBuilders = Lists.<Class<?>>newArrayList(
                 Named.class,
                 Annotated.class,
@@ -50,21 +52,32 @@ public class BuilderGenerator {
 
         Collection<Entity> entities = EntityBuilder.javaClassesToEntities(classesWithBuilders);
 
-        StringBuilder out = new StringBuilder();
-        Printer p = new Printer(out);
 
-        Collection<ClassModel> classes = new MutableBeanGenerator(entities, "p").generate();
-        //Collection<All.ClassModel> classes = new ReadOnlyBeanGenerator(entities, "p").generate();
+        String generatedSourceRoot = "bean-generator/generated";
+        String readOnlyBeanPackage = "beans";
+        String mutableBeanPackage = "beans.mutable";
 
-        for (ClassModel classModel : classes) {
+        Collection<ClassModel> readOnlyBeans = new ReadOnlyBeanGenerator(entities, readOnlyBeanPackage).generate();
+        Collection<ClassModel> mutableBeans = new MutableBeanGenerator(entities, mutableBeanPackage).generate();
+
+        writeToFiles(generatedSourceRoot, readOnlyBeanPackage, readOnlyBeans);
+    }
+
+    private static void writeToFiles(String generatedSourceRoot, String packageName, Collection<ClassModel> readOnlyBeans)
+            throws IOException {
+        File sourceRoot = new File(generatedSourceRoot);
+        assert sourceRoot.isDirectory();
+        File packageDir = new File(sourceRoot, packageToPath(packageName));
+        for (ClassModel classModel : readOnlyBeans) {
+            StringBuilder out = new StringBuilder();
+            Printer p = new Printer(out);
             ClassPrinter.printClass(classModel, p);
-            p.println();
-            p.println("==============");
-            p.println();
+            File file = new File(packageDir, classModel.getName() + ".java");
+            FileUtil.writeToFile(file, out.toString());
         }
+    }
 
-
-        System.err.flush();
-        System.out.println(out);
+    private static String packageToPath(String packageFqName) {
+        return packageFqName.replace('.', '/');
     }
 }
