@@ -35,7 +35,6 @@ import java.util.*;
 public abstract class EntityRepresentationGenerator {
 
     public static TypeData OVERRIDE = new TypeData() {
-        @NotNull
         @Override
         public <E> E create(@NotNull TypeFactory<E> f) {
             return TypeUtil.constructedType(f, "java.lang", "Override");
@@ -43,7 +42,6 @@ public abstract class EntityRepresentationGenerator {
     };
 
     public static TypeData NULLABLE = new TypeData() {
-        @NotNull
         @Override
         public <E> E create(@NotNull TypeFactory<E> f) {
             return TypeUtil.constructedType(f, "org.jetbrains.annotations", "Nullable");
@@ -51,9 +49,8 @@ public abstract class EntityRepresentationGenerator {
     };
 
     public static TypeData NOT_NULL = new TypeData() {
-                @NotNull
-                @Override
-                public <E> E create(@NotNull TypeFactory<E> f) {
+        @Override
+        public <E> E create(@NotNull TypeFactory<E> f) {
             return TypeUtil.constructedType(f, "org.jetbrains.annotations", "NotNull");
         }
     };
@@ -149,7 +146,6 @@ public abstract class EntityRepresentationGenerator {
 
     protected static TypeData collectionType(final Class<? extends Collection> aClass, final Variance variance, final TypeData type) {
         return new TypeData() {
-            @NotNull
             @Override
             public <E> E create(@NotNull TypeFactory<E> f) {
                 return f.constructedType(
@@ -180,7 +176,6 @@ public abstract class EntityRepresentationGenerator {
         if (type instanceof ParameterizedType) {
             final ParameterizedType parameterizedType = (ParameterizedType) type;
             return new TypeData() {
-                @NotNull
                 @Override
                 public <E> E create(@NotNull final TypeFactory<E> f) {
                     Class<?> rawType = (Class<?>) parameterizedType.getRawType();
@@ -207,7 +202,6 @@ public abstract class EntityRepresentationGenerator {
     private static TypeData classToTypeBean(final Class<?> theClass) {
         assert theClass.getPackage() != null;
         return new TypeData() {
-            @NotNull
             @Override
             public <E> E create(@NotNull TypeFactory<E> f) {
                 return TypeUtil.constructedType(f, theClass.getPackage().getName(), getNameWithEnclosingClasses(theClass));
@@ -244,7 +238,6 @@ public abstract class EntityRepresentationGenerator {
 
     protected static TypeData simpleType(@NotNull final ClassModel classModel) {
         return new TypeData() {
-            @NotNull
             @Override
             public <E> E create(@NotNull TypeFactory<E> f) {
                 return TypeUtil.constructedType(f, classModel.getPackageFqName(), classModel.getName());

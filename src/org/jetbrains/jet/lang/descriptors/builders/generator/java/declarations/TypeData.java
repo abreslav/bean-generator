@@ -22,6 +22,5 @@ import org.jetbrains.annotations.NotNull;
  * @author abreslav
  */
 public interface TypeData {
-    @NotNull
     <E> E create(@NotNull TypeFactory<E> f);
 }

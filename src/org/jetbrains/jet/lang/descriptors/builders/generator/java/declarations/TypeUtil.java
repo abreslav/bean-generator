@@ -24,7 +24,6 @@ import java.util.Arrays;
  * @author abreslav
  */
 public class TypeUtil {
-    @NotNull
     public static <E> E constructedType(
             @NotNull TypeFactory<E> factory,
             @NotNull String packageName, @NotNull String className, E... arguments

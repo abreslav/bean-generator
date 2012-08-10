@@ -182,27 +182,21 @@ public class ClassPrinter {
     }
 
     private String renderType(TypeData type) {
-        type.create(new TypeFactory<Runnable>() {
+        // Import types mentioned in this type
+        type.create(new TypeFactory<Void>() {
             @Override
-            public Runnable constructedType(@NotNull final String packageName, @NotNull final String className, @NotNull List<Runnable> arguments) {
-                return new Runnable() {
-                    @Override
-                    public void run() {
-                        importedTypes.add(Pair.create(packageName, className));
-                    }
-                };
+            public Void constructedType(@NotNull String packageName, @NotNull String className, @NotNull List<Void> arguments) {
+                importedTypes.add(Pair.create(packageName, className));
+                return null;
             }
 
             @Override
-            public Runnable wildcardType(@NotNull WildcardKind kind, @Nullable Runnable bound) {
-                return new Runnable() {
-                    @Override
-                    public void run() {
-
-                    }
-                };
+            public Void wildcardType(@NotNull WildcardKind kind, @Nullable Void bound) {
+                return null;
             }
-        }).run();
+        });
+
+        // Render the string
         return type.create(new TypeFactory<String>() {
             @Override
             public String constructedType(@NotNull String packageName, @NotNull String className, @NotNull List<String> arguments) {
