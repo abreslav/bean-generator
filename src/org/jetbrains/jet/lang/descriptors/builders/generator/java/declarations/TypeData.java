@@ -17,36 +17,11 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 /**
-* @author abreslav
-*/
-public interface ClassModel extends MemberModel {
-
-    boolean isAbstract();
-
+ * @author abreslav
+ */
+public interface TypeData {
     @NotNull
-    ClassKind getKind();
-
-    @NotNull
-    String getPackageFqName();
-
-    @Override
-    @NotNull
-    String getName();
-
-    @Nullable
-    TypeData getSuperClass();
-
-    @NotNull
-    List<TypeData> getSuperInterfaces();
-
-    @NotNull
-    List<FieldModel> getFields();
-
-    @NotNull
-    List<MethodModel> getMethods();
+    <E> E create(@NotNull TypeFactory<E> f);
 }

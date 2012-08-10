@@ -20,7 +20,7 @@ import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.MethodModel;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ParameterModel;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.TypeModel;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.TypeData;
 
 import java.util.List;
 
@@ -29,17 +29,17 @@ import java.util.List;
 */
 public final class MethodBean extends MemberBean<MethodBean> implements MethodModel {
     private boolean _abstract;
-    private TypeModel returnType;
+    private TypeData returnType;
     private final List<ParameterModel> parameters = Lists.newArrayList();
 
     @NotNull
     @Override
-    public TypeModel getReturnType() {
+    public TypeData getReturnType() {
         return returnType;
     }
 
     @NotNull
-    public MethodBean setReturnType(@NotNull TypeModel type) {
+    public MethodBean setReturnType(@NotNull TypeData type) {
         this.returnType = type;
         return this;
     }

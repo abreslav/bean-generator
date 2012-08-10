@@ -22,31 +22,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
-* @author abreslav
-*/
-public interface ClassModel extends MemberModel {
+ * @author abreslav
+ */
+public interface TypeFactory<T> {
+    T constructedType(@NotNull String packageName, @NotNull String className, @NotNull List<T> arguments);
 
-    boolean isAbstract();
-
-    @NotNull
-    ClassKind getKind();
-
-    @NotNull
-    String getPackageFqName();
-
-    @Override
-    @NotNull
-    String getName();
-
-    @Nullable
-    TypeData getSuperClass();
-
-    @NotNull
-    List<TypeData> getSuperInterfaces();
-
-    @NotNull
-    List<FieldModel> getFields();
-
-    @NotNull
-    List<MethodModel> getMethods();
+    T wildcardType(@NotNull WildcardKind kind, @Nullable T bound);
 }

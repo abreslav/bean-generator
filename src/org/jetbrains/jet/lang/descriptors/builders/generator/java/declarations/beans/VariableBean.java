@@ -17,23 +17,23 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.TypeModel;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.TypeData;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.VariableModel;
 
 /**
 * @author abreslav
 */
 public abstract class VariableBean<T extends VariableBean<T>> extends AnnotatedBean<T> implements VariableModel {
-    private TypeModel type;
+    private TypeData type;
 
     @NotNull
     @Override
-    public TypeModel getType() {
+    public TypeData getType() {
         return type;
     }
 
     @NotNull
-    public T setType(@NotNull TypeModel type) {
+    public T setType(@NotNull TypeData type) {
         this.type = type;
         return (T) this;
     }

@@ -16,8 +16,10 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator.java;
 
-import gnu.trove.THashSet;
-import gnu.trove.TObjectHashingStrategy;
+import com.google.common.collect.Sets;
+import com.intellij.openapi.util.Pair;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodePrinter;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.PieceOfCode;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
@@ -25,6 +27,7 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.b
 import org.jetbrains.jet.utils.Printer;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -42,12 +45,13 @@ public class ClassPrinter {
         classPrinter.printClass(classModel);
 
         p.println();
-        for (TypeModel importedType : classPrinter.importedTypes) {
-            String packageFqName = importedType.getPackageFqName();
-            if (!packageFqName.isEmpty()
+        for (Pair<String, String> importedType : classPrinter.importedTypes) {
+            String packageFqName = importedType.getFirst();
+            if (packageFqName != null
+                    && !packageFqName.isEmpty()
                     && !packageFqName.equals("java.lang")
                     && !packageFqName.equals(classModel.getPackageFqName())) {
-                p.println("import ", packageFqName, ".", importedType.getClassName(), ";");
+                p.println("import ", importedType.getFirst(), ".", importedType.getSecond(), ";");
             }
         }
         p.println();
@@ -57,18 +61,7 @@ public class ClassPrinter {
 
     private final Printer p;
 
-    private final Set<TypeModel> importedTypes = new THashSet<TypeModel>(new TObjectHashingStrategy<TypeModel>() {
-        @Override
-        public int computeHashCode(TypeModel model) {
-            return model.getPackageFqName().hashCode() + 13 * model.getClassName().hashCode();
-        }
-
-        @Override
-        public boolean equals(TypeModel model, TypeModel model1) {
-            return model.getPackageFqName().equals(model1.getPackageFqName())
-                   && model.getClassName().equals(model1.getClassName());
-        }
-    });
+    private final Set<Pair<String, String>> importedTypes = Sets.newHashSet();
 
     private final StringBuilder body = new StringBuilder();
 
@@ -98,9 +91,9 @@ public class ClassPrinter {
             else {
                 p.printWithNoIndent(" extends ");
             }
-            for (Iterator<TypeModel> iterator = classModel.getSuperInterfaces().iterator(); iterator.hasNext(); ) {
-                TypeModel typeModel = iterator.next();
-                p.printWithNoIndent(renderType(typeModel));
+            for (Iterator<TypeData> iterator = classModel.getSuperInterfaces().iterator(); iterator.hasNext(); ) {
+                TypeData typeData = iterator.next();
+                p.printWithNoIndent(renderType(typeData));
                 if (iterator.hasNext()) {
                     p.printWithNoIndent(", ");
                 }
@@ -183,30 +176,68 @@ public class ClassPrinter {
         p.printWithNoIndent(renderType(model.getType()), " ", model.getName());
     }
 
-    private String renderType(TypeModel type) {
-        StringBuilder sb = new StringBuilder();
-        doRenderType(type, sb);
-        return sb.toString();
-    }
-
-    private void doRenderType(TypeModel type, StringBuilder sb) {
-        importedTypes.add(type);
-        sb.append(type.getClassName());
-        if (!type.getArguments().isEmpty()) {
-            sb.append("<");
-            for (Iterator<TypeModel> iterator = type.getArguments().iterator(); iterator.hasNext(); ) {
-                TypeModel arg = iterator.next();
-                doRenderType(arg, sb);
-                if (iterator.hasNext()) {
-                    sb.append(", ");
-                }
+    private String renderType(TypeData type) {
+        type.create(new TypeFactory<Runnable>() {
+            @Override
+            public Runnable constructedType(@NotNull final String packageName, @NotNull final String className, @NotNull List<Runnable> arguments) {
+                return new Runnable() {
+                    @Override
+                    public void run() {
+                        importedTypes.add(Pair.create(packageName, className));
+                    }
+                };
             }
-            sb.append(">");
-        }
+
+            @Override
+            public Runnable wildcardType(@NotNull WildcardKind kind, @Nullable Runnable bound) {
+                return new Runnable() {
+                    @Override
+                    public void run() {
+
+                    }
+                };
+            }
+        }).run();
+        return type.create(new TypeFactory<String>() {
+            @Override
+            public String constructedType(@NotNull String packageName, @NotNull String className, @NotNull List<String> arguments) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(className);
+                if (!arguments.isEmpty()) {
+                    sb.append("<");
+                    for (Iterator<String> iterator = arguments.iterator(); iterator.hasNext(); ) {
+                        String argument = iterator.next();
+                        sb.append(argument);
+                        if (iterator.hasNext()) {
+                            sb.append(", ");
+                        }
+                    }
+                    sb.append(">");
+                }
+                return sb.toString();
+            }
+
+            @Override
+            public String wildcardType(@NotNull WildcardKind kind, @Nullable String bound) {
+                StringBuilder sb = new StringBuilder("?");
+                switch (kind) {
+                    case BARE:
+                        assert bound == null;
+                        break;
+                    case EXTENDS:
+                        sb.append(" extends ").append(bound);
+                        break;
+                    case SUPER:
+                        sb.append(" super ").append(bound);
+                        break;
+                }
+                return sb.toString();
+            }
+        });
     }
 
     private void printAnnotations(AnnotatedModel annotatedModel, boolean eachOnANewLine) {
-        for (TypeModel annotationType : annotatedModel.getAnnotations()) {
+        for (TypeData annotationType : annotatedModel.getAnnotations()) {
             if (eachOnANewLine) {
                 p.println("@", renderType(annotationType));
             }

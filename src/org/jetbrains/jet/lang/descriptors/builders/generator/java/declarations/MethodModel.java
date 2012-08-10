@@ -27,7 +27,7 @@ public interface MethodModel extends MemberModel {
     boolean isAbstract();
 
     @NotNull
-    TypeModel getReturnType();
+    TypeData getReturnType();
 
     @NotNull
     @Override

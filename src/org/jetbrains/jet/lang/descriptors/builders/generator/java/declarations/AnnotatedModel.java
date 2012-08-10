@@ -25,5 +25,5 @@ import java.util.List;
 */
 public interface AnnotatedModel {
     @NotNull
-    List<TypeModel> getAnnotations();
+    List<TypeData> getAnnotations();
 }

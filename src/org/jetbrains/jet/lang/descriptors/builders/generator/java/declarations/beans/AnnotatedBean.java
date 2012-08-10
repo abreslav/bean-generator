@@ -19,7 +19,7 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.AnnotatedModel;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.TypeModel;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.TypeData;
 
 import java.util.List;
 
@@ -27,16 +27,16 @@ import java.util.List;
 * @author abreslav
 */
 public abstract class AnnotatedBean<T extends AnnotatedBean<T>> extends NamedBean<T> implements AnnotatedModel {
-    private final List<TypeModel> annotations = Lists.newArrayList();
+    private final List<TypeData> annotations = Lists.newArrayList();
 
     @NotNull
     @Override
-    public List<TypeModel> getAnnotations() {
+    public List<TypeData> getAnnotations() {
         return annotations;
     }
 
-    public T addAnnotation(@NotNull TypeModel typeModel) {
-        annotations.add(typeModel);
+    public T addAnnotation(@NotNull TypeData typeData) {
+        annotations.add(typeData);
         return (T) this;
     }
 

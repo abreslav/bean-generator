@@ -29,8 +29,8 @@ public final class ClassBean extends MemberBean<ClassBean> implements ClassModel
     private String packageFqName;
     private boolean _abstract;
     private ClassKind kind;
-    private TypeModel superClass;
-    private final List<TypeModel> superInterfaces = Lists.newArrayList();
+    private TypeData superClass;
+    private final List<TypeData> superInterfaces = Lists.newArrayList();
     private final List<FieldModel> fields = Lists.newArrayList();
     private final List<MethodModel> methods = Lists.newArrayList();
 
@@ -70,19 +70,19 @@ public final class ClassBean extends MemberBean<ClassBean> implements ClassModel
     }
 
     @Override
-    public TypeModel getSuperClass() {
+    public TypeData getSuperClass() {
         return superClass;
     }
 
     @NotNull
-    public ClassBean setSuperClass(@NotNull TypeModel superClass) {
+    public ClassBean setSuperClass(@NotNull TypeData superClass) {
         this.superClass = superClass;
         return this;
     }
 
     @NotNull
     @Override
-    public List<TypeModel> getSuperInterfaces() {
+    public List<TypeData> getSuperInterfaces() {
         return superInterfaces;
     }
 

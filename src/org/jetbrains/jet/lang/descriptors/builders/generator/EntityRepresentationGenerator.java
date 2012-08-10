@@ -18,34 +18,44 @@ package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import com.google.common.collect.Maps;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.TypeBean;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author abreslav
  */
 public abstract class EntityRepresentationGenerator {
 
-    public static TypeModel OVERRIDE = new TypeBean()
-            .setPackageFqName("java.lang")
-            .setClassName("Override");
+    public static TypeData OVERRIDE = new TypeData() {
+        @NotNull
+        @Override
+        public <E> E create(@NotNull TypeFactory<E> f) {
+            return TypeUtil.constructedType(f, "java.lang", "Override");
+        }
+    };
 
-    public static TypeModel NULLABLE = new TypeBean()
-            .setPackageFqName("org.jetbrains.annotations")
-            .setClassName("Nullable");
+    public static TypeData NULLABLE = new TypeData() {
+        @NotNull
+        @Override
+        public <E> E create(@NotNull TypeFactory<E> f) {
+            return TypeUtil.constructedType(f, "org.jetbrains.annotations", "Nullable");
+        }
+    };
 
-    public static TypeModel NOT_NULL = new TypeBean()
-            .setPackageFqName("org.jetbrains.annotations")
-            .setClassName("NotNull");
+    public static TypeData NOT_NULL = new TypeData() {
+                @NotNull
+                @Override
+                public <E> E create(@NotNull TypeFactory<E> f) {
+            return TypeUtil.constructedType(f, "org.jetbrains.annotations", "NotNull");
+        }
+    };
 
     private final Map<Entity, ClassBean> map = Maps.newIdentityHashMap();
 
@@ -91,11 +101,11 @@ public abstract class EntityRepresentationGenerator {
 
     public abstract String getEntityRepresentationName(@NotNull Entity entity);
 
-    protected <T> TypeModel relationToType(@NotNull Relation<T> relation) {
+    protected <T> TypeData relationToType(@NotNull Relation<T> relation) {
         return targetToType(relation.getTarget(), relation.getMultiplicity());
     }
 
-    protected <T> TypeModel targetToType(T target, Multiplicity multiplicity) {
+    protected <T> TypeData targetToType(T target, Multiplicity multiplicity) {
         if (target instanceof Entity) {
             Entity entity = (Entity) target;
             return typeWithMultiplicity(multiplicity, simpleType(map.get(entity)));
@@ -107,47 +117,75 @@ public abstract class EntityRepresentationGenerator {
         throw new IllegalArgumentException("Unsupported target type:" + target);
     }
 
-    protected TypeModel typeWithMultiplicity(Multiplicity multiplicity, TypeModel elementType) {
+    protected TypeData typeWithMultiplicity(Multiplicity multiplicity, TypeData elementType) {
         switch (multiplicity) {
             case ZERO_OR_ONE:
             case ONE:
                 return elementType;
             case LIST:
-                return reflectionTypeBean(List.class).addArgument(elementType);
+                return collectionType(List.class, elementType);
             case SET:
-                return reflectionTypeBean(Set.class).addArgument(elementType);
+                return collectionType(Set.class, elementType);
             case COLLECTION:
-                return reflectionTypeBean(Collection.class).addArgument(elementType);
+                return collectionType(Collection.class, elementType);
         }
         throw new IllegalStateException("Unknown multiplicity: " + multiplicity);
     }
 
-    protected static TypeModel reflectionType(@NotNull Type type) {
-        return reflectionTypeBean(type);
+    protected TypeData collectionType(final Class<? extends Collection> aClass, final TypeData type) {
+        return new TypeData() {
+            @NotNull
+            @Override
+            public <E> E create(@NotNull TypeFactory<E> f) {
+                return f.constructedType(
+                        aClass.getPackage().getName(),
+                        aClass.getSimpleName(),
+                        Collections.singletonList(type.create(f)));
+            }
+        };
     }
 
-    protected static TypeBean reflectionTypeBean(Type type) {
+    protected static TypeData reflectionType(@NotNull Type type) {
         if (type instanceof Class<?>) {
             Class<?> theClass = (Class<?>) type;
             return classToTypeBean(theClass);
         }
         if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
-            TypeBean typeBean = classToTypeBean((Class<?>) parameterizedType.getRawType());
-            Type[] arguments = parameterizedType.getActualTypeArguments();
-            for (Type arg : arguments) {
-                typeBean.getArguments().add(reflectionType(arg));
-            }
-            return typeBean;
+            final ParameterizedType parameterizedType = (ParameterizedType) type;
+            return new TypeData() {
+                @NotNull
+                @Override
+                public <E> E create(@NotNull final TypeFactory<E> f) {
+                    Class<?> rawType = (Class<?>) parameterizedType.getRawType();
+                    return f.constructedType(
+                            rawType.getPackage().getName(),
+                            rawType.getSimpleName(),
+                            reflectionTypes(f, parameterizedType.getActualTypeArguments())
+                    );
+                }
+            };
         }
         throw new IllegalArgumentException("Unsupported reflection type: " + type);
     }
 
-    private static TypeBean classToTypeBean(Class<?> theClass) {
-        Package aPackage = theClass.getPackage();
-        return new TypeBean()
-                    .setPackageFqName(aPackage == null ? "" : aPackage.getName())
-                    .setClassName(theClass.getSimpleName());
+    private static <E> List<E> reflectionTypes(final TypeFactory<E> f, Type... types) {
+        return ContainerUtil.map(types, new Function<Type, E>() {
+            @Override
+            public E fun(Type type) {
+                return reflectionType(type).create(f);
+            }
+        });
+    }
+
+    private static TypeData classToTypeBean(final Class<?> theClass) {
+        assert theClass.getPackage() != null;
+        return new TypeData() {
+            @NotNull
+            @Override
+            public <E> E create(@NotNull TypeFactory<E> f) {
+                return TypeUtil.constructedType(f, theClass.getPackage().getName(), theClass.getSimpleName());
+            }
+        };
     }
 
     public static String getGetterName(Relation relation) {
@@ -166,9 +204,13 @@ public abstract class EntityRepresentationGenerator {
         return target == Boolean.TYPE ? "is" : "get";
     }
 
-    protected static TypeModel simpleType(@NotNull ClassModel classModel) {
-        return new TypeBean()
-                .setClassName(classModel.getName())
-                .setPackageFqName(classModel.getPackageFqName());
+    protected static TypeData simpleType(@NotNull final ClassModel classModel) {
+        return new TypeData() {
+            @NotNull
+            @Override
+            public <E> E create(@NotNull TypeFactory<E> f) {
+                return TypeUtil.constructedType(f, classModel.getPackageFqName(), classModel.getName());
+            }
+        };
     }
 }

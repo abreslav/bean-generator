@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 */
 public interface VariableModel extends NamedModel, AnnotatedModel {
     @NotNull
-    TypeModel getType();
+    TypeData getType();
 
     @NotNull
     @Override

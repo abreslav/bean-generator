@@ -18,18 +18,17 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.Arrays;
 
 /**
-* @author abreslav
-*/
-public interface TypeModel {
+ * @author abreslav
+ */
+public class TypeUtil {
     @NotNull
-    String getPackageFqName();
-
-    @NotNull
-    String getClassName();
-
-    @NotNull
-    List<TypeModel> getArguments();
+    public static <E> E constructedType(
+            @NotNull TypeFactory<E> factory,
+            @NotNull String packageName, @NotNull String className, E... arguments
+    ) {
+        return factory.constructedType(packageName, className, Arrays.asList(arguments));
+    }
 }
