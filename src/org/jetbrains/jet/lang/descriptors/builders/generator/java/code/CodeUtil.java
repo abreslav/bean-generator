@@ -17,6 +17,7 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator.java.code;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
@@ -27,5 +28,9 @@ public class CodeUtil {
 
     public static <E> E block(@NotNull CodeFactory<E> factory, E... statements) {
         return factory.block(Arrays.asList(statements));
+    }
+
+    public static <E> E methodCall(@NotNull CodeFactory<E> factory, @Nullable E receiver, String methodName, E... arguments) {
+        return factory.methodCall(receiver, methodName, Arrays.asList(arguments));
     }
 }
