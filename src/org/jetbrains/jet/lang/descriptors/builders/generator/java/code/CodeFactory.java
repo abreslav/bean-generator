@@ -18,8 +18,6 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.code;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.FieldModel;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.MethodModel;
 
 import java.util.List;
 
@@ -34,13 +32,13 @@ public interface CodeFactory<E> {
     E block(@NotNull List<E> block);
 
     @NotNull
-    E fieldReference(@NotNull E receiver, @NotNull FieldModel field);
+    E fieldReference(@NotNull E receiver, @NotNull String field);
 
     @NotNull
     E variableReference(@NotNull String name);
 
     @NotNull
-    E methodCall(@Nullable E receiver, @NotNull MethodModel method, @NotNull List<E> arguments);
+    E methodCall(@Nullable E receiver, @NotNull String method, @NotNull List<E> arguments);
 
     @NotNull
     E assignment(@NotNull E lhs, @NotNull E rhs);

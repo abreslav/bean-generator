@@ -18,8 +18,6 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.code;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.FieldModel;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.MethodModel;
 import org.jetbrains.jet.utils.Printer;
 
 import java.util.Iterator;
@@ -58,12 +56,12 @@ public class CodePrinter implements CodeFactory<PrintAction> {
 
     @NotNull
     @Override
-    public PrintAction fieldReference(@NotNull final PrintAction receiver, @NotNull final FieldModel field) {
+    public PrintAction fieldReference(@NotNull final PrintAction receiver, @NotNull final String field) {
         return new PrintAction() {
             @Override
             public void print(Printer p) {
                 receiver.print(p);
-                p.printWithNoIndent(".", field.getName());
+                p.printWithNoIndent(".", field);
             }
         };
     }
@@ -83,7 +81,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
     @Override
     public PrintAction methodCall(
             @Nullable final PrintAction receiver,
-            @NotNull final MethodModel method,
+            @NotNull final String method,
             @NotNull final List<PrintAction> arguments
     ) {
         return new PrintAction() {
@@ -92,7 +90,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
                 if (receiver != null) {
                     receiver.print(p);
                 }
-                p.printWithNoIndent(".", method.getName(), "(");
+                p.printWithNoIndent(".", method, "(");
                 for (Iterator<PrintAction> iterator = arguments.iterator(); iterator.hasNext(); ) {
                     PrintAction argument = iterator.next();
                     argument.print(p);
