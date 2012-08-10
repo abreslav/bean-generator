@@ -43,6 +43,11 @@ public class MutableBeanGenerator extends EntityRepresentationGenerator {
     }
 
     @Override
+    protected void generateSupertypes(ClassBean classBean, Entity entity) {
+
+    }
+
+    @Override
     protected void generateClassMembers(ClassBean bean, Entity entity) {
         Context context = new Context(entity, bean);
         createFields(context);

@@ -57,6 +57,10 @@ public abstract class EntityRepresentationGenerator {
 
     private final Map<Entity, ClassBean> map = Maps.newIdentityHashMap();
 
+    protected ClassBean getRepresentation(@NotNull Entity entity) {
+        return map.get(entity);
+    }
+
     protected EntityRepresentationGenerator(@NotNull Collection<Entity> entities, @NotNull String targetPackageFqName) {
         for (Entity entity : entities) {
             String readableBeanClassName = getEntityRepresentationName(entity);
@@ -82,18 +86,14 @@ public abstract class EntityRepresentationGenerator {
     }
 
     public void generateEntity(@NotNull Entity entity) {
-        ClassBean classBean = map.get(entity);
+        ClassBean classBean = getRepresentation(entity);
 
         generateSupertypes(classBean, entity);
 
         generateClassMembers(classBean, entity);
     }
 
-    protected void generateSupertypes(ClassBean classBean, Entity entity) {
-        for (Entity superEntity : entity.getSuperEntities()) {
-            classBean.getSuperInterfaces().add(simpleType(map.get(superEntity)));
-        }
-    }
+    protected abstract void generateSupertypes(ClassBean classBean, Entity entity);
 
     protected abstract void generateClassMembers(ClassBean bean, Entity entity);
 
@@ -120,7 +120,7 @@ public abstract class EntityRepresentationGenerator {
     protected <T> TypeData targetToType(T target, Multiplicity multiplicity, Variance variance) {
         if (target instanceof Entity) {
             Entity entity = (Entity) target;
-            return typeWithMultiplicity(multiplicity, simpleType(map.get(entity)), variance);
+            return typeWithMultiplicity(multiplicity, simpleType(getRepresentation(entity)), variance);
         }
         else if (target instanceof Type) {
             Type type = (Type) target;

@@ -49,6 +49,13 @@ public class ReadOnlyBeanGenerator extends EntityRepresentationGenerator {
     }
 
     @Override
+    protected void generateSupertypes(ClassBean classBean, Entity entity)  {
+        for (Entity superEntity : entity.getSuperEntities()) {
+            classBean.getSuperInterfaces().add(simpleType(getRepresentation(superEntity)));
+        }
+    }
+
+    @Override
     protected void generateClassMembers(@NotNull ClassBean bean, @NotNull Entity entity) {
         for (Relation<?> relation : entity.getRelations()) {
             bean.getMethods().add(new MethodBean()
