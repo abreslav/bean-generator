@@ -16,6 +16,7 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -36,6 +37,17 @@ import java.util.Set;
 * @author abreslav
 */
 public class EntityBuilder {
+
+    private static final Map<Type, Class<?>> PRIMITIVE_TO_BOXED = ImmutableMap.<Type, Class<?>>builder()
+            .put(byte.class, Byte.class)
+            .put(short.class, Short.class)
+            .put(int.class, Integer.class)
+            .put(long.class, Long.class)
+            .put(float.class, Float.class)
+            .put(double.class, Double.class)
+            .put(char.class, Character.class)
+            .put(boolean.class, Boolean.class)
+            .build();
 
     @NotNull
     public static Collection<Entity> javaClassesToEntities(@NotNull Collection<Class<?>> entityClassesCollection) {
@@ -168,7 +180,8 @@ public class EntityBuilder {
     }
 
     private static RelationWithTarget<Type> createRelationToJavaType(Method method, String relationName, Type type) {
-        return new RelationWithTarget<Type>(getMultiplicity(method), relationName, type);
+        Class<?> boxed = PRIMITIVE_TO_BOXED.get(type);
+        return new RelationWithTarget<Type>(getMultiplicity(method), relationName, boxed == null ? type : boxed);
     }
 
     private static Multiplicity getMultiplicity(Method method) {
