@@ -141,15 +141,15 @@ public class ClassPrinter {
     private void printMethod(MethodModel model, boolean inInterface) {
         printAnnotations(model, true);
         if (!inInterface) {
-            p.print(model.getVisibility().getRepresentation());
+            p.print(model.getVisibility().getRepresentation(), " ");
             if (model.isAbstract()) {
-                p.printWithNoIndent(" abstract");
+                p.printWithNoIndent("abstract ");
             }
         }
         else {
             p.print();
         }
-        p.printWithNoIndent(" ", renderType(model.getReturnType()), " ", model.getName(), "(");
+        p.printWithNoIndent(renderType(model.getReturnType()), " ", model.getName(), "(");
         for (Iterator<ParameterModel> iterator = model.getParameters().iterator(); iterator.hasNext(); ) {
             ParameterModel parameterModel = iterator.next();
             printParameter(parameterModel);
