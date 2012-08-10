@@ -52,6 +52,7 @@ public class ReadOnlyBeanGenerator extends EntityRepresentationGenerator {
     protected void generateClassMembers(@NotNull ClassBean bean, @NotNull Entity entity) {
         for (Relation<?> relation : entity.getRelations()) {
             bean.getMethods().add(new MethodBean()
+                                          .addAnnotation(relation.getMultiplicity() == Multiplicity.ZERO_OR_ONE ? NULLABLE : NOT_NULL)
                                           .setVisibility(Visibility.PUBLIC)
                                           .setAbstract(true)
                                           .setReturnType(relationToType(relation))
