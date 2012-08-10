@@ -30,7 +30,6 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.b
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.MethodBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ParameterBean;
 
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -38,25 +37,17 @@ import java.util.Map;
 */
 public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
 
-    public MutableBeanClassesGenerator(
-            @NotNull Collection<Entity> entities,
-            @NotNull EntityRepresentationContext<ClassBean> context,
-            @NotNull String targetPackageFqName
-    ) {
-        super(entities, context, targetPackageFqName);
-    }
-
     @Override
-    protected void generateSupertypes(ClassBean classBean, Entity entity) {
+    protected void generateSupertypes(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
 
     }
 
     @Override
-    protected void generateClassMembers(ClassBean bean, Entity entity) {
-        Context context = new Context(entity, bean);
-        createFields(context);
-        createGetters(context);
-        createSettersAndAdders(context);
+    protected void generateClassMembers(EntityRepresentationContext<ClassBean> context, ClassBean bean, Entity entity) {
+        Context c = new Context(context, entity, bean);
+        createFields(c);
+        createGetters(c);
+        createSettersAndAdders(c);
     }
 
     private void createSettersAndAdders(Context context) {
@@ -76,7 +67,7 @@ public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
 
         return createSelfReturningMethod(context.classBean)
                 .setName(getAllElementAdderName(relation))
-                .addParameter(createAllAdderParameter(relation))
+                .addParameter(createAllAdderParameter(context.types, relation))
                 .put(
                         ClassPrinter.METHOD_BODY,
                         new PieceOfCode() {
@@ -84,11 +75,12 @@ public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
                             @Override
                             public <E> E create(@NotNull CodeFactory<E> f) {
                                 return CodeUtil.block(f,
-                                      CodeUtil.methodCallStatement(f,
-                                           f.fieldReference(f._this(), context.fields.get(relation).getName()),
-                                           "add",
-                                           f.variableReference("value")),
-                                      f._return(f._this())
+                                                      CodeUtil.methodCallStatement(f,
+                                                                                   f.fieldReference(f._this(),
+                                                                                                    context.fields.get(relation).getName()),
+                                                                                   "add",
+                                                                                   f.variableReference("value")),
+                                                      f._return(f._this())
                                 );
                             }
                         }
@@ -100,7 +92,7 @@ public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
 
         return createSelfReturningMethod(context.classBean)
                 .setName(getSingleElementAdderName(relation))
-                .addParameter(createSetterParameter(relation))
+                .addParameter(createSetterParameter(context.types, relation))
                 .put(
                         ClassPrinter.METHOD_BODY,
                         new PieceOfCode() {
@@ -123,7 +115,7 @@ public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
     private MethodBean createSetter(final Context context, final Relation<?> relation) {
         return createSelfReturningMethod(context.classBean)
                 .setName(getSetterName(relation))
-                .addParameter(createSetterParameter(relation))
+                .addParameter(createSetterParameter(context.types, relation))
                 .put(
                         ClassPrinter.METHOD_BODY,
                         new PieceOfCode() {
@@ -141,14 +133,14 @@ public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
                 );
     }
 
-    private ParameterBean createSetterParameter(Relation<?> relation) {
-        return new ParameterBean().addAnnotation(NOT_NULL).setType(targetToType(relation.getTarget(), Multiplicity.ONE)).setName("values");
+    private ParameterBean createSetterParameter(TypeTransformer types, Relation<?> relation) {
+        return new ParameterBean().addAnnotation(NOT_NULL).setType(types.targetToType(relation.getTarget(), Multiplicity.ONE)).setName("values");
     }
 
-    private ParameterBean createAllAdderParameter(Relation<?> relation) {
+    private ParameterBean createAllAdderParameter(TypeTransformer types, Relation<?> relation) {
         assert relation.getMultiplicity().isCollection();
         return new ParameterBean().addAnnotation(NOT_NULL).setType(
-                targetToType(relation.getTarget(), Multiplicity.COLLECTION, Variance.OUT)).setName("value");
+                types.targetToType(relation.getTarget(), Multiplicity.COLLECTION, TypeTransformer.Variance.OUT)).setName("value");
     }
 
     private static String getAllElementAdderName(Relation<?> relation) {
@@ -171,7 +163,7 @@ public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
             context.classBean.getMethods().add(new MethodBean()
                                           .addAnnotation(OVERRIDE)
                                           .setVisibility(Visibility.PUBLIC)
-                                          .setReturnType(relationToType(relation))
+                                          .setReturnType(context.types.relationToType(relation))
                                           .setName(getGetterName(relation))
                                           .put(
                                               ClassPrinter.METHOD_BODY,
@@ -193,7 +185,7 @@ public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
         for (Relation<?> relation : context.entity.getRelations()) {
             FieldBean field = new FieldBean()
                     .setVisibility(Visibility.PRIVATE)
-                    .setType(relationToType(relation))
+                    .setType(context.types.relationToType(relation))
                     .setName(getFieldName(relation));
             context.fields.put(relation, field);
             context.classBean.getFields().add(field);
@@ -208,9 +200,13 @@ public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
     private static class Context {
         private final Entity entity;
         private final ClassBean classBean;
+        private final EntityRepresentationContext<ClassBean> context;
+        private final TypeTransformer types;
         private final Map<Relation<?>, FieldModel> fields = Maps.newHashMap();
 
-        private Context(Entity entity, ClassBean classBean) {
+        private Context(EntityRepresentationContext<ClassBean> context, Entity entity, ClassBean classBean) {
+            this.context = context;
+            this.types = types(context);
             this.entity = entity;
             this.classBean = classBean;
         }

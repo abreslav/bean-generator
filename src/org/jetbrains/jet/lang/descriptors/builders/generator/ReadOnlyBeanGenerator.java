@@ -22,20 +22,10 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.V
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.MethodBean;
 
-import java.util.Collection;
-
 /**
 * @author abreslav
 */
 public class ReadOnlyBeanGenerator extends EntityRepresentationGenerator {
-
-    public ReadOnlyBeanGenerator(
-            @NotNull Collection<Entity> entities,
-            @NotNull EntityRepresentationContext<ClassBean> context,
-            @NotNull String targetPackageFqName
-    ) {
-        super(entities, context, targetPackageFqName);
-    }
 
     @Override
     public String getEntityRepresentationName(@NotNull Entity entity) {
@@ -53,20 +43,19 @@ public class ReadOnlyBeanGenerator extends EntityRepresentationGenerator {
     }
 
     @Override
-    protected void generateSupertypes(ClassBean classBean, Entity entity)  {
-        for (Entity superEntity : entity.getSuperEntities()) {
-            classBean.getSuperInterfaces().add(simpleType(getRepresentation(superEntity)));
-        }
+    protected void generateSupertypes(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity)  {
+        generateSupertypesFromSuperEntities(context, classBean, entity);
     }
 
     @Override
-    protected void generateClassMembers(@NotNull ClassBean bean, @NotNull Entity entity) {
+    protected void generateClassMembers(EntityRepresentationContext<ClassBean> context, @NotNull ClassBean bean, @NotNull Entity entity) {
+        TypeTransformer types = types(context);
         for (Relation<?> relation : entity.getRelations()) {
             bean.getMethods().add(new MethodBean()
                                           .addAnnotation(relation.getMultiplicity() == Multiplicity.ZERO_OR_ONE ? NULLABLE : NOT_NULL)
                                           .setVisibility(Visibility.PUBLIC)
                                           .setAbstract(true)
-                                          .setReturnType(relationToVariantType(relation, Variance.OUT))
+                                          .setReturnType(types.relationToVariantType(relation, TypeTransformer.Variance.OUT))
                                           .setName(getGetterName(relation))
             );
         }

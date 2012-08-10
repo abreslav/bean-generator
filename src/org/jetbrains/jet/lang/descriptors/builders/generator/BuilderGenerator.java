@@ -62,49 +62,19 @@ public class BuilderGenerator {
         String readOnlyBeanPackage = "beans";
         String mutableBeanPackage = "beans.mutable";
 
-        class Context implements BeanGenerationContext {
-            RepresentationContext readOnlyBeanInterfaces = new RepresentationContext();
-            RepresentationContext mutableOnlyBeanInterfaces = new RepresentationContext();
-            RepresentationContext mutableBeanImplementationClasses = new RepresentationContext();
-
-            @Override
-            public ClassModel getReadOnlyBeanInterface(@NotNull Entity entity) {
-                return readOnlyBeanInterfaces.map.get(entity);
-            }
-
-            @Override
-            public ClassModel getMutableBeanInterface(@NotNull Entity entity) {
-                return mutableOnlyBeanInterfaces.map.get(entity);
-            }
-
-            @Override
-            public ClassModel getMutableBeanImplementationClass(@NotNull Entity entity) {
-                return mutableBeanImplementationClasses.map.get(entity);
-            }
-
-            class RepresentationContext implements EntityRepresentationContext<ClassBean> {
-                Map<Entity, ClassBean> map = Maps.newHashMap();
-
-                @Override
-                public void registerEntityRepresentation(@NotNull Entity entity, @NotNull ClassBean representation) {
-                    map.put(entity, representation);
-                }
-            }
-        }
-
         Context context = new Context();
 
-        Collection<ClassModel> readOnlyBeans = new ReadOnlyBeanGenerator(
+        Collection<ClassModel> readOnlyBeans = new ReadOnlyBeanGenerator().generate(
                 entities,
                 context.readOnlyBeanInterfaces,
                 readOnlyBeanPackage
-        ).generate();
+        );
 
-        Collection<ClassModel> mutableBeans = new MutableBeanGenerator(
+        Collection<ClassModel> mutableBeans = new MutableBeanGenerator().generate(
                 entities,
                 context.mutableBeanImplementationClasses,
                 mutableBeanPackage
-        ).generate();
+        );
 
         //Collection<ClassModel> mutableBeanImpls = new MutableBeanClassesGenerator(entities, context.mutableBeanImplementationClasses, mutableBeanPackage).generate();
 
@@ -130,4 +100,52 @@ public class BuilderGenerator {
     private static String packageToPath(String packageFqName) {
         return packageFqName.replace('.', '/');
     }
+
+    private static class Context implements BeanGenerationContext {
+        RepresentationContext readOnlyBeanInterfaces = new RepresentationContext();
+        RepresentationContext mutableOnlyBeanInterfaces = new RepresentationContext();
+        RepresentationContext mutableBeanImplementationClasses = new RepresentationContext();
+
+        @Override
+        public ClassModel getReadOnlyBeanInterface(@NotNull Entity entity) {
+            return readOnlyBeanInterfaces.map.get(entity);
+        }
+
+        @Override
+        public ClassModel getMutableBeanInterface(@NotNull Entity entity) {
+            return mutableOnlyBeanInterfaces.map.get(entity);
+        }
+
+        @Override
+        public ClassModel getMutableBeanImplementationClass(@NotNull Entity entity) {
+            return mutableBeanImplementationClasses.map.get(entity);
+        }
+    }
+
+    private static class RepresentationContext implements EntityRepresentationContext<ClassBean> {
+        Map<Entity, ClassBean> map = Maps.newHashMap();
+
+        @Override
+        public void registerRepresentation(@NotNull Entity entity, @NotNull ClassBean representation) {
+            map.put(entity, representation);
+        }
+
+        @Override
+        public ClassBean getRepresentation(@NotNull Entity entity) {
+            return map.get(entity);
+        }
+
+        @NotNull
+        @Override
+        public Collection<Entity> getEntities() {
+            return map.keySet();
+        }
+
+        @NotNull
+        @Override
+        public Collection<ClassBean> getRepresentations() {
+            return map.values();
+        }
+    }
+
 }
