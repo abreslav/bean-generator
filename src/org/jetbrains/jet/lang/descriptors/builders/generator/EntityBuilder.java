@@ -185,7 +185,7 @@ public class EntityBuilder {
         private final Map<Class<?>, Entity> entities = Maps.newHashMap();
 
         public Context(@NotNull Collection<Class<?>> entityClassesCollection) {
-            this.entityClasses = Sets.newHashSet(entityClassesCollection);
+            this.entityClasses = Sets.newLinkedHashSet(entityClassesCollection);
         }
 
         @NotNull

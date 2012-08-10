@@ -16,7 +16,7 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.descriptors.annotations.Annotated;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.ClassPrinter;
@@ -24,7 +24,7 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.C
 import org.jetbrains.jet.utils.Printer;
 
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 /**
  * @author abreslav
@@ -32,7 +32,7 @@ import java.util.Set;
 public class BuilderGenerator {
 
     public static void main(String[] args) {
-        Set<Class<?>> classesWithBuilders = Sets.<Class<?>>newHashSet(
+        List<Class<?>> classesWithBuilders = Lists.<Class<?>>newArrayList(
                 Named.class,
                 Annotated.class,
                 DeclarationDescriptor.class,
