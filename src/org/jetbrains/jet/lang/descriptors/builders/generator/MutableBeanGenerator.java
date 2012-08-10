@@ -23,6 +23,7 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeFacto
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeUtil;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.PieceOfCode;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.FieldModel;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.MethodModel;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.Visibility;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.FieldBean;
@@ -43,38 +44,121 @@ public class MutableBeanGenerator extends EntityRepresentationGenerator {
 
     @Override
     protected void generateClassMembers(ClassBean bean, Entity entity) {
-        final Map<Relation<?>, FieldModel> fields = Maps.newHashMap();
-        createFields(bean, entity, fields);
-        createGetters(bean, entity, fields);
-        for (final Relation<?> relation : entity.getRelations()) {
-            bean.getMethods().add(new MethodBean()
-                                          .addAnnotation(NOT_NULL)
-                                          .setVisibility(Visibility.PUBLIC)
-                                          .setReturnType(simpleType(bean))
-                                          .setName(getSetterName(relation))
-                                          .addParameter(new ParameterBean().addAnnotation(NOT_NULL).setType(relationToType(relation)).setName("value"))
-                                          .put(
-                                                  ClassPrinter.METHOD_BODY,
-                                                  new PieceOfCode() {
-                                                      @NotNull
-                                                      @Override
-                                                      public <E> E create(@NotNull CodeFactory<E> f) {
-                                                          return CodeUtil.block(f,
-                                                                  f.assignment(f.fieldReference(f._this(), fields.get(relation)),
-                                                                              f.variableReference("value")),
-                                                                  f._return(f._this())
-                                                          );
-                                                      }
-                                                  }
-                                          )
-            );
-        }
-
+        Context context = new Context(entity, bean);
+        createFields(context);
+        createGetters(context);
+        createSettersAndAdders(context);
     }
 
-    private void createGetters(ClassBean bean, Entity entity, final Map<Relation<?>, FieldModel> fields) {
-        for (final Relation<?> relation : entity.getRelations()) {
-            bean.getMethods().add(new MethodBean()
+    private void createSettersAndAdders(Context context) {
+        for (final Relation<?> relation : context.entity.getRelations()) {
+            if (!relation.getMultiplicity().isCollection()) {
+                context.classBean.getMethods().add(createSetter(context, relation));
+            }
+            else {
+                context.classBean.getMethods().add(createSingleElementAdder(context, relation));
+                context.classBean.getMethods().add(createAllElementAdder(context, relation));
+            }
+        }
+    }
+
+    private MethodModel createAllElementAdder(final Context context, final Relation<?> relation) {
+        assert relation.getMultiplicity().isCollection();
+
+        return createSelfReturningMethod(context.classBean)
+                .setName(getAllElementAdderName(relation))
+                .addParameter(createAllAdderParameter(relation))
+                .put(
+                        ClassPrinter.METHOD_BODY,
+                        new PieceOfCode() {
+                            @NotNull
+                            @Override
+                            public <E> E create(@NotNull CodeFactory<E> f) {
+                                return CodeUtil.block(f,
+                                      CodeUtil.methodCallStatement(f,
+                                           f.fieldReference(f._this(), context.fields.get(relation).getName()),
+                                           "add",
+                                           f.variableReference("value")),
+                                      f._return(f._this())
+                                );
+                            }
+                        }
+                );
+    }
+
+    private MethodModel createSingleElementAdder(final Context context, final Relation<?> relation) {
+        assert relation.getMultiplicity().isCollection();
+
+        return createSelfReturningMethod(context.classBean)
+                .setName(getSingleElementAdderName(relation))
+                .addParameter(createSetterParameter(relation))
+                .put(
+                        ClassPrinter.METHOD_BODY,
+                        new PieceOfCode() {
+                            @NotNull
+                            @Override
+                            public <E> E create(@NotNull CodeFactory<E> f) {
+                                return CodeUtil.block(f,
+                                                      CodeUtil.methodCallStatement(f,
+                                                                                   f.fieldReference(f._this(),
+                                                                                                    context.fields.get(relation).getName()),
+                                                                                   "add",
+                                                                                   f.variableReference("value")),
+                                                      f._return(f._this())
+                                );
+                            }
+                        }
+                );
+    }
+
+    private MethodBean createSetter(final Context context, final Relation<?> relation) {
+        return createSelfReturningMethod(context.classBean)
+                .setName(getSetterName(relation))
+                .addParameter(createSetterParameter(relation))
+                .put(
+                        ClassPrinter.METHOD_BODY,
+                        new PieceOfCode() {
+                            @NotNull
+                            @Override
+                            public <E> E create(@NotNull CodeFactory<E> f) {
+                                return CodeUtil.block(f,
+                                                      f.assignment(
+                                                              f.fieldReference(f._this(), context.getField(relation).getName()),
+                                                              f.variableReference("value")),
+                                                      f._return(f._this())
+                                );
+                            }
+                        }
+                );
+    }
+
+    private ParameterBean createSetterParameter(Relation<?> relation) {
+        return new ParameterBean().addAnnotation(NOT_NULL).setType(targetToType(relation.getTarget(), Multiplicity.ONE)).setName("values");
+    }
+
+    private ParameterBean createAllAdderParameter(Relation<?> relation) {
+        assert relation.getMultiplicity().isCollection();
+        return new ParameterBean().addAnnotation(NOT_NULL).setType(targetToType(relation.getTarget(), Multiplicity.COLLECTION)).setName("value");
+    }
+
+    private static String getAllElementAdderName(Relation<?> relation) {
+        return "addAllTo" + relation.getName();
+    }
+
+    private static String getSingleElementAdderName(Relation<?> relation) {
+        return "addTo" + relation.getName();
+    }
+
+    private static MethodBean createSelfReturningMethod(ClassBean classBean) {
+        return new MethodBean()
+                        .addAnnotation(NOT_NULL)
+                        .setVisibility(Visibility.PUBLIC)
+                        .setReturnType(simpleType(classBean));
+    }
+
+    private void createGetters(final Context context) {
+        for (final Relation<?> relation : context.entity.getRelations()) {
+            context.classBean.getMethods().add(new MethodBean()
                                           .addAnnotation(OVERRIDE)
                                           .setVisibility(Visibility.PUBLIC)
                                           .setReturnType(relationToType(relation))
@@ -86,7 +170,7 @@ public class MutableBeanGenerator extends EntityRepresentationGenerator {
                                                   @Override
                                                   public <E> E create(@NotNull CodeFactory<E> f) {
                                                       return f._return(
-                                                          f.fieldReference(f._this(), fields.get(relation))
+                                                          f.fieldReference(f._this(), context.getField(relation).getName())
                                                       );
                                                   }
                                               }
@@ -95,14 +179,14 @@ public class MutableBeanGenerator extends EntityRepresentationGenerator {
         }
     }
 
-    private void createFields(ClassBean bean, Entity entity, Map<Relation<?>, FieldModel> fields) {
-        for (Relation<?> relation : entity.getRelations()) {
+    private void createFields(Context context) {
+        for (Relation<?> relation : context.entity.getRelations()) {
             FieldBean field = new FieldBean()
                     .setVisibility(Visibility.PRIVATE)
                     .setType(relationToType(relation))
                     .setName(getFieldName(relation));
-            fields.put(relation, field);
-            bean.getFields().add(field);
+            context.fields.put(relation, field);
+            context.classBean.getFields().add(field);
         }
     }
 
@@ -110,4 +194,20 @@ public class MutableBeanGenerator extends EntityRepresentationGenerator {
     public String getEntityRepresentationName(@NotNull Entity entity) {
         return entity.getName() + "Bean";
     }
+
+    private static class Context {
+        private final Entity entity;
+        private final ClassBean classBean;
+        private final Map<Relation<?>, FieldModel> fields = Maps.newHashMap();
+
+        private Context(Entity entity, ClassBean classBean) {
+            this.entity = entity;
+            this.classBean = classBean;
+        }
+
+        public FieldModel getField(Relation<?> relation) {
+            return fields.get(relation);
+        }
+    }
+
 }
