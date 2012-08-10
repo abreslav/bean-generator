@@ -51,12 +51,17 @@ public class ClassPrinter {
                     && !packageFqName.isEmpty()
                     && !packageFqName.equals("java.lang")
                     && !packageFqName.equals(classModel.getPackageFqName())) {
-                p.println("import ", importedType.getFirst(), ".", importedType.getSecond(), ";");
+                p.println("import ", importedType.getFirst(), ".", getFirstSegmentInQualifiedName(importedType.getSecond()), ";");
             }
         }
         p.println();
 
         p.printWithNoIndent(classPrinter.body);
+    }
+
+    private static String getFirstSegmentInQualifiedName(String qName) {
+        int index = qName.indexOf(".");
+        return index < 0 ? qName : qName.substring(0, index);
     }
 
     private final Printer p;
