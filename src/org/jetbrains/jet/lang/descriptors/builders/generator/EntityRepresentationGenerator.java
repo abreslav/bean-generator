@@ -92,14 +92,17 @@ public abstract class EntityRepresentationGenerator {
     public abstract String getEntityRepresentationName(@NotNull Entity entity);
 
     protected <T> TypeModel relationToType(@NotNull Relation<T> relation) {
-        T target = relation.getTarget();
+        return targetToType(relation.getTarget(), relation.getMultiplicity());
+    }
+
+    protected <T> TypeModel targetToType(T target, Multiplicity multiplicity) {
         if (target instanceof Entity) {
             Entity entity = (Entity) target;
-            return typeWithMultiplicity(relation.getMultiplicity(), simpleType(map.get(entity)));
+            return typeWithMultiplicity(multiplicity, simpleType(map.get(entity)));
         }
         else if (target instanceof Type) {
             Type type = (Type) target;
-            return typeWithMultiplicity(relation.getMultiplicity(), reflectionType(type));
+            return typeWithMultiplicity(multiplicity, reflectionType(type));
         }
         throw new IllegalArgumentException("Unsupported target type:" + target);
     }

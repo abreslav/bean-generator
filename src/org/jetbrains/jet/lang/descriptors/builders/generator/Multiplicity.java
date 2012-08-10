@@ -16,6 +16,8 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
+import java.util.EnumSet;
+
 /**
 * @author abreslav
 */
@@ -24,5 +26,9 @@ public enum Multiplicity {
     ONE,
     LIST,
     SET,
-    COLLECTION
+    COLLECTION;
+
+    public boolean isCollection() {
+        return EnumSet.of(LIST, SET, COLLECTION).contains(this);
+    }
 }
