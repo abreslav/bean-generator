@@ -30,6 +30,7 @@ import java.util.List;
 */
 public class CodePrinter implements CodeFactory<PrintAction> {
 
+    @NotNull
     @Override
     public PrintAction statement(@NotNull final PrintAction expression) {
         return new PrintAction() {
@@ -55,6 +56,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         };
     }
 
+    @NotNull
     @Override
     public PrintAction fieldReference(@NotNull final PrintAction receiver, @NotNull final FieldModel field) {
         return new PrintAction() {
@@ -77,6 +79,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         };
     }
 
+    @NotNull
     @Override
     public PrintAction methodCall(
             @Nullable final PrintAction receiver,
@@ -101,6 +104,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         };
     }
 
+    @NotNull
     @Override
     public PrintAction assignment(@NotNull final PrintAction lhs, @NotNull final PrintAction rhs) {
         return new PrintAction() {
@@ -115,6 +119,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         };
     }
 
+    @NotNull
     @Override
     public PrintAction _return(@Nullable final PrintAction subj) {
         return new PrintAction() {
@@ -130,6 +135,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         };
     }
 
+    @NotNull
     @Override
     public PrintAction string(@NotNull final String s) {
         return new PrintAction() {
@@ -140,6 +146,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         };
     }
 
+    @NotNull
     @Override
     public PrintAction integer(final int i) {
         return new PrintAction() {
@@ -150,6 +157,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         };
     }
 
+    @NotNull
     @Override
     public PrintAction binary(@NotNull final PrintAction lhs, @NotNull final BinaryOperation op, @NotNull final PrintAction rhs) {
         return new PrintAction() {
