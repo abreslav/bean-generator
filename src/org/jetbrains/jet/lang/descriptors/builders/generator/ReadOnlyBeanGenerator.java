@@ -29,8 +29,12 @@ import java.util.Collection;
 */
 public class ReadOnlyBeanGenerator extends EntityRepresentationGenerator {
 
-    public ReadOnlyBeanGenerator(@NotNull Collection<Entity> entities, @NotNull String targetPackageFqName) {
-        super(entities, targetPackageFqName);
+    public ReadOnlyBeanGenerator(
+            @NotNull Collection<Entity> entities,
+            @NotNull EntityRepresentationContext<ClassBean> context,
+            @NotNull String targetPackageFqName
+    ) {
+        super(entities, context, targetPackageFqName);
     }
 
     @Override

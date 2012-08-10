@@ -61,7 +61,7 @@ public abstract class EntityRepresentationGenerator {
         return map.get(entity);
     }
 
-    protected EntityRepresentationGenerator(@NotNull Collection<Entity> entities, @NotNull String targetPackageFqName) {
+    protected EntityRepresentationGenerator(@NotNull Collection<Entity> entities, @NotNull EntityRepresentationContext<ClassBean> context, @NotNull String targetPackageFqName) {
         for (Entity entity : entities) {
             String readableBeanClassName = getEntityRepresentationName(entity);
             ClassBean classBean = new ClassBean()
@@ -70,6 +70,7 @@ public abstract class EntityRepresentationGenerator {
                     .setKind(getClassKind())
                     .setName(readableBeanClassName);
             map.put(entity, classBean);
+            context.registerEntityRepresentation(entity, classBean);
         }
     }
 

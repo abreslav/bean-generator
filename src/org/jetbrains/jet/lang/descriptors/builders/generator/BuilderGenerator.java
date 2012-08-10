@@ -17,16 +17,21 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.intellij.openapi.util.io.FileUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.descriptors.annotations.Annotated;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.ClassPrinter;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassModel;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.utils.Printer;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author abreslav
@@ -57,10 +62,55 @@ public class BuilderGenerator {
         String readOnlyBeanPackage = "beans";
         String mutableBeanPackage = "beans.mutable";
 
-        Collection<ClassModel> readOnlyBeans = new ReadOnlyBeanGenerator(entities, readOnlyBeanPackage).generate();
-        Collection<ClassModel> mutableBeans = new MutableBeanGenerator(entities, mutableBeanPackage).generate();
+        class Context implements BeanGenerationContext {
+            RepresentationContext readOnlyBeanInterfaces = new RepresentationContext();
+            RepresentationContext mutableOnlyBeanInterfaces = new RepresentationContext();
+            RepresentationContext mutableBeanImplementationClasses = new RepresentationContext();
+
+            @Override
+            public ClassModel getReadOnlyBeanInterface(@NotNull Entity entity) {
+                return readOnlyBeanInterfaces.map.get(entity);
+            }
+
+            @Override
+            public ClassModel getMutableBeanInterface(@NotNull Entity entity) {
+                return mutableOnlyBeanInterfaces.map.get(entity);
+            }
+
+            @Override
+            public ClassModel getMutableBeanImplementationClass(@NotNull Entity entity) {
+                return mutableBeanImplementationClasses.map.get(entity);
+            }
+
+            class RepresentationContext implements EntityRepresentationContext<ClassBean> {
+                Map<Entity, ClassBean> map = Maps.newHashMap();
+
+                @Override
+                public void registerEntityRepresentation(@NotNull Entity entity, @NotNull ClassBean representation) {
+                    map.put(entity, representation);
+                }
+            }
+        }
+
+        Context context = new Context();
+
+        Collection<ClassModel> readOnlyBeans = new ReadOnlyBeanGenerator(
+                entities,
+                context.readOnlyBeanInterfaces,
+                readOnlyBeanPackage
+        ).generate();
+
+        Collection<ClassModel> mutableBeans = new MutableBeanGenerator(
+                entities,
+                context.mutableBeanImplementationClasses,
+                mutableBeanPackage
+        ).generate();
+
+        //Collection<ClassModel> mutableBeanImpls = new MutableBeanClassesGenerator(entities, context.mutableBeanImplementationClasses, mutableBeanPackage).generate();
 
         writeToFiles(generatedSourceRoot, readOnlyBeanPackage, readOnlyBeans);
+        writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeans);
+        //writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeanImpls);
     }
 
     private static void writeToFiles(String generatedSourceRoot, String packageName, Collection<ClassModel> readOnlyBeans)
