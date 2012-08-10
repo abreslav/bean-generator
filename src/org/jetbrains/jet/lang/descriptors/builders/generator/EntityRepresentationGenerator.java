@@ -16,6 +16,7 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
@@ -101,48 +102,74 @@ public abstract class EntityRepresentationGenerator {
 
     public abstract String getEntityRepresentationName(@NotNull Entity entity);
 
+    protected enum Variance {
+        NONE,
+        IN,
+        OUT
+    }
+
     protected <T> TypeData relationToType(@NotNull Relation<T> relation) {
-        return targetToType(relation.getTarget(), relation.getMultiplicity());
+        return targetToType(relation.getTarget(), relation.getMultiplicity(), Variance.NONE);
+    }
+
+    protected <T> TypeData relationToVariantType(@NotNull Relation<T> relation, @NotNull Variance variance) {
+        return targetToType(relation.getTarget(), relation.getMultiplicity(), variance);
     }
 
     protected <T> TypeData targetToType(T target, Multiplicity multiplicity) {
+        return targetToType(target, multiplicity, Variance.NONE);
+    }
+
+    protected <T> TypeData targetToType(T target, Multiplicity multiplicity, Variance variance) {
         if (target instanceof Entity) {
             Entity entity = (Entity) target;
-            return typeWithMultiplicity(multiplicity, simpleType(map.get(entity)));
+            return typeWithMultiplicity(multiplicity, simpleType(map.get(entity)), variance);
         }
         else if (target instanceof Type) {
             Type type = (Type) target;
-            return typeWithMultiplicity(multiplicity, reflectionType(type));
+            return typeWithMultiplicity(multiplicity, reflectionType(type), variance);
         }
         throw new IllegalArgumentException("Unsupported target type:" + target);
     }
 
-    protected TypeData typeWithMultiplicity(Multiplicity multiplicity, TypeData elementType) {
+    protected static TypeData typeWithMultiplicity(Multiplicity multiplicity, TypeData elementType, Variance variance) {
         switch (multiplicity) {
             case ZERO_OR_ONE:
             case ONE:
                 return elementType;
             case LIST:
-                return collectionType(List.class, elementType);
+                return collectionType(List.class, variance, elementType);
             case SET:
-                return collectionType(Set.class, elementType);
+                return collectionType(Set.class, variance, elementType);
             case COLLECTION:
-                return collectionType(Collection.class, elementType);
+                return collectionType(Collection.class, variance, elementType);
         }
         throw new IllegalStateException("Unknown multiplicity: " + multiplicity);
     }
 
-    protected TypeData collectionType(final Class<? extends Collection> aClass, final TypeData type) {
+    protected static TypeData collectionType(final Class<? extends Collection> aClass, final Variance variance, final TypeData type) {
         return new TypeData() {
             @NotNull
             @Override
             public <E> E create(@NotNull TypeFactory<E> f) {
                 return f.constructedType(
                         aClass.getPackage().getName(),
-                        aClass.getSimpleName(),
-                        Collections.singletonList(type.create(f)));
+                        getNameWithEnclosingClasses(aClass),
+                        Collections.singletonList(wildcard(f, variance, type.create(f))));
             }
         };
+    }
+
+    private static <E> E wildcard(TypeFactory<E> f, Variance variance, E e) {
+        switch (variance) {
+            case NONE:
+                return e;
+            case IN:
+                return f.wildcardType(WildcardKind.SUPER, e);
+            case OUT:
+                return f.wildcardType(WildcardKind.EXTENDS, e);
+        }
+        throw new IllegalStateException("Unknown variance: " + variance);
     }
 
     protected static TypeData reflectionType(@NotNull Type type) {
@@ -159,7 +186,7 @@ public abstract class EntityRepresentationGenerator {
                     Class<?> rawType = (Class<?>) parameterizedType.getRawType();
                     return f.constructedType(
                             rawType.getPackage().getName(),
-                            rawType.getSimpleName(),
+                            getNameWithEnclosingClasses(rawType),
                             reflectionTypes(f, parameterizedType.getActualTypeArguments())
                     );
                 }
@@ -183,9 +210,20 @@ public abstract class EntityRepresentationGenerator {
             @NotNull
             @Override
             public <E> E create(@NotNull TypeFactory<E> f) {
-                return TypeUtil.constructedType(f, theClass.getPackage().getName(), theClass.getSimpleName());
+                return TypeUtil.constructedType(f, theClass.getPackage().getName(), getNameWithEnclosingClasses(theClass));
             }
         };
+    }
+
+    private static String getNameWithEnclosingClasses(@NotNull Class<?> aClass) {
+        List<String> names = Lists.newArrayList();
+        Class<?> c = aClass;
+        while (c != null) {
+            names.add(c.getSimpleName());
+            c = c.getEnclosingClass();
+        }
+        Collections.reverse(names);
+        return StringUtil.join(names, ".");
     }
 
     public static String getGetterName(Relation relation) {

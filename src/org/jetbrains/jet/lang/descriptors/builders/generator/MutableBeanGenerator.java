@@ -138,7 +138,8 @@ public class MutableBeanGenerator extends EntityRepresentationGenerator {
 
     private ParameterBean createAllAdderParameter(Relation<?> relation) {
         assert relation.getMultiplicity().isCollection();
-        return new ParameterBean().addAnnotation(NOT_NULL).setType(targetToType(relation.getTarget(), Multiplicity.COLLECTION)).setName("value");
+        return new ParameterBean().addAnnotation(NOT_NULL).setType(
+                targetToType(relation.getTarget(), Multiplicity.COLLECTION, Variance.OUT)).setName("value");
     }
 
     private static String getAllElementAdderName(Relation<?> relation) {
