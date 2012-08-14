@@ -16,10 +16,16 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator.dataholder;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * @author abreslav
- *
- * @param R type this key is applicable to
- * @param V value type for this key
  */
-public interface DataHolderKey<R, V> {}
+public interface WritableDataHolder<T extends DataHolder<T>> {
+    @NotNull
+    <V> T put(@NotNull DataHolderKey<? super T, V> key, @NotNull V value);
+
+    @NotNull
+    @SuppressWarnings("unchecked")
+    T copyDataFrom(@NotNull DataHolder<? extends T> other);
+}

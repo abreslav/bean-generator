@@ -24,10 +24,10 @@ import java.util.Map;
 /**
 * @author abreslav
 */
-public abstract class DataHolderImpl<T extends DataHolderImpl<T>> implements DataHolder {
-    private Map<DataHolderKey<?>, Object> map;
+public class DataHolderImpl<T extends DataHolder<T>> implements WritableDataHolder<T>, DataHolder<T> {
+    private Map<DataHolderKey<? super T, ?>, Object> map;
 
-    private Map<DataHolderKey<?>, Object> getMap() {
+    private Map<DataHolderKey<? super T, ?>, Object> getMap() {
         if (map == null) {
             map = Maps.newHashMap();
         }
@@ -35,20 +35,23 @@ public abstract class DataHolderImpl<T extends DataHolderImpl<T>> implements Dat
     }
 
     @Override
-    public <V> V getData(@NotNull DataHolderKey<V> key) {
+    public <V> V getData(@NotNull DataHolderKey<? super T, V> key) {
         //noinspection unchecked
         return (V) getMap().get(key);
     }
 
+    @Override
     @NotNull
-    public <V> T put(@NotNull DataHolderKey<V> key, @NotNull V value) {
+    public <V> T put(@NotNull DataHolderKey<? super T, V> key, @NotNull V value) {
         getMap().put(key, value);
         return (T) this;
     }
 
+    @Override
     @NotNull
-    public T copyDataFrom(@NotNull DataHolder other) {
-        getMap().putAll(((DataHolderImpl<?>) other).getMap());
+    @SuppressWarnings("unchecked")
+    public T copyDataFrom(@NotNull DataHolder<? extends T> other) {
+        getMap().putAll(((DataHolderImpl) other).getMap());
         return (T) this;
     }
 }

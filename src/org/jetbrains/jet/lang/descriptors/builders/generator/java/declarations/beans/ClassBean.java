@@ -18,6 +18,10 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.
 
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolder;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderImpl;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKey;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.WritableDataHolder;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
 
@@ -26,7 +30,7 @@ import java.util.List;
 /**
 * @author abreslav
 */
-public final class ClassBean extends MemberBean<ClassBean> implements ClassModel {
+public final class ClassBean extends MemberBean<ClassBean> implements ClassModel, WritableDataHolder<ClassModel> {
     private String packageFqName;
     private boolean _abstract;
     private ClassKind kind;
@@ -34,6 +38,8 @@ public final class ClassBean extends MemberBean<ClassBean> implements ClassModel
     private final List<TypeData> superInterfaces = Lists.newArrayList();
     private final List<FieldModel> fields = Lists.newArrayList();
     private final List<MethodModel> methods = Lists.newArrayList();
+
+    private final DataHolderImpl<ClassModel> dataHolder = new DataHolderImpl<ClassModel>();
 
     @NotNull
     @Override
@@ -97,5 +103,24 @@ public final class ClassBean extends MemberBean<ClassBean> implements ClassModel
     @Override
     public List<MethodModel> getMethods() {
         return methods;
+    }
+
+    @Override
+    public <V> V getData(@NotNull DataHolderKey<? super ClassModel, V> key) {
+        return dataHolder.getData(key);
+    }
+
+    @Override
+    @NotNull
+    public <V> ClassBean put(@NotNull DataHolderKey<? super ClassModel, V> key, @NotNull V value) {
+        dataHolder.put(key, value);
+        return this;
+    }
+
+    @Override
+    @NotNull
+    public ClassBean copyDataFrom(@NotNull DataHolder<? extends ClassModel> other) {
+        dataHolder.copyDataFrom(other);
+        return this;
     }
 }

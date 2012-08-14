@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 /**
 * @author abreslav
 */
-public interface DataHolder {
+public interface DataHolder<T extends DataHolder<T>> {
     @Nullable
-    <V> V getData(@NotNull DataHolderKey<V> key);
+    <V> V getData(@NotNull DataHolderKey<? super T, V> key);
 }

@@ -32,7 +32,7 @@ import java.util.*;
  * @author abreslav
  */
 public abstract class EntityRepresentationGenerator {
-    protected static DataHolderKey<Entity> ENTITY = DataHolderKeyImpl.create("ENTITY");
+    protected static DataHolderKey<ClassModel, Entity> ENTITY = DataHolderKeyImpl.create("ENTITY");
 
     public static TypeData OVERRIDE = new TypeData() {
         @Override

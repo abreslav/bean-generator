@@ -82,14 +82,14 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
         Map<String, MethodModel> methodsToImplement = Maps.newLinkedHashMap();
         collectAllMethodsToImplement(methodsToImplement, entity, mutableBeanInterfaces, IMPLS.keySet());
         for (MethodModel method : methodsToImplement.values()) {
-            for (Map.Entry<DataHolderKey<Relation<?>>, MethodImplementation> entry : IMPLS.entrySet()) {
+            for (Map.Entry<DataHolderKey<? super MethodModel, Relation<?>>, MethodImplementation> entry : IMPLS.entrySet()) {
                 Relation<?> relation = method.getData(entry.getKey());
                 if (relation != null) {
                     if (c.fields.get(relation) == null) {
                         createField(c, relation);
                     }
                     MethodBean implementation = implement(method, entry.getValue().createBody(c, method));
-                    if (entry.getKey() != GETTER) {
+                    if (entry.getKey() != (Object) GETTER) {
                         implementation.setReturnType(TypeUtil.simpleType(interfaceBean));
                     }
                     classBean.getMethods().add(implementation);
@@ -103,7 +103,7 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
             Map<String, MethodModel> result,
             Entity start,
             EntityRepresentationContext<ClassBean> context,
-            Collection<DataHolderKey<Relation<?>>> keys
+            Collection<DataHolderKey<? super MethodModel, Relation<?>>> keys
     ) {
         Queue<Entity> queue = Lists.newLinkedList();
         queue.offer(start);
@@ -111,7 +111,7 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
             Entity entity = queue.remove();
             ClassBean classBean = context.getRepresentation(entity);
             for (MethodModel method : classBean.getMethods()) {
-                for (DataHolderKey<Relation<?>> key : keys) {
+                for (DataHolderKey<? super MethodModel, Relation<?>> key : keys) {
                     Relation<?> relation = method.getData(key);
                     String name = method.getName();
                     if (relation != null && !result.containsKey(name)) {
@@ -247,7 +247,7 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
         }
     };
 
-    private static Map<DataHolderKey<Relation<?>>, MethodImplementation> IMPLS = ImmutableMap.<DataHolderKey<Relation<?>>, MethodImplementation>builder()
+    private static Map<DataHolderKey<? super MethodModel, Relation<?>>, MethodImplementation> IMPLS = ImmutableMap.<DataHolderKey<? super MethodModel, Relation<?>>, MethodImplementation>builder()
             .put(GETTER, GETTER_IMPL)
             .put(SETTER, SETTER_IMPL)
             .put(ADDER, ADDER_IMPL)

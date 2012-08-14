@@ -18,6 +18,10 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.
 
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolder;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderImpl;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKey;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.WritableDataHolder;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.MethodModel;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ParameterModel;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
@@ -27,11 +31,13 @@ import java.util.List;
 /**
 * @author abreslav
 */
-public final class MethodBean extends MemberBean<MethodBean> implements MethodModel {
+public final class MethodBean extends MemberBean<MethodBean> implements MethodModel, WritableDataHolder<MethodModel> {
     private boolean _abstract;
     private boolean _static;
     private TypeData returnType;
     private final List<ParameterModel> parameters = Lists.newArrayList();
+
+    private final DataHolderImpl<MethodModel> dataHolder = new DataHolderImpl<MethodModel>();
 
     @NotNull
     @Override
@@ -85,5 +91,22 @@ public final class MethodBean extends MemberBean<MethodBean> implements MethodMo
         return this;
     }
 
+    @Override
+    public <V> V getData(@NotNull DataHolderKey<? super MethodModel, V> key) {
+        return dataHolder.getData(key);
+    }
 
+    @Override
+    @NotNull
+    public <V> MethodBean put(@NotNull DataHolderKey<? super MethodModel, V> key, @NotNull V value) {
+        dataHolder.put(key, value);
+        return this;
+    }
+
+    @Override
+    @NotNull
+    public MethodBean copyDataFrom(@NotNull DataHolder<? extends MethodModel> other) {
+        dataHolder.copyDataFrom(other);
+        return this;
+    }
 }

@@ -31,10 +31,10 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeUtil
  */
 public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator {
 
-    public static DataHolderKey<Relation<?>> GETTER = DataHolderKeyImpl.create("GETTER");
-    public static DataHolderKey<Relation<?>> SETTER = DataHolderKeyImpl.create("SETTER");
-    public static DataHolderKey<Relation<?>> ADDER = DataHolderKeyImpl.create("ADDER");
-    public static DataHolderKey<Relation<?>> ALL_ADDER = DataHolderKeyImpl.create("ALL_ADDER");
+    public static DataHolderKey<MethodModel, Relation<?>> GETTER = DataHolderKeyImpl.create("GETTER");
+    public static DataHolderKey<MethodModel, Relation<?>> SETTER = DataHolderKeyImpl.create("SETTER");
+    public static DataHolderKey<MethodModel, Relation<?>> ADDER = DataHolderKeyImpl.create("ADDER");
+    public static DataHolderKey<MethodModel, Relation<?>> ALL_ADDER = DataHolderKeyImpl.create("ALL_ADDER");
 
     @NotNull
     @Override

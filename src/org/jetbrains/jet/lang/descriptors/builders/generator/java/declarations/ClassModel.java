@@ -18,6 +18,7 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolder;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
 
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.List;
 /**
 * @author abreslav
 */
-public interface ClassModel extends MemberModel {
+public interface ClassModel extends MemberModel, DataHolder<ClassModel> {
 
     boolean isAbstract();
 

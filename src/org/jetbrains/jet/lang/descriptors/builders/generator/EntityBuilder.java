@@ -56,7 +56,7 @@ public class EntityBuilder {
         }
     }
 
-    public static final DataHolderKey<ClassName> DATA_CLASS = DataHolderKeyImpl.create("DATA_CLASS");
+    public static final DataHolderKey<Entity, ClassName> DATA_CLASS = DataHolderKeyImpl.create("DATA_CLASS");
 
     private static final Map<Type, Class<?>> PRIMITIVE_TO_BOXED = ImmutableMap.<Type, Class<?>>builder()
             .put(byte.class, Byte.class)

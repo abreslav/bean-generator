@@ -39,8 +39,8 @@ import java.util.Set;
  */
 public class ClassPrinter {
 
-    public static final DataHolderKey<PieceOfCode> METHOD_BODY = DataHolderKeyImpl.create("METHOD_BODY");
-    public static final DataHolderKey<PieceOfCode> FIELD_INITIALIZER = DataHolderKeyImpl.create("FIELD_INITIALIZER");
+    public static final DataHolderKey<MethodModel, PieceOfCode> METHOD_BODY = DataHolderKeyImpl.create("METHOD_BODY");
+    public static final DataHolderKey<FieldModel, PieceOfCode> FIELD_INITIALIZER = DataHolderKeyImpl.create("FIELD_INITIALIZER");
 
     private final TypeRenderer typeRenderer = new TypeRenderer() {
         @NotNull

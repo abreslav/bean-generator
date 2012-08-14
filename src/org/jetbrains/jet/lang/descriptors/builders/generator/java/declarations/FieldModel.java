@@ -16,9 +16,11 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations;
 
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolder;
+
 /**
 * @author abreslav
 */
-public interface FieldModel extends MemberModel, VariableModel {
+public interface FieldModel extends MemberModel, VariableModel, DataHolder<FieldModel> {
     boolean isFinal();
 }

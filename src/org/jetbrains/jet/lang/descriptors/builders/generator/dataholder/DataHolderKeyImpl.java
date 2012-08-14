@@ -21,9 +21,9 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author abreslav
  */
-public final class DataHolderKeyImpl<V> implements DataHolderKey<V> {
-    public static <V> DataHolderKey<V> create(@NotNull String name) {
-        return new DataHolderKeyImpl<V>(name);
+public final class DataHolderKeyImpl<R, V> implements DataHolderKey<R, V> {
+    public static <V, R> DataHolderKey<R, V> create(@NotNull String name) {
+        return new DataHolderKeyImpl<R, V>(name);
     }
 
     private final String name;

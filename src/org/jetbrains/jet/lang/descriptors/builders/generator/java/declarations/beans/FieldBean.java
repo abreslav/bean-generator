@@ -17,15 +17,21 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolder;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderImpl;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKey;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.WritableDataHolder;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.FieldModel;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.Visibility;
 
 /**
 * @author abreslav
 */
-public final class FieldBean extends VariableBean<FieldBean> implements FieldModel {
+public final class FieldBean extends VariableBean<FieldBean> implements FieldModel, WritableDataHolder<FieldModel> {
     private Visibility visibility;
     private boolean _final;
+
+    private final DataHolderImpl<FieldModel> dataHolder = new DataHolderImpl<FieldModel>();
 
     @NotNull
     @Override
@@ -46,6 +52,25 @@ public final class FieldBean extends VariableBean<FieldBean> implements FieldMod
     @NotNull
     public FieldBean setFinal(boolean _final) {
         this._final = _final;
+        return this;
+    }
+
+    @Override
+    public <V> V getData(@NotNull DataHolderKey<? super FieldModel, V> key) {
+        return dataHolder.getData(key);
+    }
+
+    @Override
+    @NotNull
+    public <V> FieldBean put(@NotNull DataHolderKey<? super FieldModel, V> key, @NotNull V value) {
+        dataHolder.put(key, value);
+        return this;
+    }
+
+    @Override
+    @NotNull
+    public FieldBean copyDataFrom(@NotNull DataHolder<? extends FieldModel> other) {
+        dataHolder.copyDataFrom(other);
         return this;
     }
 }
