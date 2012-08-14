@@ -79,6 +79,22 @@ public class CodePrinter implements CodeFactory<PrintAction> {
 
     @NotNull
     @Override
+    public PrintAction variableDeclaration(@NotNull final TypeData type, @NotNull final String name, @Nullable final PrintAction initializer) {
+        return new PrintAction() {
+            @Override
+            public void print(Printer p) {
+                p.print(typeRenderer.renderType(type), " ", name);
+                if (initializer != null) {
+                    p.printWithNoIndent(" = ");
+                    initializer.print(p);
+                }
+                p.printlnWithNoIndent(";");
+            }
+        };
+    }
+
+    @NotNull
+    @Override
     public PrintAction variableReference(@NotNull final String name) {
         return new PrintAction() {
             @Override
@@ -126,9 +142,10 @@ public class CodePrinter implements CodeFactory<PrintAction> {
                                     typeRenderer.renderType(new TypeData() {
                                         @Override
                                         public <E> E create(@NotNull TypeFactory<E> f) {
-                                                    return f.constructedType(classBeingInstantiated.getPackageFqName(), classBeingInstantiated.getName(),
-                                                                             Collections.<E>emptyList());
-                                                }
+                                            return f.constructedType(classBeingInstantiated.getPackageFqName(),
+                                                                     classBeingInstantiated.getName(),
+                                                                     Collections.<E>emptyList());
+                                        }
                                     })
                 );
                 if (!typeArguments.isEmpty()) {

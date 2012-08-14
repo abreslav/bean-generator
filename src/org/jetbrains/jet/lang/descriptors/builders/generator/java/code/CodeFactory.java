@@ -37,6 +37,9 @@ public interface CodeFactory<E> {
     E fieldReference(@NotNull E receiver, @NotNull String field);
 
     @NotNull
+    E variableDeclaration(@NotNull TypeData type, @NotNull String name, @Nullable E initializer);
+
+    @NotNull
     E variableReference(@NotNull String name);
 
     @NotNull
