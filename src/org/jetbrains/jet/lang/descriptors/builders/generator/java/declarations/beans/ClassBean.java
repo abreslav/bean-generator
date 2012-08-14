@@ -120,7 +120,7 @@ public final class ClassBean extends MemberBean<ClassBean> implements ClassModel
     @Override
     @NotNull
     public ClassBean copyDataFrom(@NotNull DataHolder<? extends ClassModel> other) {
-        dataHolder.copyDataFrom(other);
+        dataHolder.copyDataFrom(((ClassBean) other).dataHolder);
         return this;
     }
 }

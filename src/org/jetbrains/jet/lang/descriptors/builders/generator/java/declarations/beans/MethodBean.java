@@ -106,7 +106,7 @@ public final class MethodBean extends MemberBean<MethodBean> implements MethodMo
     @Override
     @NotNull
     public MethodBean copyDataFrom(@NotNull DataHolder<? extends MethodModel> other) {
-        dataHolder.copyDataFrom(other);
+        dataHolder.copyDataFrom(((MethodBean) other).dataHolder);
         return this;
     }
 }

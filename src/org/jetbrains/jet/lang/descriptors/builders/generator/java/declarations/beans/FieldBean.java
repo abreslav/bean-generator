@@ -70,7 +70,7 @@ public final class FieldBean extends VariableBean<FieldBean> implements FieldMod
     @Override
     @NotNull
     public FieldBean copyDataFrom(@NotNull DataHolder<? extends FieldModel> other) {
-        dataHolder.copyDataFrom(other);
+        dataHolder.copyDataFrom(((FieldBean) other).dataHolder);
         return this;
     }
 }
