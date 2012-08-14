@@ -116,8 +116,9 @@ public class CodePrinter implements CodeFactory<PrintAction> {
             public void print(Printer p) {
                 if (receiver != null) {
                     receiver.print(p);
+                    p.printWithNoIndent(".");
                 }
-                p.printWithNoIndent(".", method, "(");
+                p.printWithNoIndent(method, "(");
                 for (Iterator<PrintAction> iterator = arguments.iterator(); iterator.hasNext(); ) {
                     PrintAction argument = iterator.next();
                     argument.print(p);
