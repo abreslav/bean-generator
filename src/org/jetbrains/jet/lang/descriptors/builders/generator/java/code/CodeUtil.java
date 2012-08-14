@@ -44,4 +44,8 @@ public class CodeUtil {
     public static <E> E constructorCall(@NotNull CodeFactory<E> factory, @NotNull ClassModel classModel, E... arguments) {
         return factory.constructorCall(classModel, Collections.<TypeData>emptyList(), Arrays.asList(arguments));
     }
+
+    public static <E> E _for(@NotNull CodeFactory<E> f, @NotNull TypeData indexType, @NotNull String indexName, @NotNull E range, @NotNull E... body) {
+        return f._for(f.variableDeclaration(indexType, indexName, null), range, f.block(Arrays.asList(body)));
+    }
 }
