@@ -23,6 +23,7 @@ import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.DataHolderKeyImpl;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -32,6 +33,7 @@ import java.util.*;
  * @author abreslav
  */
 public abstract class EntityRepresentationGenerator {
+    protected static DataHolderKey<Entity> ENTITY = DataHolderKeyImpl.create("ENTITY");
 
     public static TypeData OVERRIDE = new TypeData() {
         @Override
@@ -58,29 +60,41 @@ public abstract class EntityRepresentationGenerator {
     }
 
     @NotNull
-    protected ClassKind getClassKind() {
-        return ClassKind.CLASS;
-    }
+    protected abstract ClassKind getClassKind();
 
     public Collection<ClassModel> generate(
             @NotNull Collection<Entity> entities,
             @NotNull EntityRepresentationContext<ClassBean> context,
             @NotNull String targetPackageFqName
     ) {
+        preProcess(entities, context);
+
         for (Entity entity : entities) {
             String readableBeanClassName = getEntityRepresentationName(entity);
             ClassBean classBean = new ClassBean()
                     .setPackageFqName(targetPackageFqName)
                     .setVisibility(Visibility.PUBLIC)
                     .setKind(getClassKind())
-                    .setName(readableBeanClassName);
+                    .setName(readableBeanClassName)
+                    .put(ENTITY, entity);
             context.registerRepresentation(entity, classBean);
         }
 
         for (Entity entity : entities) {
             generateEntity(context, entity);
         }
+
+        postProcess(context);
+
         return (Collection) context.getRepresentations();
+    }
+
+    private void preProcess(Collection<Entity> entities, EntityRepresentationContext<ClassBean> context) {
+        // Override if needed
+    }
+
+    protected void postProcess(EntityRepresentationContext<ClassBean> context) {
+        // Override if needed
     }
 
     private void generateEntity(@NotNull EntityRepresentationContext<ClassBean> context, @NotNull Entity entity) {
