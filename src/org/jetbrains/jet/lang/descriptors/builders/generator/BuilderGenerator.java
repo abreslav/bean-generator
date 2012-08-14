@@ -59,28 +59,26 @@ public class BuilderGenerator {
 
 
         String generatedSourceRoot = "bean-generator/generated";
-        String readOnlyBeanPackage = "beans";
-        String mutableBeanPackage = "beans.mutable";
+        String mutableBeanPackage = "beans";
+        String mutableBeanClassPackage = "beans.impl";
 
         Context context = new Context();
 
-        Collection<ClassModel> readOnlyBeans = new ReadOnlyBeanGenerator().generate(
-                entities,
-                context.readOnlyBeanInterfaces,
-                readOnlyBeanPackage
-        );
-
         Collection<ClassModel> mutableBeans = new MutableBeanGenerator().generate(
                 entities,
-                context.mutableBeanImplementationClasses,
+                context.mutableBeanInterfaces,
                 mutableBeanPackage
         );
 
-        //Collection<ClassModel> mutableBeanImpls = new MutableBeanClassesGenerator(entities, context.mutableBeanImplementationClasses, mutableBeanPackage).generate();
+        Collection<ClassModel> mutableBeanClasses = new MutableBeanClassesGenerator(context.mutableBeanInterfaces).generate(
+                entities,
+                context.mutableBeanImplementationClasses,
+                mutableBeanClassPackage
+        );
 
-        writeToFiles(generatedSourceRoot, readOnlyBeanPackage, readOnlyBeans);
+        //writeToFiles(generatedSourceRoot, readOnlyBeanPackage, readOnlyBeans);
         writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeans);
-        //writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeanImpls);
+        writeToFiles(generatedSourceRoot, mutableBeanClassPackage, mutableBeanClasses);
     }
 
     private static void writeToFiles(String generatedSourceRoot, String packageName, Collection<ClassModel> readOnlyBeans)
@@ -103,7 +101,7 @@ public class BuilderGenerator {
 
     private static class Context implements BeanGenerationContext {
         RepresentationContext readOnlyBeanInterfaces = new RepresentationContext();
-        RepresentationContext mutableOnlyBeanInterfaces = new RepresentationContext();
+        RepresentationContext mutableBeanInterfaces = new RepresentationContext();
         RepresentationContext mutableBeanImplementationClasses = new RepresentationContext();
 
         @Override
@@ -113,7 +111,7 @@ public class BuilderGenerator {
 
         @Override
         public ClassModel getMutableBeanInterface(@NotNull Entity entity) {
-            return mutableOnlyBeanInterfaces.map.get(entity);
+            return mutableBeanInterfaces.map.get(entity);
         }
 
         @Override
@@ -123,7 +121,7 @@ public class BuilderGenerator {
     }
 
     private static class RepresentationContext implements EntityRepresentationContext<ClassBean> {
-        Map<Entity, ClassBean> map = Maps.newHashMap();
+        private final Map<Entity, ClassBean> map = Maps.newLinkedHashMap();
 
         @Override
         public void registerRepresentation(@NotNull Entity entity, @NotNull ClassBean representation) {
