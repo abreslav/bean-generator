@@ -19,6 +19,8 @@ package org.jetbrains.jet.lang.descriptors.builders.generator;
 import com.google.common.collect.*;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKey;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKeyImpl;
 import org.jetbrains.jet.lang.descriptors.builders.generator.runtime.Optional;
 import org.jetbrains.jet.lang.descriptors.builders.generator.runtime.Skip;
 
@@ -35,6 +37,26 @@ import java.util.Set;
 * @author abreslav
 */
 public class EntityBuilder {
+
+    public static class ClassName {
+        private final String packageFqName;
+        private final String className;
+
+        public ClassName(@NotNull String packageFqName, @NotNull String className) {
+            this.packageFqName = packageFqName;
+            this.className = className;
+        }
+
+        public String getPackageFqName() {
+            return packageFqName;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+    }
+
+    public static final DataHolderKey<ClassName> DATA_CLASS = DataHolderKeyImpl.create("DATA_CLASS");
 
     private static final Map<Type, Class<?>> PRIMITIVE_TO_BOXED = ImmutableMap.<Type, Class<?>>builder()
             .put(byte.class, Byte.class)
@@ -71,7 +93,9 @@ public class EntityBuilder {
     private static void createEmptyEntities(Context c) {
         for (Class<?> entityClass : c.entityClasses) {
             String name = entityClass.getSimpleName();
-            c.entities.put(entityClass, new EntityImpl(name));
+            EntityImpl entity = new EntityImpl(name);
+            entity.put(DATA_CLASS, new ClassName(entityClass.getPackage().getName(), entityClass.getSimpleName()));
+            c.entities.put(entityClass, entity);
         }
     }
 

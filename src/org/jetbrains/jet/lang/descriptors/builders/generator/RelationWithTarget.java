@@ -18,6 +18,7 @@ package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderImpl;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.List;
 /**
 * @author abreslav
 */
-public class RelationWithTarget<T> implements Relation {
+public class RelationWithTarget<T> extends DataHolderImpl<RelationWithTarget<T>> implements Relation {
     private final List<Relation<?>> overriddenRelations = Lists.newArrayList();
     private final T target;
     private final String name;
