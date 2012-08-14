@@ -24,6 +24,9 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodePrint
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.PieceOfCode;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.DataHolderKeyImpl;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeFactory;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeRenderer;
 import org.jetbrains.jet.utils.Printer;
 
 import java.util.Iterator;
@@ -36,6 +39,16 @@ import java.util.Set;
 public class ClassPrinter {
 
     public static final DataHolderKey<PieceOfCode> METHOD_BODY = DataHolderKeyImpl.create("METHOD_BODY");
+    public static final DataHolderKey<PieceOfCode> FIELD_INITIALIZER = DataHolderKeyImpl.create("FIELD_INITIALIZER");
+
+    private final TypeRenderer typeRenderer = new TypeRenderer() {
+        @NotNull
+        @Override
+        public String renderType(@NotNull TypeData type) {
+            return ClassPrinter.this.renderType(type);
+        }
+    };
+    private final CodePrinter codePrinter = new CodePrinter(typeRenderer);
 
     public static void printClass(ClassModel classModel, Printer p) {
         if (!classModel.getPackageFqName().isEmpty()) {
@@ -133,7 +146,13 @@ public class ClassPrinter {
         else {
             p.print();
         }
-        p.printlnWithNoIndent(" ", renderType(model.getType()), " ", model.getName(), ";");
+        p.printWithNoIndent(" ", renderType(model.getType()), " ", model.getName());
+        PieceOfCode initializer = model.getData(FIELD_INITIALIZER);
+        if (initializer != null) {
+            p.printWithNoIndent(" = ");
+            initializer.create(codePrinter).print(p);
+        }
+        p.printlnWithNoIndent(";");
     }
 
     private void printMethod(MethodModel model, boolean inInterface) {
@@ -164,7 +183,7 @@ public class ClassPrinter {
 
             PieceOfCode methodBody = model.getData(METHOD_BODY);
             if (methodBody != null) {
-                methodBody.create(new CodePrinter()).print(p);
+                methodBody.create(codePrinter).print(p);
             }
             else {
                 throw new IllegalStateException("No body for method " + model.getName());

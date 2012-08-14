@@ -18,6 +18,8 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.code;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassModel;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
 
 import java.util.List;
 
@@ -39,6 +41,9 @@ public interface CodeFactory<E> {
 
     @NotNull
     E methodCall(@Nullable E receiver, @NotNull String method, @NotNull List<E> arguments);
+
+    @NotNull
+    E constructorCall(@NotNull ClassModel classBeingInstantiated, @NotNull List<TypeData> typeArguments, @NotNull List<E> arguments);
 
     @NotNull
     E assignment(@NotNull E lhs, @NotNull E rhs);

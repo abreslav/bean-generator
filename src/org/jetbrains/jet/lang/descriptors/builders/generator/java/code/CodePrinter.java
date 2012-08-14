@@ -18,8 +18,13 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.code;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassModel;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeFactory;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeRenderer;
 import org.jetbrains.jet.utils.Printer;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -27,6 +32,12 @@ import java.util.List;
 * @author abreslav
 */
 public class CodePrinter implements CodeFactory<PrintAction> {
+
+    private final TypeRenderer typeRenderer;
+
+    public CodePrinter(@NotNull TypeRenderer typeRenderer) {
+        this.typeRenderer = typeRenderer;
+    }
 
     @NotNull
     @Override
@@ -91,6 +102,46 @@ public class CodePrinter implements CodeFactory<PrintAction> {
                     receiver.print(p);
                 }
                 p.printWithNoIndent(".", method, "(");
+                for (Iterator<PrintAction> iterator = arguments.iterator(); iterator.hasNext(); ) {
+                    PrintAction argument = iterator.next();
+                    argument.print(p);
+                    if (iterator.hasNext()) {
+                        p.printWithNoIndent(", ");
+                    }
+                }
+                p.printWithNoIndent(")");
+            }
+        };
+    }
+
+    @NotNull
+    @Override
+    public PrintAction constructorCall(
+            @NotNull final ClassModel classBeingInstantiated, @NotNull final List<TypeData> typeArguments, @NotNull final List<PrintAction> arguments
+    ) {
+        return new PrintAction() {
+            @Override
+            public void print(Printer p) {
+                p.printWithNoIndent("new ");
+                typeRenderer.renderType(new TypeData() {
+                    @Override
+                    public <E> E create(@NotNull TypeFactory<E> f) {
+                        return f.constructedType(classBeingInstantiated.getPackageFqName(), classBeingInstantiated.getName(),
+                                                 Collections.<E>emptyList());
+                    }
+                });
+                if (!typeArguments.isEmpty()) {
+                    p.printWithNoIndent("<");
+                    for (Iterator<TypeData> iterator = typeArguments.iterator(); iterator.hasNext(); ) {
+                        TypeData argument = iterator.next();
+                        p.printWithNoIndent(typeRenderer.renderType(argument));
+                        if (iterator.hasNext()) {
+                            p.printWithNoIndent(", ");
+                        }
+                    }
+                    p.printWithNoIndent(">");
+                }
+                p.printWithNoIndent("(");
                 for (Iterator<PrintAction> iterator = arguments.iterator(); iterator.hasNext(); ) {
                     PrintAction argument = iterator.next();
                     argument.print(p);

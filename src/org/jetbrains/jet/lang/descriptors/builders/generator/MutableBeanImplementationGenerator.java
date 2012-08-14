@@ -29,8 +29,10 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.b
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.FieldBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.JavaDeclarationUtil;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.MethodBean;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Queue;
 
@@ -40,6 +42,14 @@ import static org.jetbrains.jet.lang.descriptors.builders.generator.MutableBeanI
 * @author abreslav
 */
 public class MutableBeanImplementationGenerator extends EntityRepresentationGenerator {
+
+    private static final ClassModel ARRAY_LIST = new ClassBean()
+            .setPackageFqName("java.util")
+            .setName("ArrayList");
+
+    private static final ClassModel HASH_SET = new ClassBean()
+            .setPackageFqName("java.util")
+            .setName("HashSet");
 
     private final EntityRepresentationContext<ClassBean> mutableBeanInterfaces;
 
@@ -113,11 +123,36 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
         }
     }
 
-    private static void createField(EntityContext context, Relation<?> relation) {
-        FieldBean field = new FieldBean()
+    private static void createField(final EntityContext context, final Relation<?> relation) {
+        final FieldBean field = new FieldBean()
                 .setVisibility(Visibility.PRIVATE)
                 .setType(context.types.relationToType(relation))
                 .setName(getFieldName(relation));
+        if (relation.getMultiplicity().isCollection()) {
+            field.setFinal(true);
+            field.put(ClassPrinter.FIELD_INITIALIZER, new PieceOfCode() {
+                @NotNull
+                @Override
+                public <E> E create(@NotNull CodeFactory<E> f) {
+                    ClassModel collectionClass;
+                    switch (relation.getMultiplicity()) {
+                        case LIST:
+                        case COLLECTION:
+                            collectionClass = ARRAY_LIST;
+                            break;
+                        case SET:
+                            collectionClass = HASH_SET;
+                            break;
+                        default:
+                            throw new IllegalStateException("Unknown collection multiplicity: " + relation.getMultiplicity());
+                    }
+                    TypeData elementType = context.types.targetToType(relation.getTarget(), Multiplicity.ONE);
+                    return f.constructorCall(collectionClass,
+                                             Collections.singletonList(elementType),
+                                             Collections.<E>emptyList());
+                }
+            });
+        }
         context.fields.put(relation, field);
         context.classBean.getFields().add(field);
     }
