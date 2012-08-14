@@ -26,7 +26,7 @@ import java.util.List;
 /**
 * @author abreslav
 */
-public class EntityImpl extends DataHolderImpl<EntityImpl> implements Entity {
+public class EntityImpl extends DataHolderImpl<Entity> implements Entity {
     private final String name;
     private final List<Relation<?>> relations = Lists.newArrayList();
     private final List<Entity> superEntities = Lists.newArrayList();

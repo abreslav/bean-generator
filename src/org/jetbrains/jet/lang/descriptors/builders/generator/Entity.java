@@ -17,6 +17,7 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolder;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,7 +25,7 @@ import java.util.List;
 /**
 * @author abreslav
 */
-public interface Entity {
+public interface Entity extends DataHolder<Entity> {
     @NotNull
     String getName();
 
