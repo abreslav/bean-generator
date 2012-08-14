@@ -71,13 +71,13 @@ public class BeanGenerator {
         Collection<Entity> entities = EntityBuilder.javaClassesToEntities(classesWithBuilders);
         Context context = new Context();
 
-        Collection<ClassModel> mutableBeans = new MutableBeanGenerator().generate(
+        Collection<ClassModel> mutableBeans = new MutableBeanInterfaceGenerator().generate(
                 entities,
                 context.mutableBeanInterfaces,
                 mutableBeanPackage
         );
 
-        Collection<ClassModel> mutableBeanClasses = new MutableBeanClassesGenerator(context.mutableBeanInterfaces).generate(
+        Collection<ClassModel> mutableBeanClasses = new MutableBeanImplementationGenerator(context.mutableBeanInterfaces).generate(
                 entities,
                 context.mutableBeanImplementationClasses,
                 mutableBeanClassPackage

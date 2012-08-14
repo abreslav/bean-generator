@@ -34,16 +34,16 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Queue;
 
-import static org.jetbrains.jet.lang.descriptors.builders.generator.MutableBeanGenerator.*;
+import static org.jetbrains.jet.lang.descriptors.builders.generator.MutableBeanInterfaceGenerator.*;
 
 /**
 * @author abreslav
 */
-public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
+public class MutableBeanImplementationGenerator extends EntityRepresentationGenerator {
 
     private final EntityRepresentationContext<ClassBean> mutableBeanInterfaces;
 
-    public MutableBeanClassesGenerator(EntityRepresentationContext<ClassBean> mutableBeanInterfaces) {
+    public MutableBeanImplementationGenerator(EntityRepresentationContext<ClassBean> mutableBeanInterfaces) {
         this.mutableBeanInterfaces = mutableBeanInterfaces;
     }
 

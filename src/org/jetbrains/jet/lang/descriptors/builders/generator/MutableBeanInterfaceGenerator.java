@@ -26,7 +26,7 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.b
 /**
  * @author abreslav
  */
-public class MutableBeanGenerator extends EntityRepresentationGenerator {
+public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator {
 
     public static DataHolderKey<Relation<?>> GETTER = DataHolderKeyImpl.create("GETTER");
     public static DataHolderKey<Relation<?>> SETTER = DataHolderKeyImpl.create("SETTER");
