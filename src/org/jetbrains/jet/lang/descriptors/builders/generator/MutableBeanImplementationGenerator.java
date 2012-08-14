@@ -149,7 +149,7 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
                     TypeData elementType = context.types.targetToType(relation.getTarget(), Multiplicity.ONE);
                     return f.constructorCall(collectionClass,
                                              Collections.singletonList(elementType),
-                                             Collections.<E>emptyList());
+                                             Collections.<E>singletonList(f.integer(0)));
                 }
             });
         }
