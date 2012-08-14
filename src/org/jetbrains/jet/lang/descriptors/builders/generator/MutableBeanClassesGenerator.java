@@ -67,7 +67,6 @@ public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
     protected void generateClassMembers(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
         ClassBean interfaceBean = mutableBeanInterfaces.getRepresentation(entity);
         EntityContext c = new EntityContext(mutableBeanInterfaces, entity, classBean);
-        createFields(c);
         Map<String, MethodModel> methodsToImplement = Maps.newLinkedHashMap();
         collectAllMethodsToImplement(methodsToImplement, entity, mutableBeanInterfaces, IMPLS.keySet());
         for (MethodModel method : methodsToImplement.values()) {
@@ -111,12 +110,6 @@ public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
             for (Entity superEntity : entity.getSuperEntities()) {
                 queue.offer(superEntity);
             }
-        }
-    }
-
-    private static void createFields(EntityContext context) {
-        for (Relation<?> relation : context.entity.getRelations()) {
-            createField(context, relation);
         }
     }
 
