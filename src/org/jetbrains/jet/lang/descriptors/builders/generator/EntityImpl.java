@@ -18,6 +18,7 @@ package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderImpl;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.List;
 /**
 * @author abreslav
 */
-public class EntityImpl implements Entity {
+public class EntityImpl extends DataHolderImpl<EntityImpl> implements Entity {
     private final String name;
     private final List<Relation<?>> relations = Lists.newArrayList();
     private final List<Entity> superEntities = Lists.newArrayList();
