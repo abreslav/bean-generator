@@ -17,12 +17,10 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator.dataholder;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
 * @author abreslav
 */
 public interface DataHolder<T extends DataHolder<T>> {
-    @Nullable
     <V> V getData(@NotNull DataHolderKey<? super T, V> key);
 }
