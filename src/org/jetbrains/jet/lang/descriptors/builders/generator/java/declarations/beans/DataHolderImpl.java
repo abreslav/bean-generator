@@ -42,8 +42,15 @@ public abstract class DataHolderImpl<T extends DataHolderImpl<T>> implements Dat
         return (V) getMap().get(key);
     }
 
+    @NotNull
     public <V> T put(@NotNull DataHolderKey<V> key, @NotNull V value) {
         getMap().put(key, value);
+        return (T) this;
+    }
+
+    @NotNull
+    public T copyDataFrom(@NotNull DataHolder other) {
+        getMap().putAll(((DataHolderImpl<?>) other).getMap());
         return (T) this;
     }
 }

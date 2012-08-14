@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.AnnotatedModel;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.TypeData;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -35,8 +36,15 @@ public abstract class AnnotatedBean<T extends AnnotatedBean<T>> extends NamedBea
         return annotations;
     }
 
+    @NotNull
     public T addAnnotation(@NotNull TypeData typeData) {
         annotations.add(typeData);
+        return (T) this;
+    }
+
+    @NotNull
+    public T addAnnotations(@NotNull Collection<? extends TypeData> annotations) {
+        this.annotations.addAll(annotations);
         return (T) this;
     }
 

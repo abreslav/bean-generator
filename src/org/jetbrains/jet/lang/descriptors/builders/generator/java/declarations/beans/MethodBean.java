@@ -61,8 +61,17 @@ public final class MethodBean extends MemberBean<MethodBean> implements MethodMo
         return parameters;
     }
 
+    @NotNull
     public MethodBean addParameter(@NotNull ParameterModel parameter) {
         parameters.add(parameter);
         return this;
     }
+
+    @NotNull
+    public MethodBean addParameters(@NotNull List<? extends  ParameterModel> parameters) {
+        this.parameters.addAll(parameters);
+        return this;
+    }
+
+
 }
