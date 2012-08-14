@@ -33,10 +33,14 @@ public class TypeUtil {
     }
 
     public static TypeData simpleType(@NotNull final ClassModel classModel) {
+        return simpleType(classModel.getPackageFqName(), classModel.getName());
+    }
+
+    public static TypeData simpleType(@NotNull final String packageName, @NotNull final String className) {
         return new TypeData() {
             @Override
             public <E> E create(@NotNull TypeFactory<E> f) {
-                return constructedType(f, classModel.getPackageFqName(), classModel.getName());
+                return constructedType(f, packageName, className);
             }
         };
     }
