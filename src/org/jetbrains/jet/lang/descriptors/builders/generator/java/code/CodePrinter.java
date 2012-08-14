@@ -251,4 +251,21 @@ public class CodePrinter implements CodeFactory<PrintAction> {
             }
         };
     }
+
+    @NotNull
+    @Override
+    public PrintAction _for(@NotNull final PrintAction variableDeclaration, @NotNull final PrintAction rangeExpression, @NotNull final PrintAction body) {
+        return new PrintAction() {
+            @Override
+            public void print(Printer p) {
+                p.print("for (");
+                variableDeclaration.print(p);
+                p.printWithNoIndent(" : ");
+                rangeExpression.print(p);
+                p.printlnWithNoIndent(") {");
+                body.print(p);
+                p.println("}");
+            }
+        };
+    }
 }
