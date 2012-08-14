@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * @author abreslav
  */
-public class BuilderGenerator {
+public class BeanGenerator {
 
     public static void main(String[] args) throws IOException {
         List<Class<?>> classesWithBuilders = Lists.<Class<?>>newArrayList(

@@ -17,7 +17,7 @@
 package org.jetbrains.jet.lang.descriptors.builders;
 
 import junit.framework.TestCase;
-import org.jetbrains.jet.lang.descriptors.builders.generator.BuilderGenerator;
+import org.jetbrains.jet.lang.descriptors.builders.generator.BeanGenerator;
 import tests.ContravariantSetters;
 
 import java.util.Arrays;
@@ -28,7 +28,7 @@ import java.util.Arrays;
 public class BeanGeneratorTest extends TestCase {
 
     public void testContravariantSetters() throws Exception {
-        BuilderGenerator.generateBeans(
+        BeanGenerator.generateBeans(
                 Arrays.asList(
                         ContravariantSetters.A.class,
                         ContravariantSetters.B.class
