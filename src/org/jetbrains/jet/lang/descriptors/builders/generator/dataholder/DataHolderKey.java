@@ -14,15 +14,9 @@
  * limitations under the License.
  */
 
-package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+package org.jetbrains.jet.lang.descriptors.builders.generator.dataholder;
 
 /**
 * @author abreslav
 */
-public interface DataHolder {
-    @Nullable
-    <V> V getData(@NotNull DataHolderKey<V> key);
-}
+public interface DataHolderKey<V> {}

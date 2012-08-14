@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans;
+package org.jetbrains.jet.lang.descriptors.builders.generator.dataholder;
 
 import com.google.common.collect.Maps;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.DataHolder;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.DataHolderKey;
 
 import java.util.Map;
 

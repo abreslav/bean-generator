@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKey;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.ClassPrinter;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeFactory;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeUtil;

@@ -17,6 +17,7 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderImpl;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.NamedModel;
 
 /**

@@ -17,6 +17,7 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolder;
 
 /**
 * @author abreslav
