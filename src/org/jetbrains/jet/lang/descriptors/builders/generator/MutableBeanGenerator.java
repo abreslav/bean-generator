@@ -16,15 +16,15 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
+import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassKind;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.DataHolderKey;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.MethodModel;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.Visibility;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.DataHolderKeyImpl;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.MethodBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ParameterBean;
+
+import java.util.Collection;
 
 /**
  * @author abreslav
@@ -111,14 +111,22 @@ public class MutableBeanGenerator extends EntityRepresentationGenerator {
     }
 
     private static ParameterBean createSetterParameter(TypeTransformer types, Relation<?> relation) {
-        return new ParameterBean().addAnnotation(NOT_NULL).setType(types.targetToType(relation.getTarget(), Multiplicity.ONE)).setName(
+        Relation<?> mostAbstractRelation = getMostAbstract(relation);
+        TypeData setterParameterType = types.targetToType(mostAbstractRelation.getTarget(), Multiplicity.ONE);
+        return new ParameterBean().addAnnotation(NOT_NULL).setType(setterParameterType).setName(
                 "value");
+    }
+
+    private static Relation<?> getMostAbstract(Relation<?> relation) {
+        Collection<Relation<?>> overridden = relation.getOverriddenRelations();
+        if (overridden.isEmpty()) return relation;
+        return ContainerUtil.getFirstItem(overridden);
     }
 
     private static ParameterBean createAllAdderParameter(TypeTransformer types, Relation<?> relation) {
         assert relation.getMultiplicity().isCollection();
-        return new ParameterBean().addAnnotation(NOT_NULL).setType(
-                types.targetToType(relation.getTarget(), Multiplicity.COLLECTION, TypeTransformer.Variance.OUT)).setName("values");
+        TypeData type = types.targetToType(getMostAbstract(relation).getTarget(), Multiplicity.COLLECTION, TypeTransformer.Variance.OUT);
+        return new ParameterBean().addAnnotation(NOT_NULL).setType(type).setName("values");
     }
 
     private static String getAllElementAdderName(Relation<?> relation) {
