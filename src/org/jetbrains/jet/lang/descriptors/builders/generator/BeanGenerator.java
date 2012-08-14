@@ -90,10 +90,12 @@ public class BeanGenerator {
         );
 
         ClassModel beanUtil = BeanUtilGenerator.generate(mutableBeanPackage, "BeanUtil", context.mutableBeanInterfaces, context.mutableBeanImplementationClasses);
+        ClassModel dataToBeanUtil = DataToBeanGenerator.generate(mutableBeanPackage, "DataToBean", context.mutableBeanInterfaces, context.mutableBeanImplementationClasses);
 
         writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeans);
         writeToFiles(generatedSourceRoot, mutableBeanClassPackage, mutableBeanClasses);
         writeToFiles(generatedSourceRoot, mutableBeanPackage, Collections.singletonList(beanUtil));
+        writeToFiles(generatedSourceRoot, mutableBeanPackage, Collections.singletonList(dataToBeanUtil));
     }
 
     private static void writeToFiles(String generatedSourceRoot, String packageName, Collection<ClassModel> readOnlyBeans)
