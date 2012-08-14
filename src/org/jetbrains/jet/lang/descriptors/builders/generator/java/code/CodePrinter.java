@@ -122,14 +122,15 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         return new PrintAction() {
             @Override
             public void print(Printer p) {
-                p.printWithNoIndent("new ");
-                typeRenderer.renderType(new TypeData() {
-                    @Override
-                    public <E> E create(@NotNull TypeFactory<E> f) {
-                        return f.constructedType(classBeingInstantiated.getPackageFqName(), classBeingInstantiated.getName(),
-                                                 Collections.<E>emptyList());
-                    }
-                });
+                p.printWithNoIndent("new ",
+                                    typeRenderer.renderType(new TypeData() {
+                                        @Override
+                                        public <E> E create(@NotNull TypeFactory<E> f) {
+                                                    return f.constructedType(classBeingInstantiated.getPackageFqName(), classBeingInstantiated.getName(),
+                                                                             Collections.<E>emptyList());
+                                                }
+                                    })
+                );
                 if (!typeArguments.isEmpty()) {
                     p.printWithNoIndent("<");
                     for (Iterator<TypeData> iterator = typeArguments.iterator(); iterator.hasNext(); ) {
