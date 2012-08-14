@@ -83,12 +83,11 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         return new PrintAction() {
             @Override
             public void print(Printer p) {
-                p.print(typeRenderer.renderType(type), " ", name);
+                p.printWithNoIndent(typeRenderer.renderType(type), " ", name);
                 if (initializer != null) {
                     p.printWithNoIndent(" = ");
                     initializer.print(p);
                 }
-                p.printlnWithNoIndent(";");
             }
         };
     }
@@ -263,7 +262,9 @@ public class CodePrinter implements CodeFactory<PrintAction> {
                 p.printWithNoIndent(" : ");
                 rangeExpression.print(p);
                 p.printlnWithNoIndent(") {");
+                p.pushIndent();
                 body.print(p);
+                p.popIndent();
                 p.println("}");
             }
         };
