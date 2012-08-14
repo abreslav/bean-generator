@@ -105,25 +105,10 @@ public class BeanGenerator {
         return packageFqName.replace('.', '/');
     }
 
-    private static class Context implements BeanGenerationContext {
+    private static class Context {
         RepresentationContext readOnlyBeanInterfaces = new RepresentationContext();
         RepresentationContext mutableBeanInterfaces = new RepresentationContext();
         RepresentationContext mutableBeanImplementationClasses = new RepresentationContext();
-
-        @Override
-        public ClassModel getReadOnlyBeanInterface(@NotNull Entity entity) {
-            return readOnlyBeanInterfaces.map.get(entity);
-        }
-
-        @Override
-        public ClassModel getMutableBeanInterface(@NotNull Entity entity) {
-            return mutableBeanInterfaces.map.get(entity);
-        }
-
-        @Override
-        public ClassModel getMutableBeanImplementationClass(@NotNull Entity entity) {
-            return mutableBeanImplementationClasses.map.get(entity);
-        }
     }
 
     private static class RepresentationContext implements EntityRepresentationContext<ClassBean> {
