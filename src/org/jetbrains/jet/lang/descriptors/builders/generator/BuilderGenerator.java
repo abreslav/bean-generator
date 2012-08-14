@@ -55,13 +55,22 @@ public class BuilderGenerator {
                 FunctionDescriptor.class
         );
 
-        Collection<Entity> entities = EntityBuilder.javaClassesToEntities(classesWithBuilders);
 
 
         String generatedSourceRoot = "bean-generator/generated";
         String mutableBeanPackage = "beans";
         String mutableBeanClassPackage = "beans.impl";
 
+        generateBeans(classesWithBuilders, generatedSourceRoot, mutableBeanPackage, mutableBeanClassPackage);
+    }
+
+    public static void generateBeans(
+            List<? extends Class<?>> classesWithBuilders,
+            String generatedSourceRoot,
+            String mutableBeanPackage,
+            String mutableBeanClassPackage
+    ) throws IOException {
+        Collection<Entity> entities = EntityBuilder.javaClassesToEntities(classesWithBuilders);
         Context context = new Context();
 
         Collection<ClassModel> mutableBeans = new MutableBeanGenerator().generate(
@@ -76,7 +85,6 @@ public class BuilderGenerator {
                 mutableBeanClassPackage
         );
 
-        //writeToFiles(generatedSourceRoot, readOnlyBeanPackage, readOnlyBeans);
         writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeans);
         writeToFiles(generatedSourceRoot, mutableBeanClassPackage, mutableBeanClasses);
     }
