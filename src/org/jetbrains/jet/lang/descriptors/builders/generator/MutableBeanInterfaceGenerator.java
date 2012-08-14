@@ -121,11 +121,11 @@ public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator
         return new ParameterBean().addAnnotation(NOT_NULL).setType(type).setName("values");
     }
 
-    private static String getAllElementAdderName(Relation<?> relation) {
+    public static String getAllElementAdderName(Relation<?> relation) {
         return "addAllTo" + relation.getName();
     }
 
-    private static String getSingleElementAdderName(Relation<?> relation) {
+    public static String getSingleElementAdderName(Relation<?> relation) {
         return "addTo" + relation.getName();
     }
 

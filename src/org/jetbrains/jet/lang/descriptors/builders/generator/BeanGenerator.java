@@ -30,6 +30,7 @@ import org.jetbrains.jet.utils.Printer;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +60,12 @@ public class BeanGenerator {
         String mutableBeanPackage = "beans";
         String mutableBeanClassPackage = "beans.impl";
 
-        generateBeans(classesWithBuilders, generatedSourceRoot, mutableBeanPackage, mutableBeanClassPackage);
+        generateBeans(
+                classesWithBuilders,
+                generatedSourceRoot,
+                mutableBeanPackage,
+                mutableBeanClassPackage
+        );
     }
 
     public static void generateBeans(
@@ -83,8 +89,11 @@ public class BeanGenerator {
                 mutableBeanClassPackage
         );
 
+        ClassModel beanUtil = BeanUtilGenerator.generate(mutableBeanPackage, "BeanUtil", context.mutableBeanInterfaces, context.mutableBeanImplementationClasses);
+
         writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeans);
         writeToFiles(generatedSourceRoot, mutableBeanClassPackage, mutableBeanClasses);
+        writeToFiles(generatedSourceRoot, mutableBeanPackage, Collections.singletonList(beanUtil));
     }
 
     private static void writeToFiles(String generatedSourceRoot, String packageName, Collection<ClassModel> readOnlyBeans)
@@ -106,7 +115,6 @@ public class BeanGenerator {
     }
 
     private static class Context {
-        RepresentationContext readOnlyBeanInterfaces = new RepresentationContext();
         RepresentationContext mutableBeanInterfaces = new RepresentationContext();
         RepresentationContext mutableBeanImplementationClasses = new RepresentationContext();
     }
