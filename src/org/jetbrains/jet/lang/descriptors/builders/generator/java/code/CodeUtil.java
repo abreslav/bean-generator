@@ -18,8 +18,11 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.code;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassModel;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * @author abreslav
@@ -36,5 +39,9 @@ public class CodeUtil {
 
     public static <E> E methodCallStatement(@NotNull CodeFactory<E> factory, @Nullable E receiver, String methodName, E... arguments) {
         return factory.statement(methodCall(factory, receiver, methodName, arguments));
+    }
+
+    public static <E> E constructorCall(@NotNull CodeFactory<E> factory, @NotNull ClassModel classModel, E... arguments) {
+        return factory.constructorCall(classModel, Collections.<TypeData>emptyList(), Arrays.asList(arguments));
     }
 }
