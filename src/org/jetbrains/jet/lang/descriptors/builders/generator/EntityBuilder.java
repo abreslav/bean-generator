@@ -132,7 +132,6 @@ public class EntityBuilder {
         }
         Type returnType = method.getGenericReturnType();
         if (Collection.class.isAssignableFrom(returnClass)) {
-
             if (returnType instanceof ParameterizedType) {
                 ParameterizedType parameterizedType = (ParameterizedType) returnType;
                 Type[] arguments = parameterizedType.getActualTypeArguments();
@@ -145,7 +144,8 @@ public class EntityBuilder {
                     return new RelationWithTarget<Entity>(getMultiplicityFromCollectionType(returnClass),
                                                           relationName, c.safeGet(elementClass));
                 }
-                return createRelationToJavaType(method, relationName, returnType);
+                return new RelationWithTarget<Type>(getMultiplicityFromCollectionType(returnClass),
+                                                    relationName, elementClass);
             }
             else {
                 warning("Collection return type is not parameterized in " + method);
@@ -195,7 +195,7 @@ public class EntityBuilder {
 
     private static class Context {
         private final Set<Class<?>> entityClasses;
-        private final Map<Class<?>, Entity> entities = Maps.newHashMap();
+        private final Map<Class<?>, Entity> entities = Maps.newLinkedHashMap();
 
         public Context(@NotNull Collection<Class<?>> entityClassesCollection) {
             this.entityClasses = Sets.newLinkedHashSet(entityClassesCollection);
