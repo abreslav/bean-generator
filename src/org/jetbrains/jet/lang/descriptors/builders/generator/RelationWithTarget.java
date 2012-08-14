@@ -49,4 +49,9 @@ public class RelationWithTarget<T> implements Relation {
     public T getTarget() {
         return target;
     }
+
+    @Override
+    public String toString() {
+        return getName() + ": [" + getMultiplicity() + "] " + target;
+    }
 }

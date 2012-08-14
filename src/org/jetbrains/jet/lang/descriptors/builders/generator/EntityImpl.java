@@ -51,4 +51,9 @@ public class EntityImpl implements Entity {
     public Collection<Entity> getSuperEntities() {
         return superEntities;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

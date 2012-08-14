@@ -36,4 +36,9 @@ public abstract class NamedBean<T extends NamedBean<T>> extends DataHolderImpl<T
         this.name = name;
         return (T) this;
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
