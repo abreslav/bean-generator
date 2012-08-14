@@ -55,8 +55,6 @@ public class BeanGenerator {
                 FunctionDescriptor.class
         );
 
-
-
         String generatedSourceRoot = "bean-generator/generated";
         String mutableBeanPackage = "beans";
         String mutableBeanClassPackage = "beans.impl";
