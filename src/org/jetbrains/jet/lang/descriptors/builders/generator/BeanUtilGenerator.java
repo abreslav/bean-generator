@@ -40,7 +40,14 @@ import static org.jetbrains.jet.lang.descriptors.builders.generator.java.code.Co
 /**
  * @author abreslav
  */
+@SuppressWarnings("unchecked")
 public class BeanUtilGenerator {
+    private static final String RESULT = "result";
+    private static final String ORIGINAL = "original";
+    private static final String SHALLOW_COPY = "shallowCopy";
+    private static final String DEEP_COPY = "deepCopy";
+    private static final String LOOP_INDEX = "item";
+
     public static ClassModel generate(
             String packageName,
             String className,
@@ -89,9 +96,9 @@ public class BeanUtilGenerator {
                                 @Override
                                 public <E> E create(@NotNull CodeFactory<E> f) {
                                     List<E> statements = Lists.newArrayList();
-                                    ClassBean implementationClass = implementations.getRepresentation(entity);
-                                    statements
-                                            .add(f.variableDeclaration(beanInterfaceType, RESULT, constructorCall(f, implementationClass)));
+                                    statements.add(resultVariableDeclarationStatement(f,
+                                                                                      beanInterfaceType,
+                                                                                      implementations.getRepresentation(entity)));
                                     for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
                                         E statement;
                                         if (!relation.getMultiplicity().isCollection()) {
@@ -113,7 +120,7 @@ public class BeanUtilGenerator {
     }
 
     private static Collection<MethodBean> generateDeepCopyMethods(
-            EntityRepresentationContext<ClassBean> interfaces,
+            final EntityRepresentationContext<ClassBean> interfaces,
             final EntityRepresentationContext<ClassBean> implementations
     ) {
         Collection<MethodBean> result = Lists.newArrayList();
@@ -128,10 +135,8 @@ public class BeanUtilGenerator {
                                            @Override
                                            public <E> E create(@NotNull CodeFactory<E> f) {
                                                List<E> statements = Lists.newArrayList();
-                                               statements.add(f.variableDeclaration(
-                                                       beanInterfaceType,
-                                                       RESULT,
-                                                       constructorCall(f, implementations.getRepresentation(entity))));
+                                               statements.add(resultVariableDeclarationStatement(f,
+                                                                     beanInterfaceType, implementations.getRepresentation(entity)));
                                                for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
                                                    E statement;
                                                    if (!relation.getMultiplicity().isCollection()) {
@@ -143,7 +148,7 @@ public class BeanUtilGenerator {
                                                        }
                                                    }
                                                    else {
-                                                       statement = deepCopyCollectionStatement(f, relation);
+                                                       statement = deepCopyCollectionStatement(f, relation, interfaces);
                                                    }
                                                    statements.add(statement);
                                                }
@@ -155,6 +160,12 @@ public class BeanUtilGenerator {
             );
         }
         return result;
+    }
+
+    private static <E> E resultVariableDeclarationStatement(CodeFactory<E> f, TypeData type, ClassBean classBean) {
+        return f.statement(
+                f.variableDeclaration(type, RESULT, constructorCall(f, classBean))
+        );
     }
 
     private static <E> E directCopyStatement(CodeFactory<E> f, Relation<?> relation) {
@@ -181,19 +192,24 @@ public class BeanUtilGenerator {
                                    methodCall(f, f.variableReference(ORIGINAL), getterName));
     }
 
-    private static <E> E deepCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation) {
-        return methodCallStatement(f, f.variableReference(RESULT),
-                            MutableBeanInterfaceGenerator
-                                    .getAllElementAdderName(relation),
-                            methodCall(f, f.variableReference(
-                                    ORIGINAL),
-                                       getGetterName(
-                                               relation)));
+    private static <E> E deepCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation, EntityRepresentationContext<ClassBean> context) {
+        TypeTransformer typeTransformer = new TypeTransformer(context);
+        TypeData elementType = typeTransformer.targetToType(relation.getTarget(), Multiplicity.ONE);
+        String getterName = getGetterName(relation);
+        return _for(f, elementType, LOOP_INDEX, methodCall(f, f.variableReference(ORIGINAL), getterName),
+                    copyCollectionElementStatement(f, relation)
+        );
     }
 
-    private static final String RESULT = "result";
-    private static final String ORIGINAL = "original";
-    private static final String SHALLOW_COPY = "shallowCopy";
-    private static final String DEEP_COPY = "deepCopy";
-
+    private static <E> E copyCollectionElementStatement(CodeFactory<E> f, Relation<?> relation) {
+        String oneElementAdderName = MutableBeanInterfaceGenerator.getSingleElementAdderName(relation);
+        if (relation.getTarget() instanceof Entity) {
+            return methodCallStatement(f, f.variableReference(RESULT), oneElementAdderName,
+                                            methodCall(f, null, DEEP_COPY, f.variableReference(LOOP_INDEX)));
+        }
+        else {
+            return methodCallStatement(f, f.variableReference(RESULT), oneElementAdderName,
+                                            f.variableReference(LOOP_INDEX));
+        }
+    }
 }
