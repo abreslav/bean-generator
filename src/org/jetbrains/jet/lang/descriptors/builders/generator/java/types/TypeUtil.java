@@ -17,6 +17,7 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator.java.types;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassModel;
 
 import java.util.Arrays;
 
@@ -29,5 +30,14 @@ public class TypeUtil {
             @NotNull String packageName, @NotNull String className, E... arguments
     ) {
         return factory.constructedType(packageName, className, Arrays.asList(arguments));
+    }
+
+    public static TypeData simpleType(@NotNull final ClassModel classModel) {
+        return new TypeData() {
+            @Override
+            public <E> E create(@NotNull TypeFactory<E> f) {
+                return constructedType(f, classModel.getPackageFqName(), classModel.getName());
+            }
+        };
     }
 }

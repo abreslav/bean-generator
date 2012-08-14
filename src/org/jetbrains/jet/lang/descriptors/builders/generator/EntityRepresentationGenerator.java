@@ -116,7 +116,7 @@ public abstract class EntityRepresentationGenerator {
             Entity entity
     ) {
         for (Entity superEntity : entity.getSuperEntities()) {
-            classBean.getSuperInterfaces().add(simpleType(context.getRepresentation(superEntity)));
+            classBean.getSuperInterfaces().add(TypeUtil.simpleType(context.getRepresentation(superEntity)));
         }
     }
 
@@ -138,15 +138,6 @@ public abstract class EntityRepresentationGenerator {
 
     private static <T> String getGetterPrefix(T target) {
         return target == Boolean.TYPE ? "is" : "get";
-    }
-
-    protected static TypeData simpleType(@NotNull final ClassModel classModel) {
-        return new TypeData() {
-            @Override
-            public <E> E create(@NotNull TypeFactory<E> f) {
-                return TypeUtil.constructedType(f, classModel.getPackageFqName(), classModel.getName());
-            }
-        };
     }
 
     protected static TypeTransformer types(EntityRepresentationContext<ClassBean> context) {
@@ -182,7 +173,7 @@ public abstract class EntityRepresentationGenerator {
         protected <T> TypeData targetToType(T target, Multiplicity multiplicity, Variance variance) {
             if (target instanceof Entity) {
                 Entity entity = (Entity) target;
-                return typeWithMultiplicity(multiplicity, simpleType(context.getRepresentation(entity)), variance);
+                return typeWithMultiplicity(multiplicity, TypeUtil.simpleType(context.getRepresentation(entity)), variance);
             }
             else if (target instanceof Type) {
                 Type type = (Type) target;

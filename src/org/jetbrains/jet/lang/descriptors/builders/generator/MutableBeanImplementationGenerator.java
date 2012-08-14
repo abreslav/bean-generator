@@ -30,6 +30,7 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.b
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.JavaDeclarationUtil;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.MethodBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeUtil;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -70,7 +71,7 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
 
     @Override
     protected void generateSupertypes(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
-        classBean.getSuperInterfaces().add(simpleType(mutableBeanInterfaces.getRepresentation(entity)));
+        classBean.getSuperInterfaces().add(TypeUtil.simpleType(mutableBeanInterfaces.getRepresentation(entity)));
     }
 
     @Override
@@ -88,7 +89,7 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
                     }
                     MethodBean implementation = implement(method, entry.getValue().createBody(c, method));
                     if (entry.getKey() != GETTER) {
-                        implementation.setReturnType(simpleType(interfaceBean));
+                        implementation.setReturnType(TypeUtil.simpleType(interfaceBean));
                     }
                     classBean.getMethods().add(implementation);
                 }

@@ -23,6 +23,7 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.b
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.MethodBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ParameterBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeUtil;
 
 /**
  * @author abreslav
@@ -133,7 +134,7 @@ public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator
                         .addAnnotation(NOT_NULL)
                         .setVisibility(Visibility.PUBLIC)
                         .setAbstract(true)
-                        .setReturnType(simpleType(classBean));
+                        .setReturnType(TypeUtil.simpleType(classBean));
     }
 
     private static class EntityContext {
