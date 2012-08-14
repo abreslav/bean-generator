@@ -68,7 +68,7 @@ public class MutableBeanClassesGenerator extends EntityRepresentationGenerator {
         ClassBean interfaceBean = mutableBeanInterfaces.getRepresentation(entity);
         EntityContext c = new EntityContext(mutableBeanInterfaces, entity, classBean);
         createFields(c);
-        Map<String, MethodModel> methodsToImplement = Maps.newHashMap();
+        Map<String, MethodModel> methodsToImplement = Maps.newLinkedHashMap();
         collectAllMethodsToImplement(methodsToImplement, entity, mutableBeanInterfaces, IMPLS.keySet());
         for (MethodModel method : methodsToImplement.values()) {
             for (Map.Entry<DataHolderKey<Relation<?>>, MethodImplementation> entry : IMPLS.entrySet()) {
