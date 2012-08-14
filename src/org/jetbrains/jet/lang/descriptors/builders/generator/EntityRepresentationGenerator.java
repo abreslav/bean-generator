@@ -133,7 +133,7 @@ public abstract class EntityRepresentationGenerator {
     }
 
     private static <T> String getGetterPrefix(T target) {
-        return target == Boolean.TYPE ? "is" : "get";
+        return target == Boolean.TYPE || target == Boolean.class ? "is" : "get";
     }
 
     protected static TypeTransformer types(EntityRepresentationContext<ClassBean> context) {
