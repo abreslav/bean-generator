@@ -17,10 +17,11 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author abreslav
@@ -28,15 +29,20 @@ import java.util.List;
 public class EntityUtil {
     @NotNull
     public static Collection<Relation<?>> getAllRelations(@NotNull Entity entity) {
-        List<Relation<?>> result = Lists.newArrayList();
-        collectAllRelations(entity, result);
+        Collection<Relation<?>> result = Lists.newArrayList();
+        Set<Relation<?>> visited = Sets.newHashSet();
+        collectAllRelations(entity, result, visited);
         return result;
     }
 
-    private static void collectAllRelations(Entity entity, List<Relation<?>> result) {
-        result.addAll(entity.getRelations());
+    private static void collectAllRelations(Entity entity, Collection<Relation<?>> result, Collection<Relation<?>> visited) {
+        for (Relation<?> relation : entity.getRelations()) {
+            if (visited.add(relation)) {
+                result.add(relation);
+            }
+        }
         for (Entity superEntity : entity.getSuperEntities()) {
-            collectAllRelations(superEntity, result);
+            collectAllRelations(superEntity, result, visited);
         }
     }
 }
