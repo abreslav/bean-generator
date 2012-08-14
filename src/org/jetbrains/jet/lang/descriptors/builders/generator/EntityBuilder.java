@@ -17,6 +17,7 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import com.google.common.collect.*;
+import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.runtime.Optional;
 import org.jetbrains.jet.lang.descriptors.builders.generator.runtime.Skip;
@@ -61,6 +62,8 @@ public class EntityBuilder {
             createRelations(c, entityClass);
         }
         bindOverriddenRelations(c.getEntities());
+
+        removeOverriddenRelations(c.getEntities());
 
         return c.getEntities();
     }
@@ -203,8 +206,32 @@ public class EntityBuilder {
                 superRelations.put(relation.getName(), relation);
             }
         }
-        for (Relation<?> relation : entity.getRelations()) {
+        Set<String> explicitlyOverridden = Sets.newHashSet();
+        for (Relation<?> relation : Lists.newArrayList(entity.getRelations())) {
             relation.getOverriddenRelations().addAll(superRelations.get(relation.getName()));
+            explicitlyOverridden.add(relation.getName());
+        }
+
+        // "fake overrides"
+        for (Map.Entry<String, Collection<Relation<?>>> entry : superRelations.asMap().entrySet()) {
+            String relationName = entry.getKey();
+            Collection<Relation<?>> overriddenRelations = entry.getValue();
+            Relation<?> someOverridden = ContainerUtil.getFirstItem(overriddenRelations);
+            RelationWithTarget<Object> fakeOverride =
+                    new RelationWithTarget<Object>(someOverridden.getMultiplicity(), relationName, someOverridden.getTarget());
+            fakeOverride.getOverriddenRelations().addAll(overriddenRelations);
+            entity.getRelations().add(fakeOverride);
+        }
+    }
+
+    private static void removeOverriddenRelations(Collection<Entity> entities) {
+        for (Entity entity : entities) {
+            for (Relation<?> relation : Lists.newArrayList(entity.getRelations())) {
+                if (!relation.getOverriddenRelations().isEmpty()) {
+                    warning("[Overridden relation]: Removing " + entity + "::" + relation);
+                    entity.getRelations().remove(relation);
+                }
+            }
         }
     }
 

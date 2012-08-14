@@ -16,15 +16,12 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
-import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.DataHolderKeyImpl;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.MethodBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ParameterBean;
-
-import java.util.Collection;
 
 /**
  * @author abreslav
@@ -111,21 +108,14 @@ public class MutableBeanGenerator extends EntityRepresentationGenerator {
     }
 
     private static ParameterBean createSetterParameter(TypeTransformer types, Relation<?> relation) {
-        Relation<?> mostAbstractRelation = getMostAbstract(relation);
-        TypeData setterParameterType = types.targetToType(mostAbstractRelation.getTarget(), Multiplicity.ONE);
+        TypeData setterParameterType = types.targetToType(relation.getTarget(), Multiplicity.ONE);
         return new ParameterBean().addAnnotation(NOT_NULL).setType(setterParameterType).setName(
                 "value");
     }
 
-    private static Relation<?> getMostAbstract(Relation<?> relation) {
-        Collection<Relation<?>> overridden = relation.getOverriddenRelations();
-        if (overridden.isEmpty()) return relation;
-        return ContainerUtil.getFirstItem(overridden);
-    }
-
     private static ParameterBean createAllAdderParameter(TypeTransformer types, Relation<?> relation) {
         assert relation.getMultiplicity().isCollection();
-        TypeData type = types.targetToType(getMostAbstract(relation).getTarget(), Multiplicity.COLLECTION, TypeTransformer.Variance.OUT);
+        TypeData type = types.targetToType(relation.getTarget(), Multiplicity.COLLECTION, TypeTransformer.Variance.OUT);
         return new ParameterBean().addAnnotation(NOT_NULL).setType(type).setName("values");
     }
 
