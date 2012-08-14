@@ -20,7 +20,6 @@ import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.ClassPrinter;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeFactory;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeUtil;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.PieceOfCode;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassKind;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassModel;
@@ -33,6 +32,10 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeUtil
 
 import java.util.Collection;
 import java.util.List;
+
+import static org.jetbrains.jet.lang.descriptors.builders.generator.EntityRepresentationGenerator.getGetterName;
+import static org.jetbrains.jet.lang.descriptors.builders.generator.EntityRepresentationGenerator.getSetterName;
+import static org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeUtil.*;
 
 /**
  * @author abreslav
@@ -50,7 +53,24 @@ public class BeanUtilGenerator {
                 .setPackageFqName(packageName)
                 .setName(className);
         utilClass.getMethods().addAll(generateShallowCopyMethods(interfaces, implementations));
+        utilClass.getMethods().addAll(generateDeepCopyMethods(interfaces, implementations));
         return utilClass;
+    }
+
+    @NotNull
+    private static MethodBean createCopyMethod(TypeData beanInterfaceType, String methodName) {
+        return new MethodBean()
+                .setVisibility(Visibility.PUBLIC)
+                .setStatic(true)
+                .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
+                .setReturnType(beanInterfaceType)
+                .setName(methodName)
+                .addParameter(
+                        new ParameterBean()
+                                .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
+                                .setType(beanInterfaceType)
+                                .setName(ORIGINAL)
+                );
     }
 
     private static Collection<MethodBean> generateShallowCopyMethods(
@@ -61,46 +81,28 @@ public class BeanUtilGenerator {
         for (final Entity entity : interfaces.getEntities()) {
             ClassBean beanInterface = interfaces.getRepresentation(entity);
             final TypeData beanInterfaceType = TypeUtil.simpleType(beanInterface);
-            final String original = "original";
-            result.add(new MethodBean()
-                    .setVisibility(Visibility.PUBLIC)
-                    .setStatic(true)
-                    .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
-                    .setReturnType(beanInterfaceType)
-                    .setName("shallowCopy")
-                    .addParameter(
-                        new ParameterBean()
-                                .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
-                                .setType(beanInterfaceType)
-                                .setName(original)
-                    )
+            result.add(createCopyMethod(beanInterfaceType, SHALLOW_COPY)
                     .put(
                             ClassPrinter.METHOD_BODY,
                             new PieceOfCode() {
                                 @NotNull
                                 @Override
                                 public <E> E create(@NotNull CodeFactory<E> f) {
-                                    String result = "result";
                                     List<E> statements = Lists.newArrayList();
-                                    statements.add(f.variableDeclaration(beanInterfaceType, result,
-                                                        CodeUtil.constructorCall(f, implementations.getRepresentation(entity))));
+                                    ClassBean implementationClass = implementations.getRepresentation(entity);
+                                    statements
+                                            .add(f.variableDeclaration(beanInterfaceType, RESULT, constructorCall(f, implementationClass)));
                                     for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
+                                        E statement;
                                         if (!relation.getMultiplicity().isCollection()) {
-                                            statements.add(
-                                                    CodeUtil.methodCallStatement(f, f.variableReference(result),
-                                                             MutableBeanInterfaceGenerator.getSetterName(relation),
-                                                             CodeUtil.methodCall(f, f.variableReference(original), MutableBeanInterfaceGenerator.getGetterName(relation)))
-                                            );
+                                            statement = directCopyStatement(f, relation);
                                         }
                                         else {
-                                            statements.add(
-                                                    CodeUtil.methodCallStatement(f, f.variableReference(result),
-                                                             MutableBeanInterfaceGenerator.getAllElementAdderName(relation),
-                                                             CodeUtil.methodCall(f, f.variableReference(original), MutableBeanInterfaceGenerator.getGetterName(relation)))
-                                            );
+                                            statement = shallowCopyCollectionStatement(f, relation);
                                         }
+                                        statements.add(statement);
                                     }
-                                    statements.add(f._return(f.variableReference(result)));
+                                    statements.add(f._return(f.variableReference(RESULT)));
                                     return f.block(statements);
                                 }
                             }
@@ -109,4 +111,89 @@ public class BeanUtilGenerator {
         }
         return result;
     }
+
+    private static Collection<MethodBean> generateDeepCopyMethods(
+            EntityRepresentationContext<ClassBean> interfaces,
+            final EntityRepresentationContext<ClassBean> implementations
+    ) {
+        Collection<MethodBean> result = Lists.newArrayList();
+        for (final Entity entity : interfaces.getEntities()) {
+            ClassBean beanInterface = interfaces.getRepresentation(entity);
+            final TypeData beanInterfaceType = TypeUtil.simpleType(beanInterface);
+            result.add(createCopyMethod(beanInterfaceType, DEEP_COPY)
+                               .put(
+                                       ClassPrinter.METHOD_BODY,
+                                       new PieceOfCode() {
+                                           @NotNull
+                                           @Override
+                                           public <E> E create(@NotNull CodeFactory<E> f) {
+                                               List<E> statements = Lists.newArrayList();
+                                               statements.add(f.variableDeclaration(
+                                                       beanInterfaceType,
+                                                       RESULT,
+                                                       constructorCall(f, implementations.getRepresentation(entity))));
+                                               for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
+                                                   E statement;
+                                                   if (!relation.getMultiplicity().isCollection()) {
+                                                       if (relation.getTarget() instanceof Entity) {
+                                                           statement = deepCopyStatement(f, relation);
+                                                       }
+                                                       else {
+                                                           statement = directCopyStatement(f, relation);
+                                                       }
+                                                   }
+                                                   else {
+                                                       statement = deepCopyCollectionStatement(f, relation);
+                                                   }
+                                                   statements.add(statement);
+                                               }
+                                               statements.add(f._return(f.variableReference(RESULT)));
+                                               return f.block(statements);
+                                           }
+                                       }
+                               )
+            );
+        }
+        return result;
+    }
+
+    private static <E> E directCopyStatement(CodeFactory<E> f, Relation<?> relation) {
+        String setterName = getSetterName(relation);
+        String getterName = getGetterName(relation);
+        return methodCallStatement(f, f.variableReference(RESULT), setterName,
+                                   methodCall(f, f.variableReference(ORIGINAL), getterName));
+    }
+
+    private static <E> E deepCopyStatement(CodeFactory<E> f, Relation<?> relation) {
+        String getterName = getGetterName(relation);
+        String setterName = getSetterName(relation);
+        return methodCallStatement(f, f.variableReference(RESULT),
+                                   setterName,
+                                   methodCall(f, null, DEEP_COPY,
+                                              methodCall(f, f.variableReference(ORIGINAL), getterName))
+        );
+    }
+
+    private static <E> E shallowCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation) {
+        String allAdderName = MutableBeanInterfaceGenerator.getAllElementAdderName(relation);
+        String getterName = getGetterName(relation);
+        return methodCallStatement(f, f.variableReference(RESULT), allAdderName,
+                                   methodCall(f, f.variableReference(ORIGINAL), getterName));
+    }
+
+    private static <E> E deepCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation) {
+        return methodCallStatement(f, f.variableReference(RESULT),
+                            MutableBeanInterfaceGenerator
+                                    .getAllElementAdderName(relation),
+                            methodCall(f, f.variableReference(
+                                    ORIGINAL),
+                                       getGetterName(
+                                               relation)));
+    }
+
+    private static final String RESULT = "result";
+    private static final String ORIGINAL = "original";
+    private static final String SHALLOW_COPY = "shallowCopy";
+    private static final String DEEP_COPY = "deepCopy";
+
 }
