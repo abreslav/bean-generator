@@ -29,6 +29,7 @@ import java.util.List;
 */
 public final class MethodBean extends MemberBean<MethodBean> implements MethodModel {
     private boolean _abstract;
+    private boolean _static;
     private TypeData returnType;
     private final List<ParameterModel> parameters = Lists.newArrayList();
 
@@ -52,6 +53,17 @@ public final class MethodBean extends MemberBean<MethodBean> implements MethodMo
     @NotNull
     public MethodBean setAbstract(boolean _abstract) {
         this._abstract = _abstract;
+        return this;
+    }
+
+    @Override
+    public boolean isStatic() {
+        return _static;
+    }
+
+    @NotNull
+    public MethodBean setStatic(boolean _static) {
+        this._static = _static;
         return this;
     }
 

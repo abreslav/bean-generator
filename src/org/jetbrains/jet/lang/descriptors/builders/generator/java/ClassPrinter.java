@@ -162,6 +162,9 @@ public class ClassPrinter {
             if (model.isAbstract()) {
                 p.printWithNoIndent("abstract ");
             }
+            if (model.isStatic()) {
+                p.printWithNoIndent("static ");
+            }
         }
         else {
             p.print();

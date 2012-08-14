@@ -27,6 +27,8 @@ import java.util.List;
 public interface MethodModel extends MemberModel {
     boolean isAbstract();
 
+    boolean isStatic();
+
     @NotNull
     TypeData getReturnType();
 
