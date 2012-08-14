@@ -16,10 +16,7 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.runtime.Optional;
 import org.jetbrains.jet.lang.descriptors.builders.generator.runtime.Skip;
@@ -50,7 +47,7 @@ public class EntityBuilder {
             .build();
 
     @NotNull
-    public static Collection<Entity> javaClassesToEntities(@NotNull Collection<Class<?>> entityClassesCollection) {
+    public static Collection<Entity> javaClassesToEntities(@NotNull Collection<? extends Class<?>> entityClassesCollection) {
         Context c = new Context(entityClassesCollection);
 
         createEmptyEntities(c);
@@ -63,6 +60,7 @@ public class EntityBuilder {
             // Relations
             createRelations(c, entityClass);
         }
+        bindOverriddenRelations(c.getEntities());
 
         return c.getEntities();
     }
@@ -120,7 +118,7 @@ public class EntityBuilder {
                 continue;
             }
 
-            Relation relation = createRelation(c, method, relationName, returnType);
+            Relation<?> relation = createRelation(c, method, relationName, returnType);
             entity.getRelations().add(relation);
         }
     }
@@ -189,6 +187,27 @@ public class EntityBuilder {
         return optional == null ? Multiplicity.ONE : Multiplicity.ZERO_OR_ONE;
     }
 
+    private static void bindOverriddenRelations(Collection<Entity> entities) {
+        Set<Entity> alreadyBound = Sets.newHashSet();
+        for (Entity entity : entities) {
+            bindOverriddenRelations(entity, alreadyBound);
+        }
+    }
+
+    private static void bindOverriddenRelations(Entity entity, Set<Entity> alreadyBound) {
+        if (!alreadyBound.add(entity)) return;
+        Multimap<String, Relation<?>> superRelations = HashMultimap.create();
+        for (Entity superEntity : entity.getSuperEntities()) {
+            bindOverriddenRelations(superEntity, alreadyBound);
+            for (Relation<?> relation : superEntity.getRelations()) {
+                superRelations.put(relation.getName(), relation);
+            }
+        }
+        for (Relation<?> relation : entity.getRelations()) {
+            relation.getOverriddenRelations().addAll(superRelations.get(relation.getName()));
+        }
+    }
+
     private static void warning(String message) {
         System.err.println(message);
     }
@@ -197,7 +216,7 @@ public class EntityBuilder {
         private final Set<Class<?>> entityClasses;
         private final Map<Class<?>, Entity> entities = Maps.newLinkedHashMap();
 
-        public Context(@NotNull Collection<Class<?>> entityClassesCollection) {
+        public Context(@NotNull Collection<? extends Class<?>> entityClassesCollection) {
             this.entityClasses = Sets.newLinkedHashSet(entityClassesCollection);
         }
 

@@ -18,10 +18,15 @@ package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
+
 /**
 * @author abreslav
 */
 public interface Relation<T> {
+    @NotNull
+    Collection<Relation<?>> getOverriddenRelations();
+
     @NotNull
     Multiplicity getMultiplicity();
 

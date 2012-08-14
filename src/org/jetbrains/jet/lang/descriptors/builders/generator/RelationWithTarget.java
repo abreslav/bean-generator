@@ -16,12 +16,17 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
+import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
 * @author abreslav
 */
 public class RelationWithTarget<T> implements Relation {
+    private final List<Relation<?>> overriddenRelations = Lists.newArrayList();
     private final T target;
     private final String name;
     private final Multiplicity multiplicity;
@@ -48,6 +53,12 @@ public class RelationWithTarget<T> implements Relation {
     @Override
     public T getTarget() {
         return target;
+    }
+
+    @NotNull
+    @Override
+    public Collection<Relation<?>> getOverriddenRelations() {
+        return overriddenRelations;
     }
 
     @Override
