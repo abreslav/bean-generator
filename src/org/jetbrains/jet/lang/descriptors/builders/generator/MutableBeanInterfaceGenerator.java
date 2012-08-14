@@ -22,6 +22,7 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.b
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.DataHolderKeyImpl;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.MethodBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ParameterBean;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
 
 /**
  * @author abreslav

@@ -19,7 +19,7 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.AnnotatedModel;
-import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.TypeData;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
 
 import java.util.Collection;
 import java.util.List;

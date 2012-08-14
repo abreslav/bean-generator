@@ -19,6 +19,7 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
 
 import java.util.List;
 

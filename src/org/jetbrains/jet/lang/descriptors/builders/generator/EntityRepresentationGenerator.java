@@ -24,6 +24,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.DataHolderKeyImpl;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeFactory;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeUtil;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

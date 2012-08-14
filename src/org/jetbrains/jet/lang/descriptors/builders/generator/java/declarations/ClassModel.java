@@ -18,6 +18,7 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
 
 import java.util.List;
 

@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations;
+package org.jetbrains.jet.lang.descriptors.builders.generator.java.types;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.WildcardKind;
 
 import java.util.List;
 
