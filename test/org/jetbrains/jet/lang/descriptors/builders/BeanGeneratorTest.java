@@ -35,6 +35,7 @@ public class BeanGeneratorTest extends TestCase {
                 ),
                 "bean-generator/testData",
                 "contravariant.setters",
+                "contravariant.setters",
                 "contravariant.setters"
         );
     }
