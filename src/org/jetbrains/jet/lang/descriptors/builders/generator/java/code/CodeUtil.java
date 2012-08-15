@@ -48,4 +48,8 @@ public class CodeUtil {
     public static <E> E _for(@NotNull CodeFactory<E> f, @NotNull TypeData indexType, @NotNull String indexName, @NotNull E range, @NotNull E... body) {
         return f._for(f.variableDeclaration(indexType, indexName, null), range, f.block(Arrays.asList(body)));
     }
+
+    public static <E> E _if(@NotNull CodeFactory<E> f, @NotNull E condition, @NotNull E... body) {
+        return f._if(condition, f.block(Arrays.asList(body)));
+    }
 }

@@ -71,4 +71,7 @@ public interface CodeFactory<E> {
 
     @NotNull
     E _for(@NotNull E variableDeclaration, @NotNull E rangeExpression, @NotNull E body);
+
+    @NotNull
+    E _if(@NotNull E condition, @NotNull E body);
 }

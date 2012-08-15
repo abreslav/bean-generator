@@ -280,4 +280,21 @@ public class CodePrinter implements CodeFactory<PrintAction> {
             }
         };
     }
+
+    @NotNull
+    @Override
+    public PrintAction _if(@NotNull final PrintAction condition, @NotNull final PrintAction body) {
+        return new PrintAction() {
+            @Override
+            public void print(Printer p) {
+                p.print("if (");
+                condition.print(p);
+                p.printlnWithNoIndent(") {");
+                p.pushIndent();
+                body.print(p);
+                p.popIndent();
+                p.println("}");
+            }
+        };
+    }
 }
