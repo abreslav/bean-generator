@@ -44,4 +44,8 @@ public class TypeUtil {
             }
         };
     }
+
+    public static TypeData _void() {
+        return simpleType("", "void");
+    }
 }
