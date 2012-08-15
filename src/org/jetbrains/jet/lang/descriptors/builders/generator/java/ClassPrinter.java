@@ -129,8 +129,8 @@ public class ClassPrinter {
 
         for (MethodModel constructorModel : classModel.getConstructors()) {
             printConstructor(constructorModel, classModel);
+            p.println();
         }
-        p.println();
 
         for (MethodModel methodModel : classModel.getMethods()) {
             printMethod(methodModel, classModel.getKind() == ClassKind.INTERFACE);
