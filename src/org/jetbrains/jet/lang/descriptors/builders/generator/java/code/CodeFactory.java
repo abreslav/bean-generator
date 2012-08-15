@@ -67,5 +67,8 @@ public interface CodeFactory<E> {
     E _this();
 
     @NotNull
+    E _null();
+
+    @NotNull
     E _for(@NotNull E variableDeclaration, @NotNull E rangeExpression, @NotNull E body);
 }

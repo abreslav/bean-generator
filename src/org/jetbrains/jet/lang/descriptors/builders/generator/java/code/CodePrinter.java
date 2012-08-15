@@ -253,6 +253,17 @@ public class CodePrinter implements CodeFactory<PrintAction> {
 
     @NotNull
     @Override
+    public PrintAction _null() {
+        return new PrintAction() {
+            @Override
+            public void print(Printer p) {
+                p.printWithNoIndent("null");
+            }
+        };
+    }
+
+    @NotNull
+    @Override
     public PrintAction _for(@NotNull final PrintAction variableDeclaration, @NotNull final PrintAction rangeExpression, @NotNull final PrintAction body) {
         return new PrintAction() {
             @Override
