@@ -51,4 +51,7 @@ public interface ClassModel extends MemberModel, DataHolder<ClassModel> {
 
     @NotNull
     List<MethodModel> getMethods();
+
+    @NotNull
+    List<MethodModel> getConstructors();
 }

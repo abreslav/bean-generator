@@ -127,6 +127,11 @@ public class ClassPrinter {
         }
         p.println();
 
+        for (MethodModel constructorModel : classModel.getConstructors()) {
+            printConstructor(constructorModel, classModel);
+        }
+        p.println();
+
         for (MethodModel methodModel : classModel.getMethods()) {
             printMethod(methodModel, classModel.getKind() == ClassKind.INTERFACE);
             p.println();
@@ -156,6 +161,14 @@ public class ClassPrinter {
         p.printlnWithNoIndent(";");
     }
 
+    private void printConstructor(MethodModel model, ClassModel classModel) {
+        printAnnotations(model, true);
+        p.print(model.getVisibility().getRepresentation(), " ");
+        p.printWithNoIndent(classModel.getName());
+        printMethodParameters(model);
+        printMethodBody(model);
+    }
+
     private void printMethod(MethodModel model, boolean inInterface) {
         printAnnotations(model, true);
         if (!inInterface) {
@@ -170,7 +183,34 @@ public class ClassPrinter {
         else {
             p.print();
         }
-        p.printWithNoIndent(renderType(model.getReturnType()), " ", model.getName(), "(");
+        p.printWithNoIndent(renderType(model.getReturnType()), " ", model.getName());
+        printMethodParameters(model);
+        if (model.isAbstract()) {
+            p.printlnWithNoIndent(";");
+        }
+        else {
+            printMethodBody(model);
+        }
+    }
+
+    private void printMethodBody(MethodModel model) {
+        p.printlnWithNoIndent(" {");
+        p.pushIndent();
+
+        PieceOfCode methodBody = model.getData(METHOD_BODY);
+        if (methodBody != null) {
+            methodBody.create(codePrinter).print(p);
+        }
+        else {
+            throw new IllegalStateException("No body for method " + model.getName());
+        }
+
+        p.popIndent();
+        p.println("}");
+    }
+
+    private void printMethodParameters(MethodModel model) {
+        p.printWithNoIndent("(");
         for (Iterator<ParameterModel> iterator = model.getParameters().iterator(); iterator.hasNext(); ) {
             ParameterModel parameterModel = iterator.next();
             printParameter(parameterModel);
@@ -178,24 +218,7 @@ public class ClassPrinter {
                 p.printWithNoIndent(", ");
             }
         }
-        if (model.isAbstract()) {
-            p.printlnWithNoIndent(");");
-        }
-        else {
-            p.printlnWithNoIndent(") {");
-            p.pushIndent();
-
-            PieceOfCode methodBody = model.getData(METHOD_BODY);
-            if (methodBody != null) {
-                methodBody.create(codePrinter).print(p);
-            }
-            else {
-                throw new IllegalStateException("No body for method " + model.getName());
-            }
-
-            p.popIndent();
-            p.println("}");
-        }
+        p.printWithNoIndent(")");
     }
 
     private void printParameter(ParameterModel model) {

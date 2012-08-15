@@ -38,6 +38,7 @@ public final class ClassBean extends MemberBean<ClassBean> implements ClassModel
     private final List<TypeData> superInterfaces = Lists.newArrayList();
     private final List<FieldModel> fields = Lists.newArrayList();
     private final List<MethodModel> methods = Lists.newArrayList();
+    private final List<MethodModel> constructors = Lists.newArrayList();
 
     private final DataHolderImpl<ClassModel> dataHolder = new DataHolderImpl<ClassModel>();
 
@@ -103,6 +104,12 @@ public final class ClassBean extends MemberBean<ClassBean> implements ClassModel
     @Override
     public List<MethodModel> getMethods() {
         return methods;
+    }
+
+    @NotNull
+    @Override
+    public List<MethodModel> getConstructors() {
+        return constructors;
     }
 
     @Override
