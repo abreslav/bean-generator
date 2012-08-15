@@ -34,6 +34,8 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeUtil
 
 import java.util.List;
 
+import static org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeUtil.methodCall;
+
 /**
  * @author abreslav
  */
@@ -61,34 +63,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
     protected void generateClassMembers(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
         classBean.setAbstract(true);
 
-        TypeData delegateType = TypeUtil.simpleType(classBean);
-        classBean.getFields().add(new FieldBean()
-                                  .setVisibility(Visibility.PRIVATE)
-                                  .setFinal(true)
-                                  .setType(delegateType)
-                                  .setName("delegate")
-        );
-
-        classBean.getConstructors().add(
-                new MethodBean()
-                    .setVisibility(Visibility.PUBLIC)
-                    .setName("<init>")
-                    .addParameter(new ParameterBean()
-                                  .addAnnotation(NULLABLE)
-                                  .setType(delegateType)
-                                  .setName(DELEGATE)
-                    )
-                    .put(ClassPrinter.METHOD_BODY,
-                         new PieceOfCode() {
-                             @NotNull
-                             @Override
-                             public <E> E create(@NotNull CodeFactory<E> f) {
-                                 return f.assignment(
-                                         f.fieldReference(f._this(), DELEGATE),
-                                         f.variableReference(DELEGATE));
-                             }
-                         })
-        );
+        createDelegateFieldAndConstructors(classBean);
 
         List<Relation<?>> relationsToNonEntities = Lists.newArrayList();
         TypeTransformer types = new TypeTransformer(context);
@@ -104,6 +79,51 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
         }
         classBean.getMethods().add(0, createOpeningBuilderMethod(types, relationsToNonEntities));
         classBean.getMethods().add(createClosingBuilderMethod());
+    }
+
+    private static void createDelegateFieldAndConstructors(ClassBean classBean) {
+        TypeData delegateType = TypeUtil.simpleType(classBean);
+        classBean.getFields().add(new FieldBean()
+                                  .setVisibility(Visibility.PRIVATE)
+                                  .setFinal(true)
+                                  .setType(delegateType)
+                                  .setName("delegate")
+        );
+
+        classBean.getConstructors().add(
+                new MethodBean()
+                    .setVisibility(Visibility.PUBLIC)
+                    .setName("<init>")
+                    .addParameter(new ParameterBean()
+                                          .addAnnotation(NULLABLE)
+                                          .setType(delegateType)
+                                          .setName(DELEGATE)
+                    )
+                    .put(ClassPrinter.METHOD_BODY,
+                         new PieceOfCode() {
+                             @NotNull
+                             @Override
+                             public <E> E create(@NotNull CodeFactory<E> f) {
+                                 return f.assignment(
+                                         f.fieldReference(f._this(), DELEGATE),
+                                         f.variableReference(DELEGATE));
+                             }
+                         })
+        );
+
+        classBean.getConstructors().add(
+                new MethodBean()
+                        .setVisibility(Visibility.PUBLIC)
+                        .setName("<init>")
+                        .put(ClassPrinter.METHOD_BODY,
+                             new PieceOfCode() {
+                                 @NotNull
+                                 @Override
+                                 public <E> E create(@NotNull CodeFactory<E> f) {
+                                     return f.statement(methodCall(f, null, "this", f._null()));
+                                 }
+                             })
+        );
     }
 
     private static MethodModel createRelationBuilderMethod(
