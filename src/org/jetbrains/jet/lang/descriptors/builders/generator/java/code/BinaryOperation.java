@@ -23,7 +23,9 @@ public enum BinaryOperation {
     PLUS("+"),
     MINUS("-"),
     TIMES("*"),
-    DIV("/");
+    DIV("/"),
+    EQ("=="),
+    NEQ("!=");
 
     private final String representation;
 
