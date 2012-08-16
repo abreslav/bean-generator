@@ -17,6 +17,8 @@
 package org.jetbrains.jet.buildergen.java.types;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.buildergen.EntityBuilder;
+import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
 
 import java.util.Arrays;
@@ -47,5 +49,10 @@ public class TypeUtil {
 
     public static TypeData _void() {
         return simpleType("", "void");
+    }
+
+    public static TypeData getDataType(Entity entity) {
+        EntityBuilder.ClassName dataClassName = entity.getData(EntityBuilder.DATA_CLASS);
+        return simpleType(dataClassName.getPackageFqName(), dataClassName.getClassName());
     }
 }

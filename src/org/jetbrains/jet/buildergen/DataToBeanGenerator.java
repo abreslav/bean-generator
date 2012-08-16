@@ -72,7 +72,7 @@ public class DataToBeanGenerator {
         for (final Entity entity : interfaces.getEntities()) {
             ClassBean beanInterface = interfaces.getRepresentation(entity);
             final TypeData beanInterfaceType = TypeUtil.simpleType(beanInterface);
-            TypeData dataType = getDataType(entity);
+            TypeData dataType = TypeUtil.getDataType(entity);
             result.add(new MethodBean()
                                .setVisibility(Visibility.PUBLIC)
                                .setStatic(true)
@@ -120,11 +120,6 @@ public class DataToBeanGenerator {
         return result;
     }
 
-    private static TypeData getDataType(Entity entity) {
-        EntityBuilder.ClassName dataClassName = entity.getData(EntityBuilder.DATA_CLASS);
-        return TypeUtil.simpleType(dataClassName.getPackageFqName(), dataClassName.getClassName());
-    }
-
     private static <E> E resultVariableDeclarationStatement(CodeFactory<E> f, TypeData type, ClassBean classBean) {
         return f.statement(
                 f.variableDeclaration(type, RESULT, constructorCall(f, classBean))
@@ -153,7 +148,7 @@ public class DataToBeanGenerator {
         Object target = relation.getTarget();
         if (target instanceof Entity) {
             Entity targetEntity = (Entity) target;
-            elementType = getDataType(targetEntity);
+            elementType = TypeUtil.getDataType(targetEntity);
         }
         else {
             elementType = new TypeTransformer(context).targetToType(target, Multiplicity.ONE);
