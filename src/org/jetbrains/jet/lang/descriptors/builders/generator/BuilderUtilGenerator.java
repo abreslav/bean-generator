@@ -137,17 +137,18 @@ public class BuilderUtilGenerator {
                            .setReturnType(TypeUtil._void())
                            .setName(getBuilderMethodName(entity))
                            .addParameter(
-                                   new ParameterBean()
-                                           .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
-                                           .setType(beanInterfaceType)
-                                           .setName(ENTITY)
+                                   notNullParameter(beanInterfaceType, ENTITY)
                            )
                            .addParameter(
-                                   new ParameterBean()
-                                           .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
-                                           .setType(builderType)
-                                           .setName(BUILDER)
+                                   notNullParameter(builderType, BUILDER)
                            );
+    }
+
+    private static ParameterBean notNullParameter(TypeData beanInterfaceType, String name) {
+        return new ParameterBean()
+                .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
+                .setType(beanInterfaceType)
+                .setName(name);
     }
 
     private static <E> E getterCall(CodeFactory<E> f, Relation<?> relation) {
