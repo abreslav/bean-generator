@@ -103,29 +103,34 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                 body = new PieceOfCode() {
                     @Override
                     public <E> E create(@NotNull CodeFactory<E> f) {
-                        return  f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
+                        return f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
                     }
                 };
             }
             else {
-                body = new PieceOfCode() {
-                     @Override
-                     public <E> E create(@NotNull CodeFactory<E> f) {
-                         // This must be an entity, everything else is taken care of in open()
-                         Entity targetEntity = (Entity) relation.getTarget();
-                         if (relation.getData(REFERENCE) == TRUE) {
-                             // this.bean.setTargetEntity(entity);
-                             //return methodCallStatement(f, bean(f), getSetterName(relation), f.variableReference(BuilderClassGenerator.ENTITY));
-                             return f.singleLineComment("can't write directly to the bean: types don't match");
+                // This must be an entity, everything else is taken care of in open()
+                Entity targetEntity = (Entity) relation.getTarget();
+                if (relation.getData(REFERENCE) == TRUE) {
+                    body = new PieceOfCode() {
+                         @Override
+                         public <E> E create(@NotNull CodeFactory<E> f) {
+                                 // this.bean.setTargetEntity(entity);
+                                 //return methodCallStatement(f, bean(f), getSetterName(relation), f.variableReference(BuilderClassGenerator.ENTITY));
+                                 return f.singleLineComment("can't write directly to the bean: types don't match");
                          }
-                         else {
-                             // TargetEntityBeanBuilder subBuilder = new TargetEntityBeanBuilder();
-                             // this.bean.addTargetEntity(subBuilder.getBean());
-                             // return subBuilder
-                             return f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
+                    };
+                }
+                else {
+                    body = new PieceOfCode() {
+                         @Override
+                         public <E> E create(@NotNull CodeFactory<E> f) {
+                                 // TargetEntityBeanBuilder subBuilder = new TargetEntityBeanBuilder();
+                                 // this.bean.addTargetEntity(subBuilder.getBean());
+                                 // return subBuilder
+                                 return f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
                          }
-                     }
-                 };
+                    };
+                }
             }
 
             impl.put(METHOD_BODY, body);
