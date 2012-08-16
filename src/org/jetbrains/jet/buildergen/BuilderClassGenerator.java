@@ -146,7 +146,6 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
     private static MethodModel createSetterMethod(TypeTransformer types, Relation<?> relation, Entity targetEntity) {
         final String name = getSetterName(relation);
         return new MethodBean()
-                .addAnnotation(NOT_NULL)
                 .setVisibility(Visibility.PUBLIC)
                 .setReturnType(_void())
                 .setName(name)
