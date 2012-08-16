@@ -16,10 +16,36 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolder;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderImpl;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKey;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.WritableDataHolder;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ParameterModel;
 
 /**
 * @author abreslav
 */
-public final class ParameterBean extends VariableBean<ParameterBean> implements ParameterModel {
+public final class ParameterBean extends VariableBean<ParameterBean> implements ParameterModel, WritableDataHolder<ParameterModel> {
+
+    private final DataHolderImpl<ParameterModel> dataHolder = new DataHolderImpl<ParameterModel>();
+
+    @Override
+    public <V> V getData(@NotNull DataHolderKey<? super ParameterModel, V> key) {
+        return dataHolder.getData(key);
+    }
+
+    @NotNull
+    @Override
+    public <V> ParameterModel put(@NotNull DataHolderKey<? super ParameterModel, V> key, @NotNull V value) {
+        dataHolder.put(key, value);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public ParameterModel copyDataFrom(@NotNull DataHolder<? extends ParameterModel> other) {
+        dataHolder.copyDataFrom(((ParameterBean) other).dataHolder);
+        return this;
+    }
 }

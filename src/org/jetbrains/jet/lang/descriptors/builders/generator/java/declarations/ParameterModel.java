@@ -16,8 +16,10 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations;
 
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolder;
+
 /**
 * @author abreslav
 */
-public interface ParameterModel extends VariableModel {
+public interface ParameterModel extends VariableModel, DataHolder<ParameterModel> {
 }
