@@ -36,6 +36,7 @@ import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 import java.util.Collection;
 import java.util.List;
 
+import static org.jetbrains.jet.buildergen.EntityRepresentationGenerator.getSetterName;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.*;
 import static org.jetbrains.jet.buildergen.java.types.TypeUtil.simpleType;
 
@@ -112,13 +113,13 @@ public class BuilderUtilGenerator {
 
                                                // builder.open(entity.getFoo(), entity.isBar(), ...)
                                                statements.add(0, f.statement(
-                                                       f.methodCall(f.variableReference(BUILDER), BuilderClassGenerator.OPEN,
+                                                       f.methodCall(builder(f), BuilderClassGenerator.OPEN,
                                                                     argumentsToOpen)
                                                ));
 
                                                // builder.close()
                                                statements.add(f.statement(
-                                                       methodCall(f, f.variableReference(BUILDER), BuilderClassGenerator.CLOSE)));
+                                                       methodCall(f, builder(f), BuilderClassGenerator.CLOSE)));
 
                                                return f.block(statements);
                                            }
@@ -152,12 +153,24 @@ public class BuilderUtilGenerator {
     }
 
     private static <E> E buildEntityStatement(CodeFactory<E> f, Relation<?> relation, E sourceExpression, Entity target) {
-        // buildEntity(source), builder.addTargetEntity())
-        return f.statement(
-                methodCall(f, null, getBuilderMethodName(target),
-                           sourceExpression,
-                           methodCall(f, f.variableReference(BUILDER), BuilderClassGenerator.getBuilderMethodName(relation))
-                )
-        );
+        if (relation.getData(EntityBuilder.REFERENCE) == Boolean.TRUE) {
+            // builder.setTargetEntity(source)
+            return f.statement(
+                    methodCall(f, builder(f), getSetterName(relation), sourceExpression)
+            );
+        }
+        else {
+            // buildEntity(source), builder.addTargetEntity())
+            return f.statement(
+                    methodCall(f, null, getBuilderMethodName(target),
+                               sourceExpression,
+                               methodCall(f, builder(f), BuilderClassGenerator.getBuilderMethodName(relation))
+                    )
+            );
+        }
+    }
+
+    private static <E> E builder(CodeFactory<E> f) {
+        return f.variableReference(BUILDER);
     }
 }

@@ -33,10 +33,7 @@ import org.jetbrains.jet.buildergen.java.declarations.ClassKind;
 import org.jetbrains.jet.buildergen.java.declarations.MethodModel;
 import org.jetbrains.jet.buildergen.java.declarations.ParameterModel;
 import org.jetbrains.jet.buildergen.java.declarations.Visibility;
-import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
-import org.jetbrains.jet.buildergen.java.declarations.beans.FieldBean;
-import org.jetbrains.jet.buildergen.java.declarations.beans.MethodBean;
-import org.jetbrains.jet.buildergen.java.declarations.beans.ParameterBean;
+import org.jetbrains.jet.buildergen.java.declarations.beans.*;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
@@ -44,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.*;
+import static org.jetbrains.jet.buildergen.java.types.TypeUtil._void;
 
 /**
  * @author abreslav
@@ -84,7 +82,12 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
             Object target = relation.getTarget();
             if (target instanceof Entity) {
                 Entity targetEntity = (Entity) target;
-                classBean.getMethods().add(createRelationBuilderMethod(types, relation, targetEntity));
+                if (relation.getData(EntityBuilder.REFERENCE) == Boolean.TRUE) {
+                    classBean.getMethods().add(createSetterMethod(types, relation, targetEntity));
+                }
+                else {
+                    classBean.getMethods().add(createRelationBuilderMethod(types, relation, targetEntity));
+                }
             }
             else {
                 relationsToNonEntities.add(relation);
@@ -126,13 +129,33 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
                 createConstructor()
                         .put(ClassPrinter.METHOD_BODY,
                              new PieceOfCode() {
-                                 @NotNull
                                  @Override
                                  public <E> E create(@NotNull CodeFactory<E> f) {
                                      return f.statement(methodCall(f, null, "this", f._null()));
                                  }
                              })
         );
+    }
+
+    private static MethodModel createSetterMethod(TypeTransformer types, Relation<?> relation, Entity targetEntity) {
+        final String name = getSetterName(relation);
+        final String parameterName = "entity";
+        return new MethodBean()
+                .addAnnotation(NOT_NULL)
+                .setVisibility(Visibility.PUBLIC)
+                .setReturnType(_void())
+                .setName(name)
+                .addParameter(JavaDeclarationUtil.notNullParameter(TypeUtil.getDataType(targetEntity), parameterName))
+                .put(ClassPrinter.METHOD_BODY,
+                     new PieceOfCode() {
+                         @NotNull
+                         @Override
+                         public <E> E create(@NotNull CodeFactory<E> f) {
+                             return _if(f, delegateNullCheck(f),
+                                              f.statement(delegateCall(f, name, Collections.singletonList(f.variableReference(parameterName))))
+                             );
+                         }
+                     });
     }
 
     private static MethodModel createRelationBuilderMethod(
@@ -158,7 +181,6 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
                                           f._throw(constructorCall(f, "java.lang", "IllegalStateException", f.string("No delegate")))
                              );
                          }
-
                      });
     }
 
