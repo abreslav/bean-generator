@@ -22,6 +22,5 @@ import org.jetbrains.annotations.NotNull;
 * @author abreslav
 */
 public interface PieceOfCode {
-    @NotNull
     <E> E create(@NotNull CodeFactory<E> f);
 }
