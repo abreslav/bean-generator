@@ -77,8 +77,9 @@ public class BeanGenerator {
             String mutableBeanClassPackage,
             String builderClassPackage
     ) throws IOException {
-        Collection<Entity> entities = EntityBuilder.javaClassesToEntities(classesWithBuilders);
         Context context = new Context();
+        EntityBuilder.javaClassesToEntities(classesWithBuilders, context.dataClasses);
+        Collection<Entity> entities = context.dataClasses.getEntities();
 
         Collection<ClassModel> mutableBeans = new MutableBeanInterfaceGenerator().generate(
                 entities,
@@ -103,8 +104,8 @@ public class BeanGenerator {
                 builderClassPackage
         );
 
-        ClassModel builderUtil = BuilderUtilGenerator.generate(builderClassPackage, "BuilderUtil", context.mutableBeanInterfaces,
-                                                                 context.builderClasses);
+        ClassModel builderUtil = BuilderUtilGenerator.generate(builderClassPackage, "BuilderUtil", context.dataClasses,
+                                                               context.builderClasses);
 
         writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeans);
         writeToFiles(generatedSourceRoot, mutableBeanClassPackage, mutableBeanClasses);
@@ -136,6 +137,7 @@ public class BeanGenerator {
         RepresentationContext mutableBeanInterfaces = new RepresentationContext();
         RepresentationContext mutableBeanImplementationClasses = new RepresentationContext();
         RepresentationContext builderClasses = new RepresentationContext();
+        RepresentationContext dataClasses = new RepresentationContext();
     }
 
     private static class RepresentationContext implements EntityRepresentationContext<ClassBean> {

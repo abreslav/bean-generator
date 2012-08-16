@@ -186,7 +186,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
                 .setName(OPEN);
         for (Relation<?> relation : relations) {
             open.addParameter(new ParameterBean()
-                                      .setType(types.relationToType(relation))
+                                      .setType(types.targetToType(relation.getTarget(), relation.getMultiplicity(), TypeTransformer.Variance.OUT))
                                       .setName(getParameterName(relation))
                                       .put(RELATION, relation)
             );

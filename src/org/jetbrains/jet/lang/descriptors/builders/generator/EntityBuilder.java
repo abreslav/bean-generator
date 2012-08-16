@@ -21,6 +21,7 @@ import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKey;
 import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKeyImpl;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.runtime.Optional;
 import org.jetbrains.jet.lang.descriptors.builders.generator.runtime.Skip;
 
@@ -70,10 +71,10 @@ public class EntityBuilder {
             .build();
 
     @NotNull
-    public static Collection<Entity> javaClassesToEntities(@NotNull Collection<? extends Class<?>> entityClassesCollection) {
+    public static void javaClassesToEntities(@NotNull Collection<? extends Class<?>> entityClassesCollection, @NotNull EntityRepresentationContext<ClassBean> context) {
         Context c = new Context(entityClassesCollection);
 
-        createEmptyEntities(c);
+        createEmptyEntities(c, context);
 
         for (Class<?> entityClass : c.getEntityClasses()) {
 
@@ -86,15 +87,14 @@ public class EntityBuilder {
         bindOverriddenRelations(c.getEntities());
 
         removeOverriddenRelations(c.getEntities());
-
-        return c.getEntities();
     }
 
-    private static void createEmptyEntities(Context c) {
+    private static void createEmptyEntities(Context c, EntityRepresentationContext<ClassBean> context) {
         for (Class<?> entityClass : c.entityClasses) {
             String name = entityClass.getSimpleName();
             EntityImpl entity = new EntityImpl(name);
             entity.put(DATA_CLASS, new ClassName(entityClass.getPackage().getName(), entityClass.getSimpleName()));
+            context.registerRepresentation(entity, new ClassBean().setPackageFqName(entityClass.getPackage().getName()).setName(entityClass.getSimpleName()));
             c.entities.put(entityClass, entity);
         }
     }
