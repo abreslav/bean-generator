@@ -26,6 +26,7 @@ import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.java.ClassPrinter;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
 import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
+import org.jetbrains.jet.lang.types.TypeConstructor;
 import org.jetbrains.jet.utils.Printer;
 
 import java.io.File;
@@ -54,6 +55,9 @@ public class BeanGenerator {
                 ValueParameterDescriptor.class,
                 ClassifierDescriptor.class,
                 TypeParameterDescriptor.class,
+                ClassOrNamespaceDescriptor.class,
+                TypeConstructor.class,
+                ClassDescriptor.class,
                 FunctionDescriptor.class
         );
 
