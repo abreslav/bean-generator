@@ -40,6 +40,7 @@ import static org.jetbrains.jet.buildergen.BuilderClassGenerator.*;
 import static org.jetbrains.jet.buildergen.EntityBuilder.REFERENCE;
 import static org.jetbrains.jet.buildergen.java.ClassPrinter.METHOD_BODY;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.*;
+import static org.jetbrains.jet.buildergen.java.code.CodeUtil.constructorCall;
 import static org.jetbrains.jet.buildergen.java.types.TypeUtil._void;
 import static org.jetbrains.jet.buildergen.java.types.TypeUtil.simpleType;
 
@@ -92,36 +93,43 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
         classBean.getConstructors().add(implementConstructor(builderClass));
         classBean.getMethods().add(beanGetter(beanInterface));
 
-        for (final MethodModel method : builderClass.getMethods()) {
-            final MethodBean impl = JavaDeclarationUtil.copy(method);
-            impl.setAbstract(false);
-            impl.put(METHOD_BODY,
-                     new PieceOfCode() {
-                         @Override
-                         public <E> E create(@NotNull CodeFactory<E> f) {
-                             Relation<?> relation = method.getData(BuilderClassGenerator.RELATION_FOR_METHOD);
-                             if (relation == null) {
-                                 // either open() or close()
-                                 return f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
-                             }
-                             else {
-                                 // This must be an entity, everything else is taken care of in open()
-                                 Entity targetEntity = (Entity) relation.getTarget();
-                                 if (relation.getData(REFERENCE) == TRUE) {
-                                     // this.bean.setTargetEntity
-                                     return f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
-                                 }
-                                 else {
-                                     // TargetEntityBeanBuilder subBuilder = new TargetEntityBeanBuilder();
-                                     // this.bean.addTargetEntity(subBuilder.getBean());
-                                     // return subBuilder
-                                     return f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
-                                 }
-                             }
+        for (MethodModel method : builderClass.getMethods()) {
+            MethodBean impl = JavaDeclarationUtil.copy(method)
+                                    .addAnnotation(OVERRIDE)
+                                    .setAbstract(false);
+            final Relation<?> relation = method.getData(BuilderClassGenerator.RELATION_FOR_METHOD);
+
+            PieceOfCode body;
+            if (relation == null) {
+                 // either open() or close()
+                 body = new PieceOfCode() {
+                     @Override
+                     public <E> E create(@NotNull CodeFactory<E> f) {
+                         return  f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
+                     }
+                 };
+            }
+            else {
+                body = new PieceOfCode() {
+                     @Override
+                     public <E> E create(@NotNull CodeFactory<E> f) {
+                         // This must be an entity, everything else is taken care of in open()
+                         Entity targetEntity = (Entity) relation.getTarget();
+                         if (relation.getData(REFERENCE) == TRUE) {
+                             // this.bean.setTargetEntity(entity);
+                             return f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
+                         }
+                         else {
+                             // TargetEntityBeanBuilder subBuilder = new TargetEntityBeanBuilder();
+                             // this.bean.addTargetEntity(subBuilder.getBean());
+                             // return subBuilder
+                             return f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
                          }
                      }
+                 };
+            }
 
-            );
+            impl.put(METHOD_BODY, body);
             classBean.getMethods().add(impl);
         }
 
@@ -146,7 +154,11 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
         //classBean.getMethods().add(createClosingBuilderMethod());
     }
 
-    private MethodBean beanGetter(ClassBean beanInterface) {
+    private static <E> E bean(CodeFactory<E> f) {
+        return f.fieldReference(f._this(), BEAN);
+    }
+
+    private static MethodBean beanGetter(ClassBean beanInterface) {
         return new MethodBean()
             .addAnnotation(NOT_NULL)
             .setVisibility(Visibility.PUBLIC)
@@ -156,7 +168,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                  new PieceOfCode() {
                      @Override
                      public <E> E create(@NotNull CodeFactory<E> f) {
-                         return f._return(f.fieldReference(f._this(), BEAN));
+                         return f._return(bean(f));
                      }
                  });
     }
