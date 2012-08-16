@@ -43,6 +43,7 @@ import static org.jetbrains.jet.lang.descriptors.builders.generator.java.code.Co
 public class BuilderClassGenerator extends EntityRepresentationGenerator {
 
     private static final String DELEGATE = "delegate";
+    private static final String CLOSE = "close";
 
     @NotNull
     @Override
@@ -144,21 +145,31 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
                          @Override
                          public <E> E create(@NotNull CodeFactory<E> f) {
                              return block(f,
-                                          _if(f, f.binary(f.fieldReference(f._this(), DELEGATE), BinaryOperation.NEQ, f._null()),
-                                              f._return(methodCall(f, f.fieldReference(f._this(), DELEGATE), name))
+                                          _if(f, delegateNullCheck(f),
+                                              f._return(delegateCall(f, name))
                                           ),
                                           f._throw(constructorCall(f, "java.lang", "IllegalStateException", f.string("No delegate")))
                              );
                          }
+
                      });
     }
 
     private static MethodModel createClosingBuilderMethod() {
         return new MethodBean()
                 .setVisibility(Visibility.PUBLIC)
-                .setAbstract(true)
                 .setReturnType(TypeUtil._void())
-                .setName("close");
+                .setName(CLOSE)
+                .put(ClassPrinter.METHOD_BODY,
+                     new PieceOfCode() {
+                         @NotNull
+                         @Override
+                         public <E> E create(@NotNull CodeFactory<E> f) {
+                             return _if(f, delegateNullCheck(f),
+                                        f.statement(delegateCall(f, CLOSE))
+                             );
+                         }
+                     });
     }
 
     private static MethodModel createOpeningBuilderMethod(TypeTransformer types, List<Relation<?>> relations) {
@@ -174,6 +185,14 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
             );
         }
         return open;
+    }
+
+    private static <E> E delegateCall(CodeFactory<E> f, String name) {
+        return methodCall(f, f.fieldReference(f._this(), DELEGATE), name);
+    }
+
+    private static <E> E delegateNullCheck(CodeFactory<E> f) {
+        return f.binary(f.fieldReference(f._this(), DELEGATE), BinaryOperation.NEQ, f._null());
     }
 
     private static String getParameterName(Relation<?> relation) {
