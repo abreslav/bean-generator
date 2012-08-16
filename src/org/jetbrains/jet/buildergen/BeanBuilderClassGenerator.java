@@ -125,6 +125,51 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
         }
     }
 
+    private static FieldBean beanField(ClassBean beanInterface, final ClassBean beanImpl) {
+        return new FieldBean()
+                .setVisibility(Visibility.PRIVATE)
+                .setFinal(true)
+                .setType(simpleType(beanInterface))
+                .setName(BEAN)
+                .put(ClassPrinter.FIELD_INITIALIZER,
+                     new PieceOfCode() {
+                         @Override
+                         public <E> E create(@NotNull CodeFactory<E> f) {
+                             return constructorCall(f, beanImpl);
+                         }
+                     });
+    }
+
+    private static MethodBean implementConstructor(ClassBean builderClass) {
+        return BuilderClassGenerator.constructorDeclaration(builderClass)
+                .put(METHOD_BODY,
+                     new PieceOfCode() {
+                         @Override
+                         public <E> E create(@NotNull CodeFactory<E> f) {
+                             return f.statement(methodCall(f, null, "super", f.variableReference(DELEGATE)));
+                         }
+                     });
+    }
+
+    private static PieceOfCode openBody(final MethodModel method) {
+        return new PieceOfCode() {
+            @Override
+            public <E> E create(@NotNull CodeFactory<E> f) {
+                List<E> statements = Lists.newArrayList();
+                for (ParameterModel parameter : method.getParameters()) {
+                    Relation<?> relation = parameter.getData(RELATION_FOR_PARAMETER);
+                    String name = relation.getMultiplicity().isCollection()
+                                  ? MutableBeanInterfaceGenerator.getAllElementAdderName(relation)
+                                  : getSetterName(relation);
+                    statements.add(
+                            methodCallStatement(f, bean(f), name, f.variableReference(parameter.getName()))
+                    );
+                }
+                return f.block(statements);
+            }
+        };
+    }
+
     private static PieceOfCode referenceSetterBody() {
         return new PieceOfCode() {
              @Override
@@ -163,25 +208,6 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
         };
     }
 
-    private static PieceOfCode openBody(final MethodModel method) {
-        return new PieceOfCode() {
-            @Override
-            public <E> E create(@NotNull CodeFactory<E> f) {
-                List<E> statements = Lists.newArrayList();
-                for (ParameterModel parameter : method.getParameters()) {
-                    Relation<?> relation = parameter.getData(RELATION_FOR_PARAMETER);
-                    String name = relation.getMultiplicity().isCollection()
-                                  ? MutableBeanInterfaceGenerator.getAllElementAdderName(relation)
-                                  : getSetterName(relation);
-                    statements.add(
-                            methodCallStatement(f, bean(f), name, f.variableReference(parameter.getName()))
-                    );
-                }
-                return f.block(statements);
-            }
-        };
-    }
-
     private static <E> E bean(CodeFactory<E> f) {
         return f.fieldReference(f._this(), BEAN);
     }
@@ -199,31 +225,5 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                          return f._return(bean(f));
                      }
                  });
-    }
-
-    private static FieldBean beanField(ClassBean beanInterface, final ClassBean beanImpl) {
-        return new FieldBean()
-                .setVisibility(Visibility.PRIVATE)
-                .setFinal(true)
-                .setType(simpleType(beanInterface))
-                .setName(BEAN)
-                .put(ClassPrinter.FIELD_INITIALIZER,
-                     new PieceOfCode() {
-                         @Override
-                         public <E> E create(@NotNull CodeFactory<E> f) {
-                             return constructorCall(f, beanImpl);
-                         }
-                     });
-    }
-
-    private static MethodBean implementConstructor(ClassBean builderClass) {
-        return BuilderClassGenerator.constructorDeclaration(builderClass)
-                .put(METHOD_BODY,
-                     new PieceOfCode() {
-                         @Override
-                         public <E> E create(@NotNull CodeFactory<E> f) {
-                             return f.statement(methodCall(f, null, "super", f.variableReference(DELEGATE)));
-                         }
-                     });
     }
 }
