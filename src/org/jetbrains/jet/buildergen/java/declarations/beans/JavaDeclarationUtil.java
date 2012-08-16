@@ -19,6 +19,7 @@ package org.jetbrains.jet.buildergen.java.declarations.beans;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.EntityRepresentationGenerator;
 import org.jetbrains.jet.buildergen.java.declarations.MethodModel;
+import org.jetbrains.jet.buildergen.java.declarations.Visibility;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 
 /**
@@ -45,5 +46,11 @@ public class JavaDeclarationUtil {
                 .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
                 .setType(beanInterfaceType)
                 .setName(name);
+    }
+
+    public static MethodBean publicConstructor() {
+        return new MethodBean()
+                .setVisibility(Visibility.PUBLIC)
+                .setName("<init>");
     }
 }
