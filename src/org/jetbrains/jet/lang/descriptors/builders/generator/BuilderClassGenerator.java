@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.ClassPrinter;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.BinaryOperation;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeFactory;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.PieceOfCode;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassKind;
@@ -34,7 +35,7 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeUtil
 
 import java.util.List;
 
-import static org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeUtil.methodCall;
+import static org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeUtil.*;
 
 /**
  * @author abreslav
@@ -131,12 +132,25 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
             Relation<?> relation,
             Entity targetEntity
     ) {
+        final String name = getBuilderMethodName(relation);
         return new MethodBean()
                 .addAnnotation(NOT_NULL)
                 .setVisibility(Visibility.PUBLIC)
-                .setAbstract(true)
                 .setReturnType(types.targetToType(targetEntity, Multiplicity.ONE))
-                .setName(getBuilderMethodName(relation));
+                .setName(name)
+                .put(ClassPrinter.METHOD_BODY,
+                     new PieceOfCode() {
+                         @NotNull
+                         @Override
+                         public <E> E create(@NotNull CodeFactory<E> f) {
+                             return block(f,
+                                          _if(f, f.binary(f.fieldReference(f._this(), DELEGATE), BinaryOperation.NEQ, f._null()),
+                                              f._return(methodCall(f, f.fieldReference(f._this(), DELEGATE), name))
+                                          ),
+                                          f._throw(constructorCall(f, "java.lang", "IllegalStateException", f.string("No delegate")))
+                             );
+                         }
+                     });
     }
 
     private static MethodModel createClosingBuilderMethod() {
