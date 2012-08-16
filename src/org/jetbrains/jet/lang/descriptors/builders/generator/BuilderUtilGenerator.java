@@ -74,31 +74,15 @@ public class BuilderUtilGenerator {
             final TypeData beanInterfaceType = TypeUtil.simpleType(beanInterface);
             ClassBean builderClass = builders.getRepresentation(entity);
             final TypeData builderType = TypeUtil.simpleType(builderClass);
-            result.add(new MethodBean()
-                               .setVisibility(Visibility.PUBLIC)
-                               .setStatic(true)
-                               .setReturnType(TypeUtil._void())
-                               .setName(getBuilderMethodName(entity))
-                               .addParameter(
-                                       new ParameterBean()
-                                               .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
-                                               .setType(beanInterfaceType)
-                                               .setName(ENTITY)
-                               )
-                               .addParameter(
-                                       new ParameterBean()
-                                               .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
-                                               .setType(builderType)
-                                               .setName(BUILDER)
-                               )
+            result.add(createBuilderMethod(entity, beanInterfaceType, builderType)
                                .put(
                                        ClassPrinter.METHOD_BODY,
                                        new PieceOfCode() {
                                            @NotNull
                                            @Override
                                            public <E> E create(@NotNull CodeFactory<E> f) {
-                                               List<E> argumentsToOpen = Lists.newArrayList();
                                                List<E> statements = Lists.newArrayList();
+                                               List<E> argumentsToOpen = Lists.newArrayList();
                                                for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
                                                    Object target = relation.getTarget();
                                                    if (target instanceof Entity) {
@@ -106,7 +90,8 @@ public class BuilderUtilGenerator {
                                                        E statement;
                                                        if (!relation.getMultiplicity().isCollection()) {
                                                            // buildSubEntity(entity.getSubEntity(), builder.addSubEntity())
-                                                           statement = buildEntityStatement(f, relation, getterCall(f, relation), subEntity);
+                                                           statement =
+                                                                   buildEntityStatement(f, relation, getterCall(f, relation), subEntity);
                                                        }
                                                        else {
                                                            ClassBean subEntityClass = beans.getRepresentation(subEntity);
@@ -115,7 +100,8 @@ public class BuilderUtilGenerator {
                                                            //     buildSubEntity(sub, builder.addSubEntity())
                                                            // }
                                                            statement = _for(f, subEntityType, ITEM, getterCall(f, relation),
-                                                                buildEntityStatement(f, relation, f.variableReference(ITEM), subEntity)
+                                                                            buildEntityStatement(f, relation, f.variableReference(ITEM),
+                                                                                                 subEntity)
                                                            );
                                                        }
                                                        statements.add(statement);
@@ -132,7 +118,8 @@ public class BuilderUtilGenerator {
                                                ));
 
                                                // builder.close()
-                                               statements.add(f.statement(methodCall(f, f.variableReference(BUILDER), BuilderClassGenerator.CLOSE)));
+                                               statements.add(f.statement(
+                                                       methodCall(f, f.variableReference(BUILDER), BuilderClassGenerator.CLOSE)));
 
                                                return f.block(statements);
                                            }
@@ -141,6 +128,26 @@ public class BuilderUtilGenerator {
             );
         }
         return result;
+    }
+
+    private static MethodBean createBuilderMethod(Entity entity, TypeData beanInterfaceType, TypeData builderType) {
+        return new MethodBean()
+                           .setVisibility(Visibility.PUBLIC)
+                           .setStatic(true)
+                           .setReturnType(TypeUtil._void())
+                           .setName(getBuilderMethodName(entity))
+                           .addParameter(
+                                   new ParameterBean()
+                                           .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
+                                           .setType(beanInterfaceType)
+                                           .setName(ENTITY)
+                           )
+                           .addParameter(
+                                   new ParameterBean()
+                                           .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
+                                           .setType(builderType)
+                                           .setName(BUILDER)
+                           );
     }
 
     private static <E> E getterCall(CodeFactory<E> f, Relation<?> relation) {
