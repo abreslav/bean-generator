@@ -45,11 +45,6 @@ import static org.jetbrains.jet.lang.descriptors.builders.generator.java.types.T
  */
 @SuppressWarnings("unchecked")
 public class BuilderUtilGenerator {
-    private static final String RESULT = "result";
-    private static final String ORIGINAL = "original";
-    private static final String SHALLOW_COPY = "shallowCopy";
-    private static final String DEEP_COPY = "deepCopy";
-    private static final String LOOP_INDEX = "item";
     private static final String BUILDER = "builder";
     private static final String ENTITY = "entity";
     private static final String ITEM = "item";
