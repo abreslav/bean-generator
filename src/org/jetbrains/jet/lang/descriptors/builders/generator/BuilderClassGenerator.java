@@ -19,12 +19,15 @@ package org.jetbrains.jet.lang.descriptors.builders.generator;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKey;
+import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKeyImpl;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.ClassPrinter;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.BinaryOperation;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeFactory;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.PieceOfCode;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassKind;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.MethodModel;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ParameterModel;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.Visibility;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.FieldBean;
@@ -42,6 +45,8 @@ import static org.jetbrains.jet.lang.descriptors.builders.generator.java.code.Co
  * @author abreslav
  */
 public class BuilderClassGenerator extends EntityRepresentationGenerator {
+
+    public static final DataHolderKey<ParameterModel, Relation<?>> RELATION = DataHolderKeyImpl.create("RELATION");
 
     private static final String DELEGATE = "delegate";
     private static final String CLOSE = "close";
@@ -183,6 +188,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
             open.addParameter(new ParameterBean()
                                       .setType(types.relationToType(relation))
                                       .setName(getParameterName(relation))
+                                      .put(RELATION, relation)
             );
         }
         open.put(ClassPrinter.METHOD_BODY,
