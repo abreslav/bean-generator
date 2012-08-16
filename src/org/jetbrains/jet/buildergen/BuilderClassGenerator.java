@@ -107,12 +107,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
         );
 
         classBean.getConstructors().add(
-                JavaDeclarationUtil.publicConstructor()
-                    .addParameter(new ParameterBean()
-                                          .addAnnotation(NULLABLE)
-                                          .setType(delegateType)
-                                          .setName(DELEGATE)
-                    )
+                constructorDeclaration(delegateType)
                     .put(ClassPrinter.METHOD_BODY,
                          new PieceOfCode() {
                              @NotNull
@@ -135,6 +130,15 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
                                  }
                              })
         );
+    }
+
+    public static MethodBean constructorDeclaration(TypeData delegateType) {
+        return JavaDeclarationUtil.publicConstructor()
+            .addParameter(new ParameterBean()
+                                  .addAnnotation(NULLABLE)
+                                  .setType(delegateType)
+                                  .setName(DELEGATE)
+            );
     }
 
     private static MethodModel createSetterMethod(TypeTransformer types, Relation<?> relation, Entity targetEntity) {
