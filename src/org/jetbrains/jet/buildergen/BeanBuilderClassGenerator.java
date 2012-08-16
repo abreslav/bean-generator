@@ -107,22 +107,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                     continue; // no implementation needed for close()
                 }
                 // open()
-                body = new PieceOfCode() {
-                    @Override
-                    public <E> E create(@NotNull CodeFactory<E> f) {
-                        List<E> statements = Lists.newArrayList();
-                        for (ParameterModel parameter : method.getParameters()) {
-                            Relation<?> relation = parameter.getData(RELATION_FOR_PARAMETER);
-                            String name = relation.getMultiplicity().isCollection()
-                                          ? MutableBeanInterfaceGenerator.getAllElementAdderName(relation)
-                                          : getSetterName(relation);
-                            statements.add(
-                                    methodCallStatement(f, bean(f), name, f.variableReference(parameter.getName()))
-                            );
-                        }
-                        return f.block(statements);
-                    }
-                };
+                body = openBody(method);
             }
             else {
                 // This must be an entity, everything else is taken care of in open()
@@ -153,6 +138,25 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
             impl.put(METHOD_BODY, body);
             classBean.getMethods().add(impl);
         }
+    }
+
+    private static PieceOfCode openBody(final MethodModel method) {
+        return new PieceOfCode() {
+            @Override
+            public <E> E create(@NotNull CodeFactory<E> f) {
+                List<E> statements = Lists.newArrayList();
+                for (ParameterModel parameter : method.getParameters()) {
+                    Relation<?> relation = parameter.getData(RELATION_FOR_PARAMETER);
+                    String name = relation.getMultiplicity().isCollection()
+                                  ? MutableBeanInterfaceGenerator.getAllElementAdderName(relation)
+                                  : getSetterName(relation);
+                    statements.add(
+                            methodCallStatement(f, bean(f), name, f.variableReference(parameter.getName()))
+                    );
+                }
+                return f.block(statements);
+            }
+        };
     }
 
     private static <E> E bean(CodeFactory<E> f) {
