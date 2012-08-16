@@ -16,6 +16,7 @@
 
 package org.jetbrains.jet.buildergen.java.code;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
@@ -59,4 +60,6 @@ public interface CodeFactory<E> {
     E _for(E variableDeclaration, E rangeExpression, E body);
 
     E _if(E condition, E body);
+
+    E singleLineComment(@NotNull String text);
 }

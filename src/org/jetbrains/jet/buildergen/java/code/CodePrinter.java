@@ -308,4 +308,14 @@ public class CodePrinter implements CodeFactory<PrintAction> {
             }
         };
     }
+
+    @Override
+    public PrintAction singleLineComment(@NotNull final String text) {
+        return new PrintAction() {
+            @Override
+            public void print(Printer p) {
+                p.println("// ", text);
+            }
+        };
+    }
 }
