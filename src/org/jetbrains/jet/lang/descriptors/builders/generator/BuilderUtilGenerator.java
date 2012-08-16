@@ -34,8 +34,8 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.jetbrains.jet.lang.descriptors.builders.generator.EntityRepresentationGenerator.getGetterName;
-import static org.jetbrains.jet.lang.descriptors.builders.generator.EntityRepresentationGenerator.getSetterName;
 import static org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeUtil.*;
+import static org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeUtil.simpleType;
 
 /**
  * @author abreslav
@@ -49,6 +49,7 @@ public class BuilderUtilGenerator {
     private static final String LOOP_INDEX = "item";
     private static final String BUILDER = "builder";
     private static final String ENTITY = "entity";
+    private static final String ITEM = "item";
 
     public static ClassModel generate(
             String packageName,
@@ -66,7 +67,7 @@ public class BuilderUtilGenerator {
     }
 
     private static Collection<MethodBean> generateBeanToBuilderMethods(
-            EntityRepresentationContext<ClassBean> beans,
+            final EntityRepresentationContext<ClassBean> beans,
             final EntityRepresentationContext<ClassBean> builders
     ) {
         Collection<MethodBean> result = Lists.newArrayList();
@@ -74,7 +75,7 @@ public class BuilderUtilGenerator {
             ClassBean beanInterface = beans.getRepresentation(entity);
             final TypeData beanInterfaceType = TypeUtil.simpleType(beanInterface);
             ClassBean builderClass = builders.getRepresentation(entity);
-            TypeData builderType = TypeUtil.simpleType(builderClass);
+            final TypeData builderType = TypeUtil.simpleType(builderClass);
             result.add(new MethodBean()
                                .setVisibility(Visibility.PUBLIC)
                                .setStatic(true)
@@ -109,13 +110,17 @@ public class BuilderUtilGenerator {
                                                        E statement;
                                                        if (!relation.getMultiplicity().isCollection()) {
                                                            // buildSubEntity(entity.getSubEntity(), builder.addSubEntity())
-                                                           statement = buildEntityStatement(f, relation, subEntity);
+                                                           statement = buildEntityStatement(f, relation, getterCall(f, relation), subEntity);
                                                        }
                                                        else {
+                                                           ClassBean subEntityClass = beans.getRepresentation(subEntity);
+                                                           TypeData subEntityType = simpleType(subEntityClass);
                                                            // for (SubEntity sub : entity.getSubEntities()) {
                                                            //     buildSubEntity(sub, builder.addSubEntity())
                                                            // }
-                                                           statement = f.statement(f._null());
+                                                           statement = _for(f, subEntityType, ITEM, getterCall(f, relation),
+                                                                buildEntityStatement(f, relation, f.variableReference(ITEM), subEntity)
+                                                           );
                                                        }
                                                        statements.add(statement);
                                                    }
@@ -133,58 +138,21 @@ public class BuilderUtilGenerator {
         return result;
     }
 
+    private static <E> E getterCall(CodeFactory<E> f, Relation<?> relation) {
+        return methodCall(f, f.variableReference(ENTITY), getGetterName(relation));
+    }
+
     private static String getBuilderMethodName(Entity entity) {
         return "build" + entity.getName();
     }
 
-    private static <E> E buildEntityStatement(CodeFactory<E> f, Relation<?> relation, Entity target) {
-        // buildEntity(entity.getTargetEntity(), builder.addTargetEntity())
+    private static <E> E buildEntityStatement(CodeFactory<E> f, Relation<?> relation, E sourceExpression, Entity target) {
+        // buildEntity(source), builder.addTargetEntity())
         return f.statement(
                 methodCall(f, null, getBuilderMethodName(target),
-                           methodCall(f, f.variableReference(ENTITY), MutableBeanInterfaceGenerator.getGetterName(relation)),
+                           sourceExpression,
                            methodCall(f, f.variableReference(BUILDER), BuilderClassGenerator.getBuilderMethodName(relation))
                 )
         );
-    }
-
-    private static <E> E resultVariableDeclarationStatement(CodeFactory<E> f, TypeData type, ClassBean classBean) {
-        return f.statement(
-                f.variableDeclaration(type, RESULT, constructorCall(f, classBean))
-        );
-    }
-
-    private static <E> E directCopyStatement(CodeFactory<E> f, Relation<?> relation) {
-        String setterName = getSetterName(relation);
-        String getterName = getGetterName(relation);
-        return methodCallStatement(f, f.variableReference(RESULT), setterName,
-                                   methodCall(f, f.variableReference(ORIGINAL), getterName));
-    }
-
-    private static <E> E shallowCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation) {
-        String allAdderName = MutableBeanInterfaceGenerator.getAllElementAdderName(relation);
-        String getterName = getGetterName(relation);
-        return methodCallStatement(f, f.variableReference(RESULT), allAdderName,
-                                   methodCall(f, f.variableReference(ORIGINAL), getterName));
-    }
-
-    private static <E> E deepCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation, EntityRepresentationContext<ClassBean> context) {
-        TypeTransformer typeTransformer = new TypeTransformer(context);
-        TypeData elementType = typeTransformer.targetToType(relation.getTarget(), Multiplicity.ONE);
-        String getterName = getGetterName(relation);
-        return _for(f, elementType, LOOP_INDEX, methodCall(f, f.variableReference(ORIGINAL), getterName),
-                    copyCollectionElementStatement(f, relation)
-        );
-    }
-
-    private static <E> E copyCollectionElementStatement(CodeFactory<E> f, Relation<?> relation) {
-        String oneElementAdderName = MutableBeanInterfaceGenerator.getSingleElementAdderName(relation);
-        if (relation.getTarget() instanceof Entity) {
-            return methodCallStatement(f, f.variableReference(RESULT), oneElementAdderName,
-                                            methodCall(f, null, DEEP_COPY, f.variableReference(LOOP_INDEX)));
-        }
-        else {
-            return methodCallStatement(f, f.variableReference(RESULT), oneElementAdderName,
-                                            f.variableReference(LOOP_INDEX));
-        }
     }
 }
