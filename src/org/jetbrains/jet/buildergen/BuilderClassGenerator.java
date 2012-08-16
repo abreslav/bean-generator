@@ -104,9 +104,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
         );
 
         classBean.getConstructors().add(
-                new MethodBean()
-                    .setVisibility(Visibility.PUBLIC)
-                    .setName("<init>")
+                createConstructor()
                     .addParameter(new ParameterBean()
                                           .addAnnotation(NULLABLE)
                                           .setType(delegateType)
@@ -125,9 +123,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
         );
 
         classBean.getConstructors().add(
-                new MethodBean()
-                        .setVisibility(Visibility.PUBLIC)
-                        .setName("<init>")
+                createConstructor()
                         .put(ClassPrinter.METHOD_BODY,
                              new PieceOfCode() {
                                  @NotNull
@@ -210,6 +206,12 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
                      }
                  });
         return open;
+    }
+
+    private static MethodBean createConstructor() {
+        return new MethodBean()
+                .setVisibility(Visibility.PUBLIC)
+                .setName("<init>");
     }
 
     private static <E> E delegateCall(CodeFactory<E> f, String name) {
