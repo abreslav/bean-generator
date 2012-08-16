@@ -61,13 +61,15 @@ public class BeanGenerator {
         String mutableBeanPackage = "beans";
         String mutableBeanClassPackage = "beans.impl";
         String builderClassPackage = "builders";
+        String beanBuilderPackage = "beans.builders";
 
         generateBeans(
                 classesWithBuilders,
                 generatedSourceRoot,
                 mutableBeanPackage,
                 mutableBeanClassPackage,
-                builderClassPackage
+                builderClassPackage,
+                beanBuilderPackage
         );
     }
 
@@ -76,7 +78,8 @@ public class BeanGenerator {
             String generatedSourceRoot,
             String mutableBeanPackage,
             String mutableBeanClassPackage,
-            String builderClassPackage
+            String builderClassPackage,
+            String beanBuilderPackage
     ) throws IOException {
         Context context = new Context();
         EntityBuilder.javaClassesToEntities(classesWithBuilders, context.dataClasses);
@@ -105,6 +108,14 @@ public class BeanGenerator {
                 builderClassPackage
         );
 
+        Collection<ClassModel> beanBuilderClasses = new BeanBuilderClassGenerator(
+                context.mutableBeanInterfaces, context.mutableBeanImplementationClasses, context.builderClasses
+        ).generate(
+                entities,
+                context.beanBuilders,
+                beanBuilderPackage
+        );
+
         ClassModel builderUtil = DataBuilderGenerator.generate(builderClassPackage, "DataBuilder", context.dataClasses,
                                                                context.builderClasses);
 
@@ -113,6 +124,7 @@ public class BeanGenerator {
         writeToFiles(generatedSourceRoot, mutableBeanPackage, Collections.singletonList(beanUtil));
         writeToFiles(generatedSourceRoot, mutableBeanPackage, Collections.singletonList(dataToBeanUtil));
         writeToFiles(generatedSourceRoot, builderClassPackage, builderClasses);
+        writeToFiles(generatedSourceRoot, beanBuilderPackage, beanBuilderClasses);
         writeToFiles(generatedSourceRoot, builderClassPackage, Collections.singletonList(builderUtil));
     }
 
@@ -139,6 +151,7 @@ public class BeanGenerator {
         RepresentationContext mutableBeanImplementationClasses = new RepresentationContext();
         RepresentationContext builderClasses = new RepresentationContext();
         RepresentationContext dataClasses = new RepresentationContext();
+        RepresentationContext beanBuilders = new RepresentationContext();
     }
 
     private static class RepresentationContext implements EntityRepresentationContext<ClassBean> {
