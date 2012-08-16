@@ -50,7 +50,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
 
     public static final DataHolderKey<ParameterModel, Relation<?>> RELATION = DataHolderKeyImpl.create("RELATION");
 
-    private static final String DELEGATE = "delegate";
+    public static final String DELEGATE = "delegate";
     public static final String CLOSE = "close";
     public static final String OPEN = "open";
 
@@ -152,7 +152,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
                          @Override
                          public <E> E create(@NotNull CodeFactory<E> f) {
                              return _if(f, delegateNullCheck(f),
-                                              f.statement(delegateCall(f, name, Collections.singletonList(f.variableReference(parameterName))))
+                                        f.statement(delegateCall(f, name, Collections.singletonList(f.variableReference(parameterName))))
                              );
                          }
                      });
