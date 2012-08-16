@@ -105,7 +105,7 @@ public class BeanGenerator {
                 builderClassPackage
         );
 
-        ClassModel builderUtil = BuilderUtilGenerator.generate(builderClassPackage, "BuilderUtil", context.dataClasses,
+        ClassModel builderUtil = DataBuilderGenerator.generate(builderClassPackage, "DataBuilder", context.dataClasses,
                                                                context.builderClasses);
 
         writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeans);

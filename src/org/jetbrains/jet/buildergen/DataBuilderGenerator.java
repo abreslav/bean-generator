@@ -44,7 +44,7 @@ import static org.jetbrains.jet.buildergen.java.types.TypeUtil.simpleType;
  * @author abreslav
  */
 @SuppressWarnings("unchecked")
-public class BuilderUtilGenerator {
+public class DataBuilderGenerator {
     private static final String BUILDER = "builder";
     private static final String ENTITY = "entity";
     private static final String ITEM = "item";
