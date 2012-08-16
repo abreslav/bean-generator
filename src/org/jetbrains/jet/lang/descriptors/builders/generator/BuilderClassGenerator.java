@@ -33,6 +33,7 @@ import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.b
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeUtil;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeUtil.*;
@@ -44,6 +45,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
 
     private static final String DELEGATE = "delegate";
     private static final String CLOSE = "close";
+    private static final String OPEN = "open";
 
     @NotNull
     @Override
@@ -172,23 +174,40 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
                      });
     }
 
-    private static MethodModel createOpeningBuilderMethod(TypeTransformer types, List<Relation<?>> relations) {
+    private static MethodModel createOpeningBuilderMethod(TypeTransformer types, final List<Relation<?>> relations) {
         MethodBean open = new MethodBean()
                 .setVisibility(Visibility.PUBLIC)
-                .setAbstract(true)
                 .setReturnType(TypeUtil._void())
-                .setName("open");
+                .setName(OPEN);
         for (Relation<?> relation : relations) {
             open.addParameter(new ParameterBean()
                                       .setType(types.relationToType(relation))
                                       .setName(getParameterName(relation))
             );
         }
+        open.put(ClassPrinter.METHOD_BODY,
+                 new PieceOfCode() {
+                     @NotNull
+                     @Override
+                     public <E> E create(@NotNull CodeFactory<E> f) {
+                         List<E> arguments = Lists.newArrayList();
+                         for (Relation<?> relation : relations) {
+                             arguments.add(f.variableReference(getParameterName(relation)));
+                         }
+                         return _if(f, delegateNullCheck(f),
+                                    f.statement(delegateCall(f, OPEN, arguments))
+                         );
+                     }
+                 });
         return open;
     }
 
     private static <E> E delegateCall(CodeFactory<E> f, String name) {
-        return methodCall(f, f.fieldReference(f._this(), DELEGATE), name);
+        return delegateCall(f, name, Collections.<E>emptyList());
+    }
+
+    private static <E> E delegateCall(CodeFactory<E> f, String name, List<E> arguments) {
+        return f.methodCall(f.fieldReference(f._this(), DELEGATE), name, arguments);
     }
 
     private static <E> E delegateNullCheck(CodeFactory<E> f) {
