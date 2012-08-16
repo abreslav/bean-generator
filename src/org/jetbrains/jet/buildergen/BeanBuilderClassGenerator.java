@@ -16,32 +16,27 @@
 
 package org.jetbrains.jet.buildergen;
 
-import com.google.common.collect.Lists;
-import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.entities.Entity;
-import org.jetbrains.jet.buildergen.entities.Multiplicity;
 import org.jetbrains.jet.buildergen.entities.Relation;
 import org.jetbrains.jet.buildergen.java.ClassPrinter;
-import org.jetbrains.jet.buildergen.java.code.BinaryOperation;
 import org.jetbrains.jet.buildergen.java.code.CodeFactory;
 import org.jetbrains.jet.buildergen.java.code.PieceOfCode;
 import org.jetbrains.jet.buildergen.java.declarations.ClassKind;
 import org.jetbrains.jet.buildergen.java.declarations.MethodModel;
 import org.jetbrains.jet.buildergen.java.declarations.Visibility;
-import org.jetbrains.jet.buildergen.java.declarations.beans.*;
+import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
+import org.jetbrains.jet.buildergen.java.declarations.beans.FieldBean;
+import org.jetbrains.jet.buildergen.java.declarations.beans.JavaDeclarationUtil;
+import org.jetbrains.jet.buildergen.java.declarations.beans.MethodBean;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
-import java.util.Collections;
-import java.util.List;
-
 import static java.lang.Boolean.TRUE;
-import static org.jetbrains.jet.buildergen.BuilderClassGenerator.*;
+import static org.jetbrains.jet.buildergen.BuilderClassGenerator.DELEGATE;
 import static org.jetbrains.jet.buildergen.EntityBuilder.REFERENCE;
 import static org.jetbrains.jet.buildergen.java.ClassPrinter.METHOD_BODY;
-import static org.jetbrains.jet.buildergen.java.code.CodeUtil.*;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.constructorCall;
-import static org.jetbrains.jet.buildergen.java.types.TypeUtil._void;
+import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCall;
 import static org.jetbrains.jet.buildergen.java.types.TypeUtil.simpleType;
 
 /**
@@ -102,12 +97,15 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
             PieceOfCode body;
             if (relation == null) {
                  // either open() or close()
-                 body = new PieceOfCode() {
-                     @Override
-                     public <E> E create(@NotNull CodeFactory<E> f) {
-                         return  f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
-                     }
-                 };
+                if (method.getName().equals("close")) {
+                    continue; // no implementation needed for close()
+                }
+                body = new PieceOfCode() {
+                    @Override
+                    public <E> E create(@NotNull CodeFactory<E> f) {
+                        return  f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
+                    }
+                };
             }
             else {
                 body = new PieceOfCode() {
@@ -117,7 +115,8 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                          Entity targetEntity = (Entity) relation.getTarget();
                          if (relation.getData(REFERENCE) == TRUE) {
                              // this.bean.setTargetEntity(entity);
-                             return f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
+                             //return methodCallStatement(f, bean(f), getSetterName(relation), f.variableReference(BuilderClassGenerator.ENTITY));
+                             return f.singleLineComment("can't write directly to the bean: types don't match");
                          }
                          else {
                              // TargetEntityBeanBuilder subBuilder = new TargetEntityBeanBuilder();
@@ -132,26 +131,6 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
             impl.put(METHOD_BODY, body);
             classBean.getMethods().add(impl);
         }
-
-        //List<Relation<?>> relationsToNonEntities = Lists.newArrayList();
-        //TypeTransformer types = new TypeTransformer(context);
-        //for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
-        //    Object target = relation.getTarget();
-        //    if (target instanceof Entity) {
-        //        Entity targetEntity = (Entity) target;
-        //        if (relation.getData(EntityBuilder.REFERENCE) == Boolean.TRUE) {
-        //            classBean.getMethods().add(createSetterMethod(types, relation, targetEntity));
-        //        }
-        //        else {
-        //            classBean.getMethods().add(createRelationBuilderMethod(types, relation, targetEntity));
-        //        }
-        //    }
-        //    else {
-        //        relationsToNonEntities.add(relation);
-        //    }
-        //}
-        //classBean.getMethods().add(0, createOpeningBuilderMethod(types, relationsToNonEntities));
-        //classBean.getMethods().add(createClosingBuilderMethod());
     }
 
     private static <E> E bean(CodeFactory<E> f) {
@@ -197,121 +176,5 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                              return f.statement(methodCall(f, null, "super", f.variableReference(DELEGATE)));
                          }
                      });
-    }
-
-    private static MethodModel createSetterMethod(TypeTransformer types, Relation<?> relation, Entity targetEntity) {
-        final String name = getSetterName(relation);
-        final String parameterName = "entity";
-        return new MethodBean()
-                .addAnnotation(NOT_NULL)
-                .setVisibility(Visibility.PUBLIC)
-                .setReturnType(_void())
-                .setName(name)
-                .addParameter(JavaDeclarationUtil.notNullParameter(TypeUtil.getDataType(targetEntity), parameterName))
-                .put(METHOD_BODY,
-                     new PieceOfCode() {
-                         @NotNull
-                         @Override
-                         public <E> E create(@NotNull CodeFactory<E> f) {
-                             return _if(f, delegateNullCheck(f),
-                                        f.statement(delegateCall(f, name, Collections.singletonList(f.variableReference(parameterName))))
-                             );
-                         }
-                     });
-    }
-
-    private static MethodModel createRelationBuilderMethod(
-            TypeTransformer types,
-            Relation<?> relation,
-            Entity targetEntity
-    ) {
-        final String name = getBuilderMethodName(relation);
-        return new MethodBean()
-                .addAnnotation(NOT_NULL)
-                .setVisibility(Visibility.PUBLIC)
-                .setReturnType(types.targetToType(targetEntity, Multiplicity.ONE))
-                .setName(name)
-                .put(METHOD_BODY,
-                     new PieceOfCode() {
-                         @NotNull
-                         @Override
-                         public <E> E create(@NotNull CodeFactory<E> f) {
-                             return block(f,
-                                          _if(f, delegateNullCheck(f),
-                                              f._return(delegateCall(f, name))
-                                          ),
-                                          f._throw(constructorCall(f, "java.lang", "IllegalStateException", f.string("No delegate")))
-                             );
-                         }
-                     });
-    }
-
-    private static MethodModel createClosingBuilderMethod() {
-        return new MethodBean()
-                .setVisibility(Visibility.PUBLIC)
-                .setReturnType(TypeUtil._void())
-                .setName(CLOSE)
-                .put(METHOD_BODY,
-                     new PieceOfCode() {
-                         @NotNull
-                         @Override
-                         public <E> E create(@NotNull CodeFactory<E> f) {
-                             return _if(f, delegateNullCheck(f),
-                                        f.statement(delegateCall(f, CLOSE))
-                             );
-                         }
-                     });
-    }
-
-    private static MethodModel createOpeningBuilderMethod(TypeTransformer types, final List<Relation<?>> relations) {
-        MethodBean open = new MethodBean()
-                .setVisibility(Visibility.PUBLIC)
-                .setReturnType(TypeUtil._void())
-                .setName(OPEN);
-        for (Relation<?> relation : relations) {
-            open.addParameter(new ParameterBean()
-                                      .setType(types.targetToType(relation.getTarget(), relation.getMultiplicity(), TypeTransformer.Variance.OUT))
-                                      .setName(getParameterName(relation))
-            );
-        }
-        open.put(METHOD_BODY,
-                 new PieceOfCode() {
-                     @NotNull
-                     @Override
-                     public <E> E create(@NotNull CodeFactory<E> f) {
-                         List<E> arguments = Lists.newArrayList();
-                         for (Relation<?> relation : relations) {
-                             arguments.add(f.variableReference(getParameterName(relation)));
-                         }
-                         return _if(f, delegateNullCheck(f),
-                                    f.statement(delegateCall(f, OPEN, arguments))
-                         );
-                     }
-                 });
-        return open;
-    }
-
-    private static <E> E delegateCall(CodeFactory<E> f, String name) {
-        return delegateCall(f, name, Collections.<E>emptyList());
-    }
-
-    private static <E> E delegateCall(CodeFactory<E> f, String name, List<E> arguments) {
-        return f.methodCall(f.fieldReference(f._this(), DELEGATE), name, arguments);
-    }
-
-    private static <E> E delegateNullCheck(CodeFactory<E> f) {
-        return f.binary(f.fieldReference(f._this(), DELEGATE), BinaryOperation.NEQ, f._null());
-    }
-
-    private static String getParameterName(Relation<?> relation) {
-        return StringUtil.decapitalize(relation.getName());
-    }
-
-    public static String getBuilderMethodName(Relation<?> relation) {
-        return "add" + singularize(relation.getName());
-    }
-
-    private static String singularize(String name) {
-        return name.endsWith("s") ? name.substring(0, name.length() - 1) : name;
     }
 }
