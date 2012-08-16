@@ -113,14 +113,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                 // This must be an entity, everything else is taken care of in open()
                 final Entity targetEntity = (Entity) relation.getTarget();
                 if (relation.getData(REFERENCE) == TRUE) {
-                    body = new PieceOfCode() {
-                         @Override
-                         public <E> E create(@NotNull CodeFactory<E> f) {
-                                 // this.bean.setTargetEntity(entity);
-                                 //return methodCallStatement(f, bean(f), getSetterName(relation), f.variableReference(BuilderClassGenerator.ENTITY));
-                                 return f.singleLineComment("can't write directly to the bean: types don't match");
-                         }
-                    };
+                    body = referenceSetterBody();
                 }
                 else {
                     body = builderMethodBody(beanBuilders, relation, targetEntity);
@@ -132,7 +125,18 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
         }
     }
 
-    private PieceOfCode builderMethodBody(
+    private static PieceOfCode referenceSetterBody() {
+        return new PieceOfCode() {
+             @Override
+             public <E> E create(@NotNull CodeFactory<E> f) {
+                     // this.bean.setTargetEntity(entity);
+                     //return methodCallStatement(f, bean(f), getSetterName(relation), f.variableReference(BuilderClassGenerator.ENTITY));
+                     return f.singleLineComment("can't write directly to the bean: types don't match");
+             }
+        };
+    }
+
+    private static PieceOfCode builderMethodBody(
             final EntityRepresentationContext<ClassBean> beanBuilders,
             final Relation<?> relation,
             final Entity targetEntity
