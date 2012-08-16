@@ -38,6 +38,7 @@ import java.util.List;
 import static java.lang.Boolean.TRUE;
 import static org.jetbrains.jet.buildergen.BuilderClassGenerator.*;
 import static org.jetbrains.jet.buildergen.EntityBuilder.REFERENCE;
+import static org.jetbrains.jet.buildergen.java.ClassPrinter.METHOD_BODY;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.*;
 import static org.jetbrains.jet.buildergen.java.types.TypeUtil._void;
 import static org.jetbrains.jet.buildergen.java.types.TypeUtil.simpleType;
@@ -89,11 +90,12 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
 
         classBean.getFields().add(beanField(beanInterface, beanImpl));
         classBean.getConstructors().add(implementConstructor(builderClass));
+        classBean.getMethods().add(beanGetter(beanInterface));
 
         for (final MethodModel method : builderClass.getMethods()) {
             final MethodBean impl = JavaDeclarationUtil.copy(method);
             impl.setAbstract(false);
-            impl.put(ClassPrinter.METHOD_BODY,
+            impl.put(METHOD_BODY,
                      new PieceOfCode() {
                          @Override
                          public <E> E create(@NotNull CodeFactory<E> f) {
@@ -144,6 +146,21 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
         //classBean.getMethods().add(createClosingBuilderMethod());
     }
 
+    private MethodBean beanGetter(ClassBean beanInterface) {
+        return new MethodBean()
+            .addAnnotation(NOT_NULL)
+            .setVisibility(Visibility.PUBLIC)
+            .setReturnType(simpleType(beanInterface))
+            .setName("buildResult")
+            .put(METHOD_BODY,
+                 new PieceOfCode() {
+                     @Override
+                     public <E> E create(@NotNull CodeFactory<E> f) {
+                         return f._return(f.fieldReference(f._this(), BEAN));
+                     }
+                 });
+    }
+
     private static FieldBean beanField(ClassBean beanInterface, final ClassBean beanImpl) {
         return new FieldBean()
                 .setVisibility(Visibility.PRIVATE)
@@ -161,7 +178,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
 
     private static MethodBean implementConstructor(ClassBean builderClass) {
         return BuilderClassGenerator.constructorDeclaration(builderClass)
-                .put(ClassPrinter.METHOD_BODY,
+                .put(METHOD_BODY,
                      new PieceOfCode() {
                          @Override
                          public <E> E create(@NotNull CodeFactory<E> f) {
@@ -179,7 +196,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                 .setReturnType(_void())
                 .setName(name)
                 .addParameter(JavaDeclarationUtil.notNullParameter(TypeUtil.getDataType(targetEntity), parameterName))
-                .put(ClassPrinter.METHOD_BODY,
+                .put(METHOD_BODY,
                      new PieceOfCode() {
                          @NotNull
                          @Override
@@ -202,7 +219,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                 .setVisibility(Visibility.PUBLIC)
                 .setReturnType(types.targetToType(targetEntity, Multiplicity.ONE))
                 .setName(name)
-                .put(ClassPrinter.METHOD_BODY,
+                .put(METHOD_BODY,
                      new PieceOfCode() {
                          @NotNull
                          @Override
@@ -222,7 +239,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                 .setVisibility(Visibility.PUBLIC)
                 .setReturnType(TypeUtil._void())
                 .setName(CLOSE)
-                .put(ClassPrinter.METHOD_BODY,
+                .put(METHOD_BODY,
                      new PieceOfCode() {
                          @NotNull
                          @Override
@@ -245,7 +262,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                                       .setName(getParameterName(relation))
             );
         }
-        open.put(ClassPrinter.METHOD_BODY,
+        open.put(METHOD_BODY,
                  new PieceOfCode() {
                      @NotNull
                      @Override
