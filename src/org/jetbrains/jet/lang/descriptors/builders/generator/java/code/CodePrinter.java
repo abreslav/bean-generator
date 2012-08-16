@@ -239,6 +239,18 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         };
     }
 
+    @Override
+    public PrintAction _throw(final PrintAction expression) {
+        return new PrintAction() {
+            @Override
+            public void print(Printer p) {
+                p.print("throw ");
+                expression.print(p);
+                p.printlnWithNoIndent(";");
+            }
+        };
+    }
+
     @NotNull
     @Override
     public PrintAction _this() {

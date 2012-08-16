@@ -50,6 +50,8 @@ public interface CodeFactory<E> {
 
     E binary(E lhs, BinaryOperation op, E rhs);
 
+    E _throw(E expression);
+
     E _this();
 
     E _null();
