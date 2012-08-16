@@ -99,10 +99,8 @@ public class BuilderUtilGenerator {
                                            @NotNull
                                            @Override
                                            public <E> E create(@NotNull CodeFactory<E> f) {
+                                               List<E> argumentsToOpen = Lists.newArrayList();
                                                List<E> statements = Lists.newArrayList();
-                                               // builder.open(entity.getFoo(), entity.isBar())
-                                               statements.add(f.statement(methodCall(f, f.variableReference(BUILDER), BuilderClassGenerator.OPEN)));
-
                                                for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
                                                    Object target = relation.getTarget();
                                                    if (target instanceof Entity) {
@@ -124,7 +122,15 @@ public class BuilderUtilGenerator {
                                                        }
                                                        statements.add(statement);
                                                    }
+                                                   else {
+                                                       argumentsToOpen.add(getterCall(f, relation));
+                                                   }
                                                }
+
+                                               // builder.open(entity.getFoo(), entity.isBar(), ...)
+                                               statements.add(0, f.statement(
+                                                       f.methodCall(f.variableReference(BUILDER), BuilderClassGenerator.OPEN, argumentsToOpen)
+                                               ));
 
                                                // builder.close()
                                                statements.add(f.statement(methodCall(f, f.variableReference(BUILDER), BuilderClassGenerator.CLOSE)));
