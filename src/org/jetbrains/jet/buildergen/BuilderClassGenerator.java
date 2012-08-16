@@ -54,6 +54,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
     public static final String DELEGATE = "delegate";
     public static final String CLOSE = "close";
     public static final String OPEN = "open";
+    public static final String ENTITY = "entity";
 
     @NotNull
     @Override
@@ -144,20 +145,19 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
 
     private static MethodModel createSetterMethod(TypeTransformer types, Relation<?> relation, Entity targetEntity) {
         final String name = getSetterName(relation);
-        final String parameterName = "entity";
         return new MethodBean()
                 .addAnnotation(NOT_NULL)
                 .setVisibility(Visibility.PUBLIC)
                 .setReturnType(_void())
                 .setName(name)
-                .addParameter(JavaDeclarationUtil.notNullParameter(TypeUtil.getDataType(targetEntity), parameterName))
+                .addParameter(JavaDeclarationUtil.notNullParameter(TypeUtil.getDataType(targetEntity), ENTITY))
                 .put(ClassPrinter.METHOD_BODY,
                      new PieceOfCode() {
                          @NotNull
                          @Override
                          public <E> E create(@NotNull CodeFactory<E> f) {
                              return _if(f, delegateNullCheck(f),
-                                        f.statement(delegateCall(f, name, Collections.singletonList(f.variableReference(parameterName))))
+                                        f.statement(delegateCall(f, name, Collections.singletonList(f.variableReference(ENTITY))))
                              );
                          }
                      })
