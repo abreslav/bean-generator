@@ -49,8 +49,8 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
     public static final DataHolderKey<ParameterModel, Relation<?>> RELATION = DataHolderKeyImpl.create("RELATION");
 
     private static final String DELEGATE = "delegate";
-    private static final String CLOSE = "close";
-    private static final String OPEN = "open";
+    public static final String CLOSE = "close";
+    public static final String OPEN = "open";
 
     @NotNull
     @Override
@@ -224,7 +224,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
         return StringUtil.decapitalize(relation.getName());
     }
 
-    private static String getBuilderMethodName(Relation<?> relation) {
+    public static String getBuilderMethodName(Relation<?> relation) {
         return "add" + singularize(relation.getName());
     }
 

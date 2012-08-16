@@ -103,12 +103,15 @@ public class BeanGenerator {
                 builderClassPackage
         );
 
+        ClassModel builderUtil = BuilderUtilGenerator.generate(builderClassPackage, "BuilderUtil", context.mutableBeanInterfaces,
+                                                                 context.builderClasses);
 
         writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeans);
         writeToFiles(generatedSourceRoot, mutableBeanClassPackage, mutableBeanClasses);
         writeToFiles(generatedSourceRoot, mutableBeanPackage, Collections.singletonList(beanUtil));
         writeToFiles(generatedSourceRoot, mutableBeanPackage, Collections.singletonList(dataToBeanUtil));
         writeToFiles(generatedSourceRoot, builderClassPackage, builderClasses);
+        writeToFiles(generatedSourceRoot, builderClassPackage, Collections.singletonList(builderUtil));
     }
 
     private static void writeToFiles(String generatedSourceRoot, String packageName, Collection<ClassModel> readOnlyBeans)
