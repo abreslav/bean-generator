@@ -28,8 +28,8 @@ import org.jetbrains.jet.buildergen.java.declarations.ClassKind;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
 import org.jetbrains.jet.buildergen.java.declarations.Visibility;
 import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
+import org.jetbrains.jet.buildergen.java.declarations.beans.JavaDeclarationUtil;
 import org.jetbrains.jet.buildergen.java.declarations.beans.MethodBean;
-import org.jetbrains.jet.buildergen.java.declarations.beans.ParameterBean;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
@@ -136,18 +136,11 @@ public class BuilderUtilGenerator {
                            .setReturnType(TypeUtil._void())
                            .setName(getBuilderMethodName(entity))
                            .addParameter(
-                                   notNullParameter(beanInterfaceType, ENTITY)
+                                   JavaDeclarationUtil.notNullParameter(beanInterfaceType, ENTITY)
                            )
                            .addParameter(
-                                   notNullParameter(builderType, BUILDER)
+                                   JavaDeclarationUtil.notNullParameter(builderType, BUILDER)
                            );
-    }
-
-    private static ParameterBean notNullParameter(TypeData beanInterfaceType, String name) {
-        return new ParameterBean()
-                .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
-                .setType(beanInterfaceType)
-                .setName(name);
     }
 
     private static <E> E getterCall(CodeFactory<E> f, Relation<?> relation) {
