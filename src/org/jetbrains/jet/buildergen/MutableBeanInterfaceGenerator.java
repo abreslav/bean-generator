@@ -115,8 +115,10 @@ public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator
 
     private static ParameterBean createSetterParameter(TypeTransformer types, Relation<?> relation) {
         TypeData setterParameterType = types.targetToType(relation.getTarget(), Multiplicity.ONE);
-        return new ParameterBean().addAnnotation(NOT_NULL).setType(setterParameterType).setName(
-                "value");
+        return new ParameterBean()
+                //.addAnnotation(NOT_NULL)
+                .setType(setterParameterType)
+                .setName("value");
     }
 
     private static ParameterBean createAllAdderParameter(TypeTransformer types, Relation<?> relation) {
