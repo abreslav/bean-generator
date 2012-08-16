@@ -16,7 +16,6 @@
 
 package org.jetbrains.jet.lang.descriptors.builders.generator.java.code;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassModel;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
@@ -27,51 +26,35 @@ import java.util.List;
 * @author abreslav
 */
 public interface CodeFactory<E> {
-    @NotNull
-    E statement(@NotNull E expression);
+    E statement(E expression);
 
-    @NotNull
-    E block(@NotNull List<E> block);
+    E block(List<E> block);
 
-    @NotNull
-    E fieldReference(@NotNull E receiver, @NotNull String field);
+    E fieldReference(E receiver, String field);
 
-    @NotNull
-    E variableDeclaration(@NotNull TypeData type, @NotNull String name, @Nullable E initializer);
+    E variableDeclaration(TypeData type, String name, @Nullable E initializer);
 
-    @NotNull
-    E variableReference(@NotNull String name);
+    E variableReference(String name);
 
-    @NotNull
-    E methodCall(@Nullable E receiver, @NotNull String method, @NotNull List<E> arguments);
+    E methodCall(@Nullable E receiver, String method, List<E> arguments);
 
-    @NotNull
-    E constructorCall(@NotNull ClassModel classBeingInstantiated, @NotNull List<TypeData> typeArguments, @NotNull List<E> arguments);
+    E constructorCall(ClassModel classBeingInstantiated, List<TypeData> typeArguments, List<E> arguments);
 
-    @NotNull
-    E assignment(@NotNull E lhs, @NotNull E rhs);
+    E assignment(E lhs, E rhs);
 
-    @NotNull
     E _return(@Nullable E subj);
 
-    @NotNull
-    E string(@NotNull String s);
+    E string(String s);
 
-    @NotNull
     E integer(int i);
 
-    @NotNull
-    E binary(@NotNull E lhs, @NotNull BinaryOperation op, @NotNull E rhs);
+    E binary(E lhs, BinaryOperation op, E rhs);
 
-    @NotNull
     E _this();
 
-    @NotNull
     E _null();
 
-    @NotNull
-    E _for(@NotNull E variableDeclaration, @NotNull E rangeExpression, @NotNull E body);
+    E _for(E variableDeclaration, E rangeExpression, E body);
 
-    @NotNull
-    E _if(@NotNull E condition, @NotNull E body);
+    E _if(E condition, E body);
 }
