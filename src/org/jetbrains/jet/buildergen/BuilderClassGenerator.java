@@ -123,15 +123,19 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
         );
 
         classBean.getConstructors().add(
-                JavaDeclarationUtil.publicConstructor()
-                        .put(ClassPrinter.METHOD_BODY,
-                             new PieceOfCode() {
-                                 @Override
-                                 public <E> E create(@NotNull CodeFactory<E> f) {
-                                     return f.statement(methodCall(f, null, "this", f._null()));
-                                 }
-                             })
+                defaultConstructor()
         );
+    }
+
+    public static MethodBean defaultConstructor() {
+        return JavaDeclarationUtil.publicConstructor()
+                .put(ClassPrinter.METHOD_BODY,
+                     new PieceOfCode() {
+                         @Override
+                         public <E> E create(@NotNull CodeFactory<E> f) {
+                             return f.statement(methodCall(f, null, "this", f._null()));
+                         }
+                     });
     }
 
     public static MethodBean constructorDeclaration(ClassBean classBean) {
