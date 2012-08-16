@@ -48,7 +48,8 @@ import static org.jetbrains.jet.buildergen.java.types.TypeUtil._void;
  */
 public class BuilderClassGenerator extends EntityRepresentationGenerator {
 
-    public static final DataHolderKey<ParameterModel, Relation<?>> RELATION = DataHolderKeyImpl.create("RELATION");
+    public static final DataHolderKey<ParameterModel, Relation<?>> RELATION_FOR_PARAMETER = DataHolderKeyImpl.create("RELATION_FOR_PARAMETER");
+    public static final DataHolderKey<MethodModel, Relation<?>> RELATION_FOR_METHOD = DataHolderKeyImpl.create("RELATION_FOR_METHOD");
 
     public static final String DELEGATE = "delegate";
     public static final String CLOSE = "close";
@@ -107,7 +108,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
         );
 
         classBean.getConstructors().add(
-                constructorDeclaration(delegateType)
+                constructorDeclaration(classBean)
                     .put(ClassPrinter.METHOD_BODY,
                          new PieceOfCode() {
                              @NotNull
@@ -132,11 +133,11 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
         );
     }
 
-    public static MethodBean constructorDeclaration(TypeData delegateType) {
+    public static MethodBean constructorDeclaration(ClassBean classBean) {
         return JavaDeclarationUtil.publicConstructor()
             .addParameter(new ParameterBean()
                                   .addAnnotation(NULLABLE)
-                                  .setType(delegateType)
+                                  .setType(TypeUtil.simpleType(classBean))
                                   .setName(DELEGATE)
             );
     }
@@ -159,7 +160,8 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
                                         f.statement(delegateCall(f, name, Collections.singletonList(f.variableReference(parameterName))))
                              );
                          }
-                     });
+                     })
+                .put(RELATION_FOR_METHOD, relation);
     }
 
     private static MethodModel createRelationBuilderMethod(
@@ -185,7 +187,8 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
                                           f._throw(constructorCall(f, "java.lang", "IllegalStateException", f.string("No delegate")))
                              );
                          }
-                     });
+                     })
+                .put(RELATION_FOR_METHOD, relation);
     }
 
     private static MethodModel createClosingBuilderMethod() {
@@ -214,7 +217,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
             open.addParameter(new ParameterBean()
                                       .setType(types.targetToType(relation.getTarget(), relation.getMultiplicity(), TypeTransformer.Variance.OUT))
                                       .setName(getParameterName(relation))
-                                      .put(RELATION, relation)
+                                      .put(RELATION_FOR_PARAMETER, relation)
             );
         }
         open.put(ClassPrinter.METHOD_BODY,
