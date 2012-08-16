@@ -40,24 +40,6 @@ import java.util.Set;
 */
 public class EntityBuilder {
 
-    public static class ClassName {
-        private final String packageFqName;
-        private final String className;
-
-        public ClassName(@NotNull String packageFqName, @NotNull String className) {
-            this.packageFqName = packageFqName;
-            this.className = className;
-        }
-
-        public String getPackageFqName() {
-            return packageFqName;
-        }
-
-        public String getClassName() {
-            return className;
-        }
-    }
-
     public static final DataHolderKey<Entity, ClassName> DATA_CLASS = DataHolderKeyImpl.create("DATA_CLASS");
 
     private static final Map<Type, Class<?>> PRIMITIVE_TO_BOXED = ImmutableMap.<Type, Class<?>>builder()
@@ -294,5 +276,24 @@ public class EntityBuilder {
         public Collection<Entity> getEntities() {
             return entities.values();
         }
+    }
+
+    public static class ClassName {
+        private final String packageFqName;
+
+        private final String className;
+
+        public ClassName(@NotNull String packageFqName, @NotNull String className) {
+            this.packageFqName = packageFqName;
+            this.className = className;
+        }
+
+        public String getPackageFqName() {
+            return packageFqName;
+        }
+        public String getClassName() {
+            return className;
+        }
+
     }
 }
