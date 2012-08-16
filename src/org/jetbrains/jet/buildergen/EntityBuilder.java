@@ -24,6 +24,7 @@ import org.jetbrains.jet.buildergen.dataholder.DataHolderKeyImpl;
 import org.jetbrains.jet.buildergen.entities.*;
 import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.buildergen.runtime.Optional;
+import org.jetbrains.jet.buildergen.runtime.Reference;
 import org.jetbrains.jet.buildergen.runtime.Skip;
 
 import java.lang.reflect.Method;
@@ -41,6 +42,7 @@ import java.util.Set;
 public class EntityBuilder {
 
     public static final DataHolderKey<Entity, ClassName> DATA_CLASS = DataHolderKeyImpl.create("DATA_CLASS");
+    public static final DataHolderKey<Relation<?>, Boolean> REFERENCE = DataHolderKeyImpl.create("REFERENCE");
 
     private static final Map<Type, Class<?>> PRIMITIVE_TO_BOXED = ImmutableMap.<Type, Class<?>>builder()
             .put(byte.class, Byte.class)
@@ -128,12 +130,15 @@ public class EntityBuilder {
                 continue;
             }
 
-            Relation<?> relation = createRelation(c, method, relationName, returnType);
+            RelationWithTarget<?> relation = createRelation(c, method, relationName, returnType);
+            if (method.isAnnotationPresent(Reference.class)) {
+                relation.put(REFERENCE, true);
+            }
             entity.getRelations().add(relation);
         }
     }
 
-    private static Relation createRelation(Context c, Method method, String relationName, Class<?> returnClass) {
+    private static RelationWithTarget<?> createRelation(Context c, Method method, String relationName, Class<?> returnClass) {
         if (c.isEntityClass(returnClass)) {
             Multiplicity multiplicity = getMultiplicity(method);
             return new RelationWithTarget<Entity>(multiplicity, relationName, c.safeGet(returnClass));
