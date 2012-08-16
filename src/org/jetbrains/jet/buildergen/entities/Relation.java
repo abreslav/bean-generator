@@ -17,13 +17,14 @@
 package org.jetbrains.jet.buildergen.entities;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.buildergen.dataholder.DataHolder;
 
 import java.util.Collection;
 
 /**
 * @author abreslav
 */
-public interface Relation<T> {
+public interface Relation<T> extends DataHolder<Relation<T>> {
     @NotNull
     Collection<Relation<?>> getOverriddenRelations();
 

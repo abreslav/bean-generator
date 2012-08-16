@@ -26,7 +26,7 @@ import java.util.List;
 /**
 * @author abreslav
 */
-public class RelationWithTarget<T> extends DataHolderImpl<RelationWithTarget<T>> implements Relation {
+public class RelationWithTarget<T> extends DataHolderImpl<Relation<T>> implements Relation<T> {
     private final List<Relation<?>> overriddenRelations = Lists.newArrayList();
     private final T target;
     private final String name;
