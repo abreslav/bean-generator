@@ -231,11 +231,10 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         return new PrintAction() {
             @Override
             public void print(Printer p) {
-                p.print();
+                p.printWithNoIndent();
                 lhs.print(p);
                 p.printWithNoIndent(" ", op.getRepresentation(), " ");
                 rhs.print(p);
-                p.printlnWithNoIndent(";");
             }
         };
     }
