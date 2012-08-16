@@ -19,6 +19,7 @@ package org.jetbrains.jet.lang.descriptors.builders.generator.java.code;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassModel;
+import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.types.TypeData;
 
 import java.util.Arrays;
@@ -43,6 +44,11 @@ public class CodeUtil {
 
     public static <E> E constructorCall(@NotNull CodeFactory<E> factory, @NotNull ClassModel classModel, E... arguments) {
         return factory.constructorCall(classModel, Collections.<TypeData>emptyList(), Arrays.asList(arguments));
+    }
+
+    public static <E> E constructorCall(@NotNull CodeFactory<E> factory, @NotNull String packageName, @NotNull String className, E... arguments) {
+        ClassBean classBean = new ClassBean().setPackageFqName(packageName).setName(className);
+        return factory.constructorCall(classBean, Collections.<TypeData>emptyList(), Arrays.asList(arguments));
     }
 
     public static <E> E _for(@NotNull CodeFactory<E> f, @NotNull TypeData indexType, @NotNull String indexName, @NotNull E range, @NotNull E... body) {
