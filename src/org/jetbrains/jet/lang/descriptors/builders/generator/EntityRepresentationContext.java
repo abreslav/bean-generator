@@ -17,6 +17,7 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.entities.Entity;
 
 import java.util.Collection;
 

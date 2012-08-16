@@ -19,6 +19,8 @@ package org.jetbrains.jet.lang.descriptors.builders.generator;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKey;
+import org.jetbrains.jet.lang.descriptors.builders.generator.entities.Entity;
+import org.jetbrains.jet.lang.descriptors.builders.generator.entities.Relation;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.*;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKeyImpl;

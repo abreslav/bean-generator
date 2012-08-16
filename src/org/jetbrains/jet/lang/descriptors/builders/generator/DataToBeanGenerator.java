@@ -18,6 +18,10 @@ package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.entities.Entity;
+import org.jetbrains.jet.lang.descriptors.builders.generator.entities.EntityUtil;
+import org.jetbrains.jet.lang.descriptors.builders.generator.entities.Multiplicity;
+import org.jetbrains.jet.lang.descriptors.builders.generator.entities.Relation;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.ClassPrinter;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.CodeFactory;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.code.PieceOfCode;

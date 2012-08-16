@@ -17,6 +17,9 @@
 package org.jetbrains.jet.lang.descriptors.builders.generator;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.builders.generator.entities.Entity;
+import org.jetbrains.jet.lang.descriptors.builders.generator.entities.Multiplicity;
+import org.jetbrains.jet.lang.descriptors.builders.generator.entities.Relation;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.ClassKind;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.Visibility;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;

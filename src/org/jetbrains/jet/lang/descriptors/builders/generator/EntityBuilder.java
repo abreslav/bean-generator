@@ -21,6 +21,7 @@ import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKey;
 import org.jetbrains.jet.lang.descriptors.builders.generator.dataholder.DataHolderKeyImpl;
+import org.jetbrains.jet.lang.descriptors.builders.generator.entities.*;
 import org.jetbrains.jet.lang.descriptors.builders.generator.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.lang.descriptors.builders.generator.runtime.Optional;
 import org.jetbrains.jet.lang.descriptors.builders.generator.runtime.Skip;

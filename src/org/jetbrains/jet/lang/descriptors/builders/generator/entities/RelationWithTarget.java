@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jetbrains.jet.lang.descriptors.builders.generator;
+package org.jetbrains.jet.lang.descriptors.builders.generator.entities;
 
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
