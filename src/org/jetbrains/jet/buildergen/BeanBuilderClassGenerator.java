@@ -16,6 +16,7 @@
 
 package org.jetbrains.jet.buildergen;
 
+import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.entities.Relation;
@@ -24,6 +25,7 @@ import org.jetbrains.jet.buildergen.java.code.CodeFactory;
 import org.jetbrains.jet.buildergen.java.code.PieceOfCode;
 import org.jetbrains.jet.buildergen.java.declarations.ClassKind;
 import org.jetbrains.jet.buildergen.java.declarations.MethodModel;
+import org.jetbrains.jet.buildergen.java.declarations.ParameterModel;
 import org.jetbrains.jet.buildergen.java.declarations.Visibility;
 import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.buildergen.java.declarations.beans.FieldBean;
@@ -31,12 +33,16 @@ import org.jetbrains.jet.buildergen.java.declarations.beans.JavaDeclarationUtil;
 import org.jetbrains.jet.buildergen.java.declarations.beans.MethodBean;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
+import java.util.List;
+
 import static java.lang.Boolean.TRUE;
 import static org.jetbrains.jet.buildergen.BuilderClassGenerator.DELEGATE;
+import static org.jetbrains.jet.buildergen.BuilderClassGenerator.RELATION_FOR_PARAMETER;
 import static org.jetbrains.jet.buildergen.EntityBuilder.REFERENCE;
 import static org.jetbrains.jet.buildergen.java.ClassPrinter.METHOD_BODY;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.constructorCall;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCall;
+import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCallStatement;
 import static org.jetbrains.jet.buildergen.java.types.TypeUtil.simpleType;
 
 /**
@@ -88,7 +94,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
         classBean.getConstructors().add(implementConstructor(builderClass));
         classBean.getMethods().add(beanGetter(beanInterface));
 
-        for (MethodModel method : builderClass.getMethods()) {
+        for (final MethodModel method : builderClass.getMethods()) {
             MethodBean impl = JavaDeclarationUtil.copy(method)
                                     .addAnnotation(OVERRIDE)
                                     .setAbstract(false);
@@ -100,10 +106,21 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                 if (method.getName().equals("close")) {
                     continue; // no implementation needed for close()
                 }
+                // open()
                 body = new PieceOfCode() {
                     @Override
                     public <E> E create(@NotNull CodeFactory<E> f) {
-                        return f._throw(constructorCall(f, "java.lang", "UnsupportedOperationException"));
+                        List<E> statements = Lists.newArrayList();
+                        for (ParameterModel parameter : method.getParameters()) {
+                            Relation<?> relation = parameter.getData(RELATION_FOR_PARAMETER);
+                            String name = relation.getMultiplicity().isCollection()
+                                          ? MutableBeanInterfaceGenerator.getAllElementAdderName(relation)
+                                          : getSetterName(relation);
+                            statements.add(
+                                    methodCallStatement(f, bean(f), name, f.variableReference(parameter.getName()))
+                            );
+                        }
+                        return f.block(statements);
                     }
                 };
             }
