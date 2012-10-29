@@ -153,7 +153,7 @@ public class DataBuilderGenerator {
     }
 
     private static <E> E buildEntityStatement(CodeFactory<E> f, Relation<?> relation, E sourceExpression, Entity target) {
-        if (relation.getData(EntityBuilder.REFERENCE) == Boolean.TRUE) {
+        if (EntityUtil.isReference(relation)) {
             // builder.setTargetEntity(source)
             return f.statement(
                     methodCall(f, builder(f), getSetterName(relation), sourceExpression)

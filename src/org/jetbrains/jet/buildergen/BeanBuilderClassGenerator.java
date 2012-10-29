@@ -19,6 +19,7 @@ package org.jetbrains.jet.buildergen;
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.entities.Entity;
+import org.jetbrains.jet.buildergen.entities.EntityUtil;
 import org.jetbrains.jet.buildergen.entities.Relation;
 import org.jetbrains.jet.buildergen.java.ClassPrinter;
 import org.jetbrains.jet.buildergen.java.code.CodeFactory;
@@ -35,10 +36,8 @@ import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
 import java.util.List;
 
-import static java.lang.Boolean.TRUE;
 import static org.jetbrains.jet.buildergen.BuilderClassGenerator.DELEGATE;
 import static org.jetbrains.jet.buildergen.BuilderClassGenerator.RELATION_FOR_PARAMETER;
-import static org.jetbrains.jet.buildergen.EntityBuilder.REFERENCE;
 import static org.jetbrains.jet.buildergen.java.ClassPrinter.METHOD_BODY;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.*;
 import static org.jetbrains.jet.buildergen.java.types.TypeUtil.simpleType;
@@ -112,7 +111,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
             else {
                 // This must be an entity, everything else is taken care of in open()
                 final Entity targetEntity = (Entity) relation.getTarget();
-                if (relation.getData(REFERENCE) == TRUE) {
+                if (EntityUtil.isReference(relation)) {
                     body = referenceSetterBody();
                 }
                 else {

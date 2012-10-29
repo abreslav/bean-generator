@@ -19,6 +19,7 @@ package org.jetbrains.jet.buildergen.entities;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.buildergen.EntityBuilder;
 
 import java.util.Collection;
 import java.util.Set;
@@ -44,5 +45,9 @@ public class EntityUtil {
         for (Entity superEntity : entity.getSuperEntities()) {
             collectAllRelations(superEntity, result, visited);
         }
+    }
+
+    public static boolean isReference(@NotNull Relation<?> relation) {
+        return relation.getData(EntityBuilder.REFERENCE) == Boolean.TRUE;
     }
 }

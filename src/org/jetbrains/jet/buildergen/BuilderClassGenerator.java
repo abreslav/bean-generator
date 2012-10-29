@@ -84,7 +84,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
             Object target = relation.getTarget();
             if (target instanceof Entity) {
                 Entity targetEntity = (Entity) target;
-                if (relation.getData(EntityBuilder.REFERENCE) == Boolean.TRUE) {
+                if (EntityUtil.isReference(relation)) {
                     classBean.getMethods().add(createSetterMethod(types, relation, targetEntity));
                 }
                 else {
