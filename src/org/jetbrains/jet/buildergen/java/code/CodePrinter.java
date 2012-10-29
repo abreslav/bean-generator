@@ -103,6 +103,24 @@ public class CodePrinter implements CodeFactory<PrintAction> {
         };
     }
 
+    @Override
+    public PrintAction classReference(@NotNull final ClassModel classModel) {
+        return new PrintAction() {
+            @Override
+            public void print(Printer p) {
+                p.printWithNoIndent(typeRenderer.renderType(new TypeData() {
+                                        @Override
+                                        public <E> E create(@NotNull TypeFactory<E> f) {
+                                            return f.constructedType(classModel.getPackageFqName(),
+                                                                     classModel.getName(),
+                                                                     Collections.<E>emptyList());
+                                        }
+                                    })
+                );
+            }
+        };
+    }
+
     @NotNull
     @Override
     public PrintAction methodCall(

@@ -51,6 +51,11 @@ public class CodeUtil {
         return factory.constructorCall(classBean, Collections.<TypeData>emptyList(), Arrays.asList(arguments));
     }
 
+    public static <E> E classReference(@NotNull CodeFactory<E> factory, @NotNull String packageName, @NotNull String className) {
+        ClassBean classBean = new ClassBean().setPackageFqName(packageName).setName(className);
+        return factory.classReference(classBean);
+    }
+
     public static <E> E _for(@NotNull CodeFactory<E> f, @NotNull TypeData indexType, @NotNull String indexName, @NotNull E range, @NotNull E... body) {
         return f._for(f.variableDeclaration(indexType, indexName, null), range, f.block(Arrays.asList(body)));
     }

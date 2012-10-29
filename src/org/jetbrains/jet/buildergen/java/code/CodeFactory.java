@@ -37,6 +37,8 @@ public interface CodeFactory<E> {
 
     E variableReference(String name);
 
+    E classReference(@NotNull ClassModel classModel);
+
     E methodCall(@Nullable E receiver, String method, List<E> arguments);
 
     E constructorCall(ClassModel classBeingInstantiated, List<TypeData> typeArguments, List<E> arguments);
