@@ -39,7 +39,7 @@ public interface CodeFactory<E> {
 
     E classReference(@NotNull ClassModel classModel);
 
-    E methodCall(@Nullable E receiver, String method, List<E> arguments);
+    E methodCall(@Nullable E receiver, String method, @NotNull List<TypeData> typeArguments, List<E> arguments);
 
     E constructorCall(ClassModel classBeingInstantiated, List<TypeData> typeArguments, List<E> arguments);
 

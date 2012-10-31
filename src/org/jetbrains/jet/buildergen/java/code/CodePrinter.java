@@ -126,6 +126,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
     public PrintAction methodCall(
             @Nullable final PrintAction receiver,
             @NotNull final String method,
+            @NotNull final List<TypeData> typeArguments,
             @NotNull final List<PrintAction> arguments
     ) {
         return new PrintAction() {
@@ -135,6 +136,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
                     receiver.print(p);
                     p.printWithNoIndent(".");
                 }
+                printTypeArgumentsIfNeeded(p, typeArguments);
                 p.printWithNoIndent(method, "(");
                 for (Iterator<PrintAction> iterator = arguments.iterator(); iterator.hasNext(); ) {
                     PrintAction argument = iterator.next();
@@ -166,17 +168,7 @@ public class CodePrinter implements CodeFactory<PrintAction> {
                                         }
                                     })
                 );
-                if (!typeArguments.isEmpty()) {
-                    p.printWithNoIndent("<");
-                    for (Iterator<TypeData> iterator = typeArguments.iterator(); iterator.hasNext(); ) {
-                        TypeData argument = iterator.next();
-                        p.printWithNoIndent(typeRenderer.renderType(argument));
-                        if (iterator.hasNext()) {
-                            p.printWithNoIndent(", ");
-                        }
-                    }
-                    p.printWithNoIndent(">");
-                }
+                printTypeArgumentsIfNeeded(p, typeArguments);
                 p.printWithNoIndent("(");
                 for (Iterator<PrintAction> iterator = arguments.iterator(); iterator.hasNext(); ) {
                     PrintAction argument = iterator.next();
@@ -188,6 +180,20 @@ public class CodePrinter implements CodeFactory<PrintAction> {
                 p.printWithNoIndent(")");
             }
         };
+    }
+
+    private void printTypeArgumentsIfNeeded(@NotNull Printer p, @NotNull List<TypeData> typeArguments) {
+        if (!typeArguments.isEmpty()) {
+            p.printWithNoIndent("<");
+            for (Iterator<TypeData> iterator = typeArguments.iterator(); iterator.hasNext(); ) {
+                TypeData argument = iterator.next();
+                p.printWithNoIndent(typeRenderer.renderType(argument));
+                if (iterator.hasNext()) {
+                    p.printWithNoIndent(", ");
+                }
+            }
+            p.printWithNoIndent(">");
+        }
     }
 
     @NotNull

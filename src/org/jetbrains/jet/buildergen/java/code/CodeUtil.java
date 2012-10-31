@@ -35,7 +35,11 @@ public class CodeUtil {
     }
 
     public static <E> E methodCall(@NotNull CodeFactory<E> factory, @Nullable E receiver, String methodName, E... arguments) {
-        return factory.methodCall(receiver, methodName, Arrays.asList(arguments));
+        return factory.methodCall(receiver, methodName, Collections.<TypeData>emptyList(), Arrays.asList(arguments));
+    }
+
+    public static <E> E methodCallWithTypeArgument(@NotNull CodeFactory<E> factory, @Nullable E receiver, String methodName, @NotNull TypeData typeArgument, E... arguments) {
+        return factory.methodCall(receiver, methodName, Collections.singletonList(typeArgument), Arrays.asList(arguments));
     }
 
     public static <E> E methodCallStatement(@NotNull CodeFactory<E> factory, @Nullable E receiver, String methodName, E... arguments) {
