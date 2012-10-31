@@ -43,6 +43,7 @@ public class EntityBuilder {
 
     public static final DataHolderKey<Entity, ClassName> DATA_CLASS = DataHolderKeyImpl.create("DATA_CLASS");
     public static final DataHolderKey<Relation<?>, Boolean> REFERENCE = DataHolderKeyImpl.create("REFERENCE");
+    private static final DataHolderKey<Relation<?>, Boolean> SKIPPED = DataHolderKeyImpl.create("SKIPPED");
 
     private static final Map<Type, Class<?>> PRIMITIVE_TO_BOXED = ImmutableMap.<Type, Class<?>>builder()
             .put(byte.class, Byte.class)
@@ -72,6 +73,9 @@ public class EntityBuilder {
         bindOverriddenRelations(c.getEntities());
 
         removeOverriddenRelations(c.getEntities());
+
+        // To make @Skip "inherited"
+        removeSkippedRelations(c.getEntities());
     }
 
     private static void createEmptyEntities(Context c, EntityRepresentationContext<ClassBean> context) {
@@ -105,9 +109,6 @@ public class EntityBuilder {
     private static void createRelations(Context c, Class<?> entityClass) {
         Entity entity = c.safeGet(entityClass);
         for (Method method : entityClass.getDeclaredMethods()) {
-            if (method.getAnnotation(Skip.class) != null) {
-                continue;
-            }
             String relationName;
             String methodName = method.getName();
             if (methodName.startsWith("get")) {
@@ -133,6 +134,9 @@ public class EntityBuilder {
             RelationWithTarget<?> relation = createRelation(c, method, relationName, returnType);
             if (method.isAnnotationPresent(Reference.class)) {
                 relation.put(REFERENCE, true);
+            }
+            if (method.isAnnotationPresent(Skip.class)) {
+                relation.put(SKIPPED, true);
             }
             entity.getRelations().add(relation);
         }
@@ -241,6 +245,17 @@ public class EntityBuilder {
             for (Relation<?> relation : Lists.newArrayList(entity.getRelations())) {
                 if (!relation.getOverriddenRelations().isEmpty()) {
                     warning("[Overridden relation]: Removing " + entity + "::" + relation);
+                    entity.getRelations().remove(relation);
+                }
+            }
+        }
+    }
+
+    private static void removeSkippedRelations(Collection<Entity> entities) {
+        for (Entity entity : entities) {
+            for (Relation<?> relation : Lists.newArrayList(entity.getRelations())) {
+                if (relation.getData(SKIPPED) == Boolean.TRUE) {
+                    warning("[Skipped relation]: Removing " + entity + "::" + relation);
                     entity.getRelations().remove(relation);
                 }
             }
