@@ -149,7 +149,7 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
                         default:
                             throw new IllegalStateException("Unknown collection multiplicity: " + relation.getMultiplicity());
                     }
-                    TypeData elementType = context.types.targetToType(relation.getTarget(), Multiplicity.ONE);
+                    TypeData elementType = context.types.relationToType(relation, Multiplicity.ONE);
                     return f.constructorCall(collectionClass,
                                              Collections.singletonList(elementType),
                                              Collections.<E>singletonList(f.integer(0)));

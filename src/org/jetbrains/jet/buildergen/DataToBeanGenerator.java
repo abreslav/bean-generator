@@ -33,6 +33,7 @@ import org.jetbrains.jet.buildergen.java.declarations.beans.MethodBean;
 import org.jetbrains.jet.buildergen.java.declarations.beans.ParameterBean;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
+import org.jetbrains.jet.buildergen.runtime.LiteralReference;
 
 import java.util.Collection;
 import java.util.List;
@@ -98,8 +99,14 @@ public class DataToBeanGenerator {
                                                for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
                                                    E statement;
                                                    if (!relation.getMultiplicity().isCollection()) {
-                                                       if (relation.getTarget() instanceof Entity) {
-                                                           statement = deepCopyStatement(f, relation);
+                                                       Object target = relation.getTarget();
+                                                       if (target instanceof Entity) {
+                                                           if (EntityUtil.isReference(relation)) {
+                                                                statement = createLiteralReference(f, relation, (Entity) target);
+                                                           }
+                                                           else {
+                                                                statement = deepCopyStatement(f, relation);
+                                                           }
                                                        }
                                                        else {
                                                            statement = directCopyStatement(f, relation);
@@ -143,6 +150,20 @@ public class DataToBeanGenerator {
         );
     }
 
+    private static <E> E createLiteralReference(CodeFactory<E> f, Relation<?> relation, Entity target) {
+        String getterName = EntityRepresentationGenerator.getGetterName(relation);
+        String setterName = EntityRepresentationGenerator.getSetterName(relation);
+        Class<LiteralReference> literalReferenceClass = LiteralReference.class;
+        return methodCallStatement(f, f.variableReference(RESULT),
+                                   setterName,
+                                   methodCallWithTypeArgument(f, classReference(f, literalReferenceClass.getPackage().getName(),
+                                                                                literalReferenceClass.getSimpleName()),
+                                                              "create",
+                                                              TypeUtil.getDataType(target),
+                                                              methodCall(f, f.variableReference(ORIGINAL), getterName))
+        );
+    }
+
     private static <E> E deepCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation, EntityRepresentationContext<ClassBean> context) {
         TypeData elementType;
         Object target = relation.getTarget();
@@ -151,7 +172,7 @@ public class DataToBeanGenerator {
             elementType = TypeUtil.getDataType(targetEntity);
         }
         else {
-            elementType = new TypeTransformer(context).targetToType(target, Multiplicity.ONE);
+            elementType = new TypeTransformer(context).relationToType(relation, Multiplicity.ONE);
         }
         String getterName = EntityRepresentationGenerator.getGetterName(relation);
         return _for(f, elementType, LOOP_INDEX, methodCall(f, f.variableReference(ORIGINAL), getterName),

@@ -176,7 +176,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
         return new MethodBean()
                 .addAnnotation(NOT_NULL)
                 .setVisibility(Visibility.PUBLIC)
-                .setReturnType(types.targetToType(targetEntity, Multiplicity.ONE))
+                .setReturnType(types.relationToType(relation, Multiplicity.ONE))
                 .setName(name)
                 .put(ClassPrinter.METHOD_BODY,
                      new PieceOfCode() {
@@ -218,7 +218,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
                 .setName(OPEN);
         for (Relation<?> relation : relations) {
             open.addParameter(new ParameterBean()
-                                      .setType(types.targetToType(relation.getTarget(), relation.getMultiplicity(), TypeTransformer.Variance.OUT))
+                                      .setType(types.relationToType(relation, TypeTransformer.Variance.OUT))
                                       .setName(getParameterName(relation))
                                       .put(RELATION_FOR_PARAMETER, relation)
             );

@@ -22,6 +22,7 @@ import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.entities.Entity;
+import org.jetbrains.jet.buildergen.entities.EntityUtil;
 import org.jetbrains.jet.buildergen.entities.Multiplicity;
 import org.jetbrains.jet.buildergen.entities.Relation;
 import org.jetbrains.jet.buildergen.java.declarations.WildcardKind;
@@ -29,6 +30,7 @@ import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeFactory;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
+import org.jetbrains.jet.buildergen.runtime.BeanReference;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -55,27 +57,55 @@ public class TypeTransformer {
     }
 
     public  <T> TypeData relationToType(@NotNull Relation<T> relation) {
-        return targetToType(relation.getTarget(), relation.getMultiplicity(), Variance.NONE);
+        return relationToType(relation, Variance.NONE);
     }
 
-    public  <T> TypeData relationToVariantType(@NotNull Relation<T> relation, @NotNull Variance variance) {
-        return targetToType(relation.getTarget(), relation.getMultiplicity(), variance);
+    public  <T> TypeData relationToType(@NotNull Relation<T> relation, @NotNull Variance variance) {
+        return relationToType(relation, relation.getMultiplicity(), variance);
     }
 
-    public  <T> TypeData targetToType(T target, Multiplicity multiplicity) {
-        return targetToType(target, multiplicity, Variance.NONE);
+    public  <T> TypeData relationToType(@NotNull Relation<T> relation, Multiplicity multiplicity) {
+        return relationToType(relation, multiplicity, Variance.NONE);
     }
 
-    public <T> TypeData targetToType(T target, Multiplicity multiplicity, Variance variance) {
+    public <T> TypeData relationToType(@NotNull Relation<T> relation, Multiplicity multiplicity, Variance variance) {
+        T target = relation.getTarget();
+        boolean isReference = EntityUtil.isReference(relation);
         if (target instanceof Entity) {
             Entity entity = (Entity) target;
-            return typeWithMultiplicity(multiplicity, TypeUtil.simpleType(context.getRepresentation(entity)), variance);
+            TypeData elementType;
+            if (isReference) {
+                elementType = makeReferenceIfNeeded(TypeUtil.getDataType(entity), isReference);
+            }
+            else {
+                elementType = TypeUtil.simpleType(context.getRepresentation(entity));
+            }
+            return typeWithMultiplicity(multiplicity, elementType, variance);
         }
         else if (target instanceof Type) {
             Type type = (Type) target;
-            return typeWithMultiplicity(multiplicity, reflectionType(type), variance);
+            return typeWithMultiplicity(multiplicity, makeReferenceIfNeeded(reflectionType(type), isReference), variance);
         }
         throw new IllegalArgumentException("Unsupported target type:" + target);
+    }
+
+    private TypeData makeReferenceIfNeeded(TypeData typeData, boolean isReference) {
+        if (isReference) {
+            return referenceType(typeData);
+        }
+        return typeData;
+    }
+
+    private TypeData referenceType(@NotNull final TypeData typeData) {
+        return new TypeData() {
+            @Override
+            public <E> E create(@NotNull TypeFactory<E> f) {
+                Class<BeanReference> beanReferenceClass = BeanReference.class;
+                return TypeUtil.constructedType(f,
+                                                beanReferenceClass.getPackage().getName(), beanReferenceClass.getSimpleName(),
+                                                typeData.create(f));
+            }
+        };
     }
 
     public static TypeData typeWithMultiplicity(Multiplicity multiplicity, TypeData elementType, Variance variance) {

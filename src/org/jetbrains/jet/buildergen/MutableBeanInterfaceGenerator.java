@@ -69,7 +69,7 @@ public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator
                                                        .setVisibility(Visibility.PUBLIC)
                                                        .setAbstract(true)
                                                        .setReturnType(
-                                                               context.types.relationToVariantType(relation, TypeTransformer.Variance.OUT))
+                                                               context.types.relationToType(relation, TypeTransformer.Variance.OUT))
                                                        .setName(getGetterName(relation))
                                                        .put(GETTER, relation)
             );
@@ -114,7 +114,7 @@ public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator
     }
 
     private static ParameterBean createSetterParameter(TypeTransformer types, Relation<?> relation) {
-        TypeData setterParameterType = types.targetToType(relation.getTarget(), Multiplicity.ONE);
+        TypeData setterParameterType = types.relationToType(relation, Multiplicity.ONE);
         return new ParameterBean()
                 //.addAnnotation(NOT_NULL)
                 .setType(setterParameterType)
@@ -123,7 +123,7 @@ public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator
 
     private static ParameterBean createAllAdderParameter(TypeTransformer types, Relation<?> relation) {
         assert relation.getMultiplicity().isCollection();
-        TypeData type = types.targetToType(relation.getTarget(), Multiplicity.COLLECTION, TypeTransformer.Variance.OUT);
+        TypeData type = types.relationToType(relation, Multiplicity.COLLECTION, TypeTransformer.Variance.OUT);
         return new ParameterBean().addAnnotation(NOT_NULL).setType(type).setName("values");
     }
 

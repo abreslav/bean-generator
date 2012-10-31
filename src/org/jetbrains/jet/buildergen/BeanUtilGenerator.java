@@ -142,7 +142,7 @@ public class BeanUtilGenerator {
                                                for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
                                                    E statement;
                                                    if (!relation.getMultiplicity().isCollection()) {
-                                                       if (relation.getTarget() instanceof Entity) {
+                                                       if (!EntityUtil.isReference(relation) && relation.getTarget() instanceof Entity) {
                                                            statement = deepCopyStatement(f, relation);
                                                        }
                                                        else {
@@ -196,7 +196,7 @@ public class BeanUtilGenerator {
 
     private static <E> E deepCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation, EntityRepresentationContext<ClassBean> context) {
         TypeTransformer typeTransformer = new TypeTransformer(context);
-        TypeData elementType = typeTransformer.targetToType(relation.getTarget(), Multiplicity.ONE);
+        TypeData elementType = typeTransformer.relationToType(relation, Multiplicity.ONE);
         String getterName = EntityRepresentationGenerator.getGetterName(relation);
         return _for(f, elementType, LOOP_INDEX, methodCall(f, f.variableReference(ORIGINAL), getterName),
                     copyCollectionElementStatement(f, relation)
