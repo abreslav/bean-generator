@@ -20,13 +20,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.intellij.openapi.util.io.FileUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.descriptors.*;
-import org.jetbrains.jet.lang.descriptors.annotations.Annotated;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.java.ClassPrinter;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
 import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
+import org.jetbrains.jet.lang.descriptors.*;
+import org.jetbrains.jet.lang.descriptors.annotations.Annotated;
+import org.jetbrains.jet.lang.types.JetType;
 import org.jetbrains.jet.lang.types.TypeConstructor;
+import org.jetbrains.jet.lang.types.TypeProjection;
 import org.jetbrains.jet.utils.Printer;
 
 import java.io.File;
@@ -58,7 +60,15 @@ public class BeanGenerator {
                 ClassOrNamespaceDescriptor.class,
                 TypeConstructor.class,
                 ClassDescriptor.class,
-                FunctionDescriptor.class
+                FunctionDescriptor.class,
+                JetType.class,
+                TypeProjection.class,
+                ReceiverParameterDescriptor.class,
+                ConstructorDescriptor.class,
+                PropertyDescriptor.class,
+                PropertyGetterDescriptor.class,
+                PropertySetterDescriptor.class,
+                PropertyAccessorDescriptor.class
         );
 
         String generatedSourceRoot = "bean-generator/generated";
