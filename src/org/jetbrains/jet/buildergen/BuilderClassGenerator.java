@@ -245,7 +245,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
     }
 
     private static <E> E delegateCall(CodeFactory<E> f, String name, List<E> arguments) {
-        return f.methodCall(f.fieldReference(f._this(), DELEGATE), name, arguments);
+        return f.methodCall(f.fieldReference(f._this(), DELEGATE), name, Collections.<TypeData>emptyList(), arguments);
     }
 
     private static <E> E delegateNullCheck(CodeFactory<E> f) {

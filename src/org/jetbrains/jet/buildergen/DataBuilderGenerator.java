@@ -34,10 +34,12 @@ import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static org.jetbrains.jet.buildergen.EntityRepresentationGenerator.getSetterName;
-import static org.jetbrains.jet.buildergen.java.code.CodeUtil.*;
+import static org.jetbrains.jet.buildergen.java.code.CodeUtil._for;
+import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCall;
 import static org.jetbrains.jet.buildergen.java.types.TypeUtil.simpleType;
 
 /**
@@ -114,6 +116,7 @@ public class DataBuilderGenerator {
                                                // builder.open(entity.getFoo(), entity.isBar(), ...)
                                                statements.add(0, f.statement(
                                                        f.methodCall(builder(f), BuilderClassGenerator.OPEN,
+                                                                    Collections.<TypeData>emptyList(),
                                                                     argumentsToOpen)
                                                ));
 
