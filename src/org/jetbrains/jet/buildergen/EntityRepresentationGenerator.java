@@ -16,19 +16,20 @@
 
 package org.jetbrains.jet.buildergen;
 
-import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.dataholder.DataHolderKey;
+import org.jetbrains.jet.buildergen.dataholder.DataHolderKeyImpl;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.entities.Relation;
-import org.jetbrains.jet.buildergen.java.declarations.*;
+import org.jetbrains.jet.buildergen.java.declarations.ClassKind;
+import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
+import org.jetbrains.jet.buildergen.java.declarations.Visibility;
 import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
-import org.jetbrains.jet.buildergen.dataholder.DataHolderKeyImpl;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeFactory;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
-import java.util.*;
+import java.util.Collection;
 
 /**
  * @author abreslav
@@ -131,7 +132,7 @@ public abstract class EntityRepresentationGenerator {
     }
 
     public static String getFieldName(Relation relation) {
-        return StringUtil.decapitalize(relation.getName());
+        return GeneratorUtil.variableNameByRelation(relation);
     }
 
     private static <T> String getGetterPrefix(T target) {

@@ -17,7 +17,6 @@
 package org.jetbrains.jet.buildergen;
 
 import com.google.common.collect.Lists;
-import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.dataholder.DataHolderKey;
 import org.jetbrains.jet.buildergen.dataholder.DataHolderKeyImpl;
@@ -253,7 +252,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
     }
 
     private static String getParameterName(Relation<?> relation) {
-        return StringUtil.decapitalize(relation.getName());
+        return GeneratorUtil.variableNameByRelation(relation);
     }
 
     public static String getBuilderMethodName(Relation<?> relation) {
