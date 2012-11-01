@@ -27,6 +27,7 @@ import org.jetbrains.jet.buildergen.runtime.Optional;
 import org.jetbrains.jet.buildergen.runtime.Reference;
 import org.jetbrains.jet.buildergen.runtime.Skip;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -44,6 +45,8 @@ public class EntityBuilder {
     public static final DataHolderKey<Entity, ClassName> DATA_CLASS = DataHolderKeyImpl.create("DATA_CLASS");
     public static final DataHolderKey<Relation<?>, Boolean> REFERENCE = DataHolderKeyImpl.create("REFERENCE");
     private static final DataHolderKey<Relation<?>, Boolean> SKIPPED = DataHolderKeyImpl.create("SKIPPED");
+    public static final DataHolderKey<Relation<?>, Boolean> NULLABLE = DataHolderKeyImpl.create("NULLABLE");
+    public static final DataHolderKey<Relation<?>, Boolean> NOT_NULL = DataHolderKeyImpl.create("NOT_NULL");
 
     private static final Map<Type, Class<?>> PRIMITIVE_TO_BOXED = ImmutableMap.<Type, Class<?>>builder()
             .put(byte.class, Byte.class)
@@ -132,13 +135,26 @@ public class EntityBuilder {
             }
 
             RelationWithTarget<?> relation = createRelation(c, method, relationName, returnType);
-            if (method.isAnnotationPresent(Reference.class)) {
-                relation.put(REFERENCE, true);
-            }
-            if (method.isAnnotationPresent(Skip.class)) {
-                relation.put(SKIPPED, true);
-            }
+
+            markIfAnnotationPresent(method, relation, Reference.class, REFERENCE);
+            markIfAnnotationPresent(method, relation, Skip.class, SKIPPED);
+
+            // @Nullable and @NotNull have retention policy CLASS, so we'd need ASM to obtain them
+            //markIfAnnotationPresent(method, relation, Nullable.class, NULLABLE);
+            //markIfAnnotationPresent(method, relation, NotNull.class, NOT_NULL);
+
             entity.getRelations().add(relation);
+        }
+    }
+
+    private static void markIfAnnotationPresent(
+            Method method,
+            RelationWithTarget<?> relation,
+            Class<? extends Annotation> annotationClass,
+            DataHolderKey<Relation<?>, Boolean> key
+    ) {
+        if (method.isAnnotationPresent(annotationClass)) {
+            relation.put(key, true);
         }
     }
 
