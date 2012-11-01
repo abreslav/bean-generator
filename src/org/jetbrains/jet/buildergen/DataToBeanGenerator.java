@@ -33,7 +33,6 @@ import org.jetbrains.jet.buildergen.java.declarations.beans.MethodBean;
 import org.jetbrains.jet.buildergen.java.declarations.beans.ParameterBean;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
-import org.jetbrains.jet.buildergen.runtime.LiteralReference;
 
 import java.util.Collection;
 import java.util.List;
@@ -102,7 +101,7 @@ public class DataToBeanGenerator {
                                                        Object target = relation.getTarget();
                                                        if (target instanceof Entity) {
                                                            if (EntityUtil.isReference(relation)) {
-                                                                statement = createLiteralReference(f, relation, (Entity) target);
+                                                                statement = copyAsLiteralReference(f, relation, (Entity) target);
                                                            }
                                                            else {
                                                                 statement = deepCopyStatement(f, relation);
@@ -113,7 +112,7 @@ public class DataToBeanGenerator {
                                                        }
                                                    }
                                                    else {
-                                                       statement = deepCopyCollectionStatement(f, relation, interfaces);
+                                                        statement = deepCopyCollectionStatement(f, relation, interfaces);
                                                    }
                                                    statements.add(statement);
                                                }
@@ -150,17 +149,12 @@ public class DataToBeanGenerator {
         );
     }
 
-    private static <E> E createLiteralReference(CodeFactory<E> f, Relation<?> relation, Entity target) {
+    private static <E> E copyAsLiteralReference(CodeFactory<E> f, Relation<?> relation, Entity target) {
         String getterName = EntityRepresentationGenerator.getGetterName(relation);
         String setterName = EntityRepresentationGenerator.getSetterName(relation);
-        Class<LiteralReference> literalReferenceClass = LiteralReference.class;
         return methodCallStatement(f, f.variableReference(RESULT),
                                    setterName,
-                                   methodCallWithTypeArgument(f, classReference(f, literalReferenceClass.getPackage().getName(),
-                                                                                literalReferenceClass.getSimpleName()),
-                                                              "create",
-                                                              TypeUtil.getDataType(target),
-                                                              methodCall(f, f.variableReference(ORIGINAL), getterName))
+                                   GeneratorUtil.createLiteralReference(f, target, methodCall(f, f.variableReference(ORIGINAL), getterName))
         );
     }
 
@@ -183,8 +177,14 @@ public class DataToBeanGenerator {
     private static <E> E copyCollectionElementStatement(CodeFactory<E> f, Relation<?> relation) {
         String oneElementAdderName = MutableBeanInterfaceGenerator.getSingleElementAdderName(relation);
         if (relation.getTarget() instanceof Entity) {
-            return methodCallStatement(f, f.variableReference(RESULT), oneElementAdderName,
-                                            methodCall(f, null, DATA_TO_BEAN, f.variableReference(LOOP_INDEX)));
+            if (EntityUtil.isReference(relation)) {
+                return methodCallStatement(f, f.variableReference(RESULT), oneElementAdderName,
+                                           GeneratorUtil.createLiteralReference(f, (Entity) relation.getTarget(), f.variableReference(LOOP_INDEX)));
+            }
+            else {
+                return methodCallStatement(f, f.variableReference(RESULT), oneElementAdderName,
+                                           methodCall(f, null, DATA_TO_BEAN, f.variableReference(LOOP_INDEX)));
+            }
         }
         else {
             return methodCallStatement(f, f.variableReference(RESULT), oneElementAdderName,

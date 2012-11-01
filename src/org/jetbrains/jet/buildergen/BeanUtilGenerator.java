@@ -205,7 +205,7 @@ public class BeanUtilGenerator {
 
     private static <E> E copyCollectionElementStatement(CodeFactory<E> f, Relation<?> relation) {
         String oneElementAdderName = MutableBeanInterfaceGenerator.getSingleElementAdderName(relation);
-        if (relation.getTarget() instanceof Entity) {
+        if (relation.getTarget() instanceof Entity && !EntityUtil.isReference(relation)) {
             return methodCallStatement(f, f.variableReference(RESULT), oneElementAdderName,
                                             methodCall(f, null, DEEP_COPY, f.variableReference(LOOP_INDEX)));
         }

@@ -18,13 +18,29 @@ package org.jetbrains.jet.buildergen;
 
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.entities.Relation;
 import org.jetbrains.jet.buildergen.java.JavaKeyWords;
+import org.jetbrains.jet.buildergen.java.code.CodeFactory;
+import org.jetbrains.jet.buildergen.java.types.TypeUtil;
+import org.jetbrains.jet.buildergen.runtime.LiteralReference;
+
+import static org.jetbrains.jet.buildergen.java.code.CodeUtil.classReference;
+import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCallWithTypeArgument;
 
 public class GeneratorUtil {
 
     @NotNull
     public static String variableNameByRelation(@NotNull Relation<?> relation) {
         return JavaKeyWords.escapeJavaKeyWordWithUnderscore(StringUtil.decapitalize(relation.getName()));
+    }
+
+    static <E> E createLiteralReference(CodeFactory<E> f, Entity target, E referee) {
+        Class<LiteralReference> literalReferenceClass = LiteralReference.class;
+        return methodCallWithTypeArgument(f, classReference(f, literalReferenceClass.getPackage().getName(),
+                                                                literalReferenceClass.getSimpleName()),
+                                              "create",
+                                              TypeUtil.getDataType(target),
+                                              referee);
     }
 }
