@@ -74,6 +74,7 @@ public class BeanGenerator {
         String generatedSourceRoot = "bean-generator/generated";
         String mutableBeanPackage = "beans";
         String mutableBeanClassPackage = "beans.impl";
+        String mutableBeanUtilPackage = "beans.util";
         String builderClassPackage = "builders";
         String beanBuilderPackage = "beans.builders";
 
@@ -82,6 +83,7 @@ public class BeanGenerator {
                 generatedSourceRoot,
                 mutableBeanPackage,
                 mutableBeanClassPackage,
+                mutableBeanUtilPackage,
                 builderClassPackage,
                 beanBuilderPackage
         );
@@ -92,6 +94,7 @@ public class BeanGenerator {
             String generatedSourceRoot,
             String mutableBeanPackage,
             String mutableBeanClassPackage,
+            String mutableBeanUtilPackage,
             String builderClassPackage,
             String beanBuilderPackage
     ) throws IOException {
@@ -111,9 +114,9 @@ public class BeanGenerator {
                 mutableBeanClassPackage
         );
 
-        ClassModel beanUtil = BeanUtilGenerator.generate(mutableBeanPackage, "BeanUtil", context.mutableBeanInterfaces,
+        ClassModel beanUtil = BeanUtilGenerator.generate(mutableBeanUtilPackage, "BeanUtil", context.mutableBeanInterfaces,
                                                          context.mutableBeanImplementationClasses);
-        ClassModel dataToBeanUtil = DataToBeanGenerator.generate(mutableBeanPackage, "DataToBean", context.mutableBeanInterfaces,
+        ClassModel dataToBeanUtil = DataToBeanGenerator.generate(mutableBeanUtilPackage, "DataToBean", context.mutableBeanInterfaces,
                                                                  context.mutableBeanImplementationClasses);
 
         Collection<ClassModel> builderClasses = new BuilderClassGenerator().generate(
@@ -135,8 +138,8 @@ public class BeanGenerator {
 
         writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeans);
         writeToFiles(generatedSourceRoot, mutableBeanClassPackage, mutableBeanClasses);
-        writeToFiles(generatedSourceRoot, mutableBeanPackage, Collections.singletonList(beanUtil));
-        writeToFiles(generatedSourceRoot, mutableBeanPackage, Collections.singletonList(dataToBeanUtil));
+        writeToFiles(generatedSourceRoot, mutableBeanUtilPackage, Collections.singletonList(beanUtil));
+        writeToFiles(generatedSourceRoot, mutableBeanUtilPackage, Collections.singletonList(dataToBeanUtil));
         writeToFiles(generatedSourceRoot, builderClassPackage, builderClasses);
         writeToFiles(generatedSourceRoot, beanBuilderPackage, beanBuilderClasses);
         writeToFiles(generatedSourceRoot, builderClassPackage, Collections.singletonList(builderUtil));
