@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.entities.Relation;
 import org.jetbrains.jet.buildergen.java.JavaKeyWords;
+import org.jetbrains.jet.buildergen.java.code.BinaryOperation;
 import org.jetbrains.jet.buildergen.java.code.CodeFactory;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 import org.jetbrains.jet.buildergen.runtime.LiteralReference;
@@ -42,5 +43,15 @@ public class GeneratorUtil {
                                               "create",
                                               TypeUtil.getDataType(target),
                                               referee);
+    }
+
+    public static <E> E ifVariableIsNullReturnNullStatement(CodeFactory<E> f, String variableName) {
+        return f._if(
+                f.binary(
+                        f.variableReference(variableName),
+                        BinaryOperation.EQ,
+                        f._null()
+                ),
+                f._return(f._null()));
     }
 }

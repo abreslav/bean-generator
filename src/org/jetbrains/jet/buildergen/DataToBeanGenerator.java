@@ -76,12 +76,12 @@ public class DataToBeanGenerator {
             result.add(new MethodBean()
                                .setVisibility(Visibility.PUBLIC)
                                .setStatic(true)
-                               .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
+                               //.addAnnotation(EntityRepresentationGenerator.NOT_NULL)
                                .setReturnType(beanInterfaceType)
                                .setName(DATA_TO_BEAN)
                                .addParameter(
                                        new ParameterBean()
-                                               .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
+                                               //.addAnnotation(EntityRepresentationGenerator.NOT_NULL)
                                                .setType(dataType)
                                                .setName(ORIGINAL)
                                )
@@ -92,6 +92,8 @@ public class DataToBeanGenerator {
                                            @Override
                                            public <E> E create(@NotNull CodeFactory<E> f) {
                                                List<E> statements = Lists.newArrayList();
+                                               statements.add(GeneratorUtil.ifVariableIsNullReturnNullStatement(f, ORIGINAL));
+
                                                statements.add(resultVariableDeclarationStatement(f,
                                                                                                  beanInterfaceType, implementations
                                                        .getRepresentation(entity)));

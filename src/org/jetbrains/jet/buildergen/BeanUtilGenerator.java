@@ -71,12 +71,12 @@ public class BeanUtilGenerator {
         return new MethodBean()
                 .setVisibility(Visibility.PUBLIC)
                 .setStatic(true)
-                .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
+                //.addAnnotation(EntityRepresentationGenerator.NOT_NULL)
                 .setReturnType(beanInterfaceType)
                 .setName(methodName)
                 .addParameter(
                         new ParameterBean()
-                                .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
+                                //.addAnnotation(EntityRepresentationGenerator.NOT_NULL)
                                 .setType(beanInterfaceType)
                                 .setName(ORIGINAL)
                 );
@@ -98,6 +98,8 @@ public class BeanUtilGenerator {
                                 @Override
                                 public <E> E create(@NotNull CodeFactory<E> f) {
                                     List<E> statements = Lists.newArrayList();
+
+                                    statements.add(GeneratorUtil.ifVariableIsNullReturnNullStatement(f, ORIGINAL));
                                     statements.add(resultVariableDeclarationStatement(f,
                                                                                       beanInterfaceType,
                                                                                       implementations.getRepresentation(entity)));
@@ -137,6 +139,8 @@ public class BeanUtilGenerator {
                                            @Override
                                            public <E> E create(@NotNull CodeFactory<E> f) {
                                                List<E> statements = Lists.newArrayList();
+                                               statements.add(GeneratorUtil.ifVariableIsNullReturnNullStatement(f, ORIGINAL));
+
                                                statements.add(resultVariableDeclarationStatement(f,
                                                                      beanInterfaceType, implementations.getRepresentation(entity)));
                                                for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
