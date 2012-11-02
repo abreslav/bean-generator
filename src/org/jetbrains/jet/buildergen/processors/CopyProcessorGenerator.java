@@ -68,14 +68,22 @@ public class CopyProcessorGenerator {
             }
 
             @Override
-            public <E> void traceMethodBody(
+            public <E> void beforeEntityMethodBody(
                     @NotNull CodeFactory<E> f,
                     @NotNull Entity entity,
                     E inExpression,
                     E outExpression,
                     @NotNull List<E> statements
-            ) {
-            }
+            ) {}
+
+            @Override
+            public <E> void afterEntityMethodBody(
+                    @NotNull CodeFactory<E> f,
+                    @NotNull Entity entity,
+                    E inExpression,
+                    E outExpression,
+                    @NotNull List<E> statements
+            ) {}
 
             @Override
             public <E> void assignRelation(
