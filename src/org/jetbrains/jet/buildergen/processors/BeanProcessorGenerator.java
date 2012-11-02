@@ -385,12 +385,12 @@ public class BeanProcessorGenerator {
                     .setName(before ? beforeEntityMethodName(entity) : afterEntityMethodName(entity))
                     .addParameter(
                             new ParameterBean()
-                                    .setType(TypeUtil.simpleType(Object.class))
+                                    .setType(TypeUtil.type(Object.class))
                                     .setName(PROCESS_METHOD_PARAMETER_NAME)
                     )
                     .addParameter(
                             new ParameterBean()
-                                    .setType(TypeUtil.simpleType(Object.class))
+                                    .setType(TypeUtil.type(Object.class))
                                     .setName(PROCESS_METHOD_RESULT_NAME)
                     );
 
