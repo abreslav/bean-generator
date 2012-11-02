@@ -32,6 +32,9 @@ import java.util.List;
  */
 @SuppressWarnings("unchecked")
 public class TypeUtil {
+
+    private static final TypeData[] EMPTY = new TypeData[0];
+
     public static <E> E constructedType(
             @NotNull TypeFactory<E> factory,
             @NotNull String packageName, @NotNull String className, E... arguments
@@ -59,8 +62,29 @@ public class TypeUtil {
         return type(classModel.getPackageFqName(), classModel.getName(), arguments);
     }
 
-    public static TypeData type(@NotNull Class<?> javaClass, TypeData... arguments) {
+    public static TypeData typeWithTypeDataArguments(@NotNull Class<?> javaClass, TypeData... arguments) {
         return type(javaClass.getPackage().getName(), javaClass.getSimpleName(), arguments);
+    }
+
+    public static TypeData type(@NotNull Class<?> javaClass, Class<?>... arguments) {
+        TypeData[] args = javaClassesToTypes(Arrays.asList(arguments)).toArray(new TypeData[arguments.length]);
+        return type(javaClass.getPackage().getName(), javaClass.getSimpleName(), args);
+    }
+
+    @NotNull
+    public static List<TypeData> javaClassesToTypes(List<Class<?>> arguments) {
+        return Lists.newArrayList(Collections2.transform(arguments,
+                                                         new Function<Class<?>, TypeData>() {
+                                                             @Override
+                                                             public TypeData apply(Class<?> data) {
+                                                                 return typeWithTypeDataArguments(data, EMPTY);
+                                                             }
+                                                         }));
+    }
+
+    @NotNull
+    public static List<TypeData> javaClassesToTypes(Class<?>... arguments) {
+        return javaClassesToTypes(Arrays.asList(arguments));
     }
 
     public static TypeData _void() {
