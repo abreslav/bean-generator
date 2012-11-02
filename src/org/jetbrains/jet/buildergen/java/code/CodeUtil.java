@@ -55,6 +55,15 @@ public class CodeUtil {
         return factory.constructorCall(classBean, Collections.<TypeData>emptyList(), Arrays.asList(arguments));
     }
 
+    public static <E> E constructorCall(@NotNull CodeFactory<E> factory, @NotNull Class<?> javaClass, E... arguments) {
+        return factory.constructorCall(getClassBean(javaClass), Collections.<TypeData>emptyList(), Arrays.asList(arguments));
+    }
+
+    @NotNull
+    public static ClassBean getClassBean(@NotNull Class<?> javaClass) {
+        return new ClassBean().setPackageFqName(javaClass.getPackage().getName()).setName(javaClass.getSimpleName());
+    }
+
     public static <E> E classReference(@NotNull CodeFactory<E> factory, @NotNull String packageName, @NotNull String className) {
         ClassBean classBean = new ClassBean().setPackageFqName(packageName).setName(className);
         return factory.classReference(classBean);
