@@ -52,9 +52,13 @@ public class GeneratorUtil {
     }
 
     public static <E> E ifVariableIsNullReturnNullStatement(CodeFactory<E> f, String variableName) {
+        return ifExpressionIsNullReturnNullStatement(f, f.variableReference(variableName));
+    }
+
+    public static <E> E ifExpressionIsNullReturnNullStatement(CodeFactory<E> f, E expression) {
         return f._if(
                 f.binary(
-                        f.variableReference(variableName),
+                        expression,
                         BinaryOperation.EQ,
                         f._null()
                 ),
