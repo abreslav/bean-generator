@@ -380,7 +380,6 @@ public class BeanProcessorGenerator {
         @NotNull
         private MethodModel generateTraceMethod(@NotNull final Entity entity, final boolean before) {
             final MethodBean method = new MethodBean()
-                    .addAnnotation(NOT_NULL)
                     .setVisibility(Visibility.PUBLIC)
                     .setReturnType(TypeUtil._void())
                     .setName(before ? beforeEntityMethodName(entity) : afterEntityMethodName(entity))
