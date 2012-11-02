@@ -40,7 +40,6 @@ public class CopyProcessorGenerator {
             @NotNull final EntityRepresentationContext<? extends ClassModel> interfaces,
             @NotNull final EntityRepresentationContext<? extends ClassModel> implementations) {
         final TypeTransformer interfaceTypes = new TypeTransformer(interfaces);
-        final TypeTransformer implTypes = new TypeTransformer(interfaces);
         return BeanProcessorGenerator.generate(packageName, className, interfaces, new BeanProcessorGenerationStrategy() {
             @NotNull
             @Override
