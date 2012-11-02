@@ -31,7 +31,6 @@ import org.jetbrains.jet.buildergen.java.declarations.beans.FieldBean;
 import org.jetbrains.jet.buildergen.java.declarations.beans.MethodBean;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
-import org.jetbrains.jet.buildergen.runtime.LiteralReferenceResolver;
 import org.jetbrains.jet.utils.Printer;
 
 import java.util.Collections;
@@ -218,13 +217,7 @@ public class ToStringProcessorGenerator {
                                            _printer.print(f, f.string(relation.getName() + " = ")),
 
                                            _printer.printlnWithNoIndent(f,
-                                                                        methodCall(f,
-                                                                                   f.fieldReference(f.classReference(
-                                                                                           CodeUtil.getClassBean(
-                                                                                                   LiteralReferenceResolver.class)),
-                                                                                                    "INSTANCE"),
-                                                                                   "resolve", inExpression
-                                                                        )
+                                                        methodCall(f, inExpression, "resolve")
                                            ),
 
                                            f._return(f._null())
