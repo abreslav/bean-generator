@@ -91,7 +91,7 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
                     }
                     MethodBean implementation = implement(method, entry.getValue().createBody(c, method));
                     if (entry.getKey() != (Object) MutableBeanInterfaceGenerator.GETTER) {
-                        implementation.setReturnType(TypeUtil.type(interfaceBean));
+                        implementation.setReturnType(TypeUtil.type(classBean));
                     }
                     classBean.getMethods().add(implementation);
                 }
