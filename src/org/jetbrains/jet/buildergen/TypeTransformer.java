@@ -25,8 +25,8 @@ import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.entities.EntityUtil;
 import org.jetbrains.jet.buildergen.entities.Multiplicity;
 import org.jetbrains.jet.buildergen.entities.Relation;
+import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
 import org.jetbrains.jet.buildergen.java.declarations.WildcardKind;
-import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeFactory;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
@@ -50,9 +50,9 @@ public class TypeTransformer {
         OUT
     }
 
-    private final EntityRepresentationContext<ClassBean> context;
+    private final EntityRepresentationContext<? extends ClassModel> context;
 
-    public TypeTransformer(EntityRepresentationContext<ClassBean> context) {
+    public TypeTransformer(EntityRepresentationContext<? extends ClassModel> context) {
         this.context = context;
     }
 
