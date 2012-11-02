@@ -18,11 +18,8 @@ package org.jetbrains.jet.buildergen.processors;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.EntityRepresentationContext;
-import org.jetbrains.jet.buildergen.EntityRepresentationGenerator;
-import org.jetbrains.jet.buildergen.MutableBeanInterfaceGenerator;
 import org.jetbrains.jet.buildergen.TypeTransformer;
 import org.jetbrains.jet.buildergen.entities.Entity;
-import org.jetbrains.jet.buildergen.entities.Multiplicity;
 import org.jetbrains.jet.buildergen.entities.Relation;
 import org.jetbrains.jet.buildergen.java.code.CodeFactory;
 import org.jetbrains.jet.buildergen.java.code.CodeUtil;
@@ -32,14 +29,10 @@ import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
 import java.util.List;
 
-import static org.jetbrains.jet.buildergen.java.code.CodeUtil._for;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCall;
-import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCallStatement;
 import static org.jetbrains.jet.buildergen.processors.BeanProcessorGenerator.*;
 
 public class CopyProcessorGenerator {
-
-    private static final String LOOP_ITEM = "item";
 
     public static ClassModel generate(
             @NotNull String packageName,
@@ -88,48 +81,13 @@ public class CopyProcessorGenerator {
                     @NotNull ExpressionConverter converter,
                     @NotNull List<E> statements
             ) {
-                if (relation.getMultiplicity().isCollection()) {
-                    TypeData elementType = getTargetElementType(relation);
-                    String oneElementAdderName = MutableBeanInterfaceGenerator.getSingleElementAdderName(relation);
-                    statements.add(
-                            _for(f, elementType, LOOP_ITEM, inExpression,
-                                 methodCallStatement(f, outExpression, oneElementAdderName,
-                                                     converter.convertedExpression(f, f.variableReference(LOOP_ITEM)))
-                            )
-                    );
-                }
-                else {
-                    String setterName = EntityRepresentationGenerator.getSetterName(relation);
-                    statements.add(
-                            methodCallStatement(f, outExpression, setterName,
-                                                converter.convertedExpression(f, inExpression))
-                    );
-                }
+                BeanProcessorGeneratorUtil.assignRelation(f, out, relation, outExpression, inExpression, converter, interfaceTypes, statements);
             }
 
             @NotNull
             @Override
             public RelationVisitor<TypeData> getConversionInType() {
-                return new RelationVisitor<TypeData>() {
-                    @Override
-                    public TypeData reference(@NotNull Relation<?> relation, @NotNull Entity target) {
-                        return getTargetElementType(relation);
-                    }
-
-                    @Override
-                    public TypeData entity(@NotNull Relation<?> relation, @NotNull Entity target) {
-                        return getTargetElementType(relation);
-                    }
-
-                    @Override
-                    public TypeData data(@NotNull Relation<?> relation) {
-                        return getTargetElementType(relation);
-                    }
-                };
-            }
-
-            private TypeData getTargetElementType(Relation<?> relation) {
-                return interfaceTypes.relationToType(relation, Multiplicity.ONE);
+                return BeanProcessorGeneratorUtil.getTypes(interfaceTypes);
             }
 
             @NotNull
