@@ -81,4 +81,13 @@ public class CodeUtil {
     public static <E> E _if(@NotNull CodeFactory<E> f, @NotNull E condition, @NotNull E... body) {
         return f._if(condition, f.block(Arrays.asList(body)));
     }
+
+    public static <E> E concat(@NotNull CodeFactory<E> f, @NotNull E... strings) {
+        assert strings.length >= 1 : "Can't concatenate zero strings";
+        E result = strings[0];
+        for (int i = 1; i < strings.length; i++) {
+            result = f.binary(result, BinaryOperation.PLUS, strings[i]);
+        }
+        return result;
+    }
 }
