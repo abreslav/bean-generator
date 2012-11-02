@@ -47,6 +47,15 @@ public class TypeUtil {
         };
     }
 
+    public static TypeData simpleType(@NotNull final Class<?> javaClass) {
+        return new TypeData() {
+            @Override
+            public <E> E create(@NotNull TypeFactory<E> f) {
+                return constructedType(f, javaClass.getPackage().getName(), javaClass.getSimpleName());
+            }
+        };
+    }
+
     public static TypeData _void() {
         return simpleType("", "void");
     }
