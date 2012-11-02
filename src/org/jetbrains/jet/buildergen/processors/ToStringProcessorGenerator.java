@@ -58,13 +58,13 @@ public class ToStringProcessorGenerator {
             @NotNull
             @Override
             public TypeData getInType(@NotNull Entity entity) {
-                return TypeUtil.simpleType(interfaces.getRepresentation(entity));
+                return TypeUtil.type(interfaces.getRepresentation(entity));
             }
 
             @NotNull
             @Override
             public TypeData getOutType(@NotNull Entity entity) {
-                return TypeUtil.simpleType(Void.class);
+                return TypeUtil.type(Void.class);
             }
 
             @Override
@@ -73,7 +73,7 @@ public class ToStringProcessorGenerator {
                         new FieldBean()
                                 .setVisibility(Visibility.PRIVATE)
                                 .setFinal(true)
-                                .setType(TypeUtil.simpleType(StringBuilder.class))
+                                .setType(TypeUtil.type(StringBuilder.class))
                                 .setName(BUILDER)
                                 .put(FIELD_INITIALIZER,
                                      new PieceOfCode() {
@@ -88,7 +88,7 @@ public class ToStringProcessorGenerator {
                         new FieldBean()
                                 .setVisibility(Visibility.PRIVATE)
                                 .setFinal(true)
-                                .setType(TypeUtil.simpleType(Printer.class))
+                                .setType(TypeUtil.type(Printer.class))
                                 .setName(PRINTER)
                                 .put(FIELD_INITIALIZER,
                                      new PieceOfCode() {
@@ -106,7 +106,7 @@ public class ToStringProcessorGenerator {
                 generatorClass.getMethods().add(
                         new MethodBean()
                             .setVisibility(Visibility.PUBLIC)
-                            .setReturnType(TypeUtil.simpleType(String.class))
+                            .setReturnType(TypeUtil.type(String.class))
                             .setName("result")
                             .put(
                                     METHOD_BODY,
@@ -194,17 +194,17 @@ public class ToStringProcessorGenerator {
                 return new RelationVisitor<TypeData>() {
                     @Override
                     public TypeData reference(@NotNull Relation<?> relation, @NotNull Entity target) {
-                        return TypeUtil.simpleType(Void.class);
+                        return TypeUtil.type(Void.class);
                     }
 
                     @Override
                     public TypeData entity(@NotNull Relation<?> relation, @NotNull Entity target) {
-                        return TypeUtil.simpleType(Void.class);
+                        return TypeUtil.type(Void.class);
                     }
 
                     @Override
                     public TypeData data(@NotNull Relation<?> relation) {
-                        return TypeUtil.simpleType(Void.class);
+                        return TypeUtil.type(Void.class);
                     }
                 };
             }
