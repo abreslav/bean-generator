@@ -286,7 +286,6 @@ public class BeanProcessorGenerator {
                     )
                     .addParameter(
                             new ParameterBean()
-                                .addAnnotation(NOT_NULL)
                                 .setType(m.getOutType(entity))
                                 .setName(PROCESS_METHOD_RESULT_NAME)
                     );
