@@ -89,7 +89,7 @@ public class BeanUtilGenerator {
         Collection<MethodBean> result = Lists.newArrayList();
         for (final Entity entity : interfaces.getEntities()) {
             ClassBean beanInterface = interfaces.getRepresentation(entity);
-            final TypeData beanInterfaceType = TypeUtil.simpleType(beanInterface);
+            final TypeData beanInterfaceType = TypeUtil.type(beanInterface);
             result.add(createCopyMethod(beanInterfaceType, SHALLOW_COPY)
                     .put(
                             ClassPrinter.METHOD_BODY,
@@ -130,7 +130,7 @@ public class BeanUtilGenerator {
         Collection<MethodBean> result = Lists.newArrayList();
         for (final Entity entity : interfaces.getEntities()) {
             ClassBean beanInterface = interfaces.getRepresentation(entity);
-            final TypeData beanInterfaceType = TypeUtil.simpleType(beanInterface);
+            final TypeData beanInterfaceType = TypeUtil.type(beanInterface);
             result.add(createCopyMethod(beanInterfaceType, DEEP_COPY)
                                .put(
                                        ClassPrinter.METHOD_BODY,

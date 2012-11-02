@@ -99,7 +99,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
     }
 
     private static void createDelegateFieldAndConstructors(ClassBean classBean) {
-        TypeData delegateType = TypeUtil.simpleType(classBean);
+        TypeData delegateType = TypeUtil.type(classBean);
         classBean.getFields().add(new FieldBean()
                                   .setVisibility(Visibility.PRIVATE)
                                   .setFinal(true)
@@ -141,7 +141,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
         return JavaDeclarationUtil.publicConstructor()
             .addParameter(new ParameterBean()
                                   .addAnnotation(NULLABLE)
-                                  .setType(TypeUtil.simpleType(classBean))
+                                  .setType(TypeUtil.type(classBean))
                                   .setName(DELEGATE)
             );
     }

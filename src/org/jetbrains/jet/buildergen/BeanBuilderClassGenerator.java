@@ -40,7 +40,6 @@ import static org.jetbrains.jet.buildergen.BuilderClassGenerator.DELEGATE;
 import static org.jetbrains.jet.buildergen.BuilderClassGenerator.RELATION_FOR_PARAMETER;
 import static org.jetbrains.jet.buildergen.java.ClassPrinter.METHOD_BODY;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.*;
-import static org.jetbrains.jet.buildergen.java.types.TypeUtil.simpleType;
 
 /**
  * @author abreslav
@@ -78,7 +77,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
 
     @Override
     protected void generateSupertypes(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
-        classBean.setSuperClass(TypeUtil.simpleType(builders.getRepresentation(entity)));
+        classBean.setSuperClass(TypeUtil.type(builders.getRepresentation(entity)));
     }
 
     @Override
@@ -128,7 +127,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
         return new FieldBean()
                 .setVisibility(Visibility.PRIVATE)
                 .setFinal(true)
-                .setType(simpleType(beanInterface))
+                .setType(TypeUtil.type(beanInterface))
                 .setName(BEAN)
                 .put(ClassPrinter.FIELD_INITIALIZER,
                      new PieceOfCode() {
@@ -195,7 +194,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                               : getSetterName(relation);
                 return block(f,
                     // TargetEntityBeanBuilder subBuilder = new TargetEntityBeanBuilder();
-                    f.statement(f.variableDeclaration(simpleType(targetBeanBuilder), subBuilder,
+                    f.statement(f.variableDeclaration(TypeUtil.type(targetBeanBuilder), subBuilder,
                                           constructorCall(f, targetBeanBuilder))),
                     // this.bean.addTargetEntity(subBuilder.getBean());
                     methodCallStatement(f, bean(f), methodName,
@@ -215,7 +214,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
         return new MethodBean()
             .addAnnotation(NOT_NULL)
             .setVisibility(Visibility.PUBLIC)
-            .setReturnType(simpleType(beanInterface))
+            .setReturnType(TypeUtil.type(beanInterface))
             .setName(BUILD_RESULT)
             .put(METHOD_BODY,
                  new PieceOfCode() {

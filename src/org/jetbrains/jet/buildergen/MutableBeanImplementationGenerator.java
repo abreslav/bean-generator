@@ -73,7 +73,7 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
 
     @Override
     protected void generateSupertypes(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
-        classBean.getSuperInterfaces().add(TypeUtil.simpleType(mutableBeanInterfaces.getRepresentation(entity)));
+        classBean.getSuperInterfaces().add(TypeUtil.type(mutableBeanInterfaces.getRepresentation(entity)));
     }
 
     @Override
@@ -91,7 +91,7 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
                     }
                     MethodBean implementation = implement(method, entry.getValue().createBody(c, method));
                     if (entry.getKey() != (Object) MutableBeanInterfaceGenerator.GETTER) {
-                        implementation.setReturnType(TypeUtil.simpleType(interfaceBean));
+                        implementation.setReturnType(TypeUtil.type(interfaceBean));
                     }
                     classBean.getMethods().add(implementation);
                 }

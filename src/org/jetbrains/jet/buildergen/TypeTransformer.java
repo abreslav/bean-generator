@@ -78,7 +78,7 @@ public class TypeTransformer {
                 elementType = makeReferenceIfNeeded(TypeUtil.getDataType(entity), isReference);
             }
             else {
-                elementType = TypeUtil.simpleType(context.getRepresentation(entity));
+                elementType = TypeUtil.type(context.getRepresentation(entity));
             }
             return typeWithMultiplicity(multiplicity, elementType, variance);
         }

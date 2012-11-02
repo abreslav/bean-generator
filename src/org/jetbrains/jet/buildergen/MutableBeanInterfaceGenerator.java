@@ -140,7 +140,7 @@ public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator
                         .addAnnotation(NOT_NULL)
                         .setVisibility(Visibility.PUBLIC)
                         .setAbstract(true)
-                        .setReturnType(TypeUtil.simpleType(classBean));
+                        .setReturnType(TypeUtil.type(classBean));
     }
 
     private static class EntityContext {

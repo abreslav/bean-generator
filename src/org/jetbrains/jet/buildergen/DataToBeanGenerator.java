@@ -71,7 +71,7 @@ public class DataToBeanGenerator {
         Collection<MethodBean> result = Lists.newArrayList();
         for (final Entity entity : interfaces.getEntities()) {
             ClassBean beanInterface = interfaces.getRepresentation(entity);
-            final TypeData beanInterfaceType = TypeUtil.simpleType(beanInterface);
+            final TypeData beanInterfaceType = TypeUtil.type(beanInterface);
             TypeData dataType = TypeUtil.getDataType(entity);
             result.add(new MethodBean()
                                .setVisibility(Visibility.PUBLIC)

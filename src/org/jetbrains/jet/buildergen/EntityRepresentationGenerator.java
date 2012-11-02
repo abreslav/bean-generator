@@ -115,7 +115,7 @@ public abstract class EntityRepresentationGenerator {
             Entity entity
     ) {
         for (Entity superEntity : entity.getSuperEntities()) {
-            classBean.getSuperInterfaces().add(TypeUtil.simpleType(context.getRepresentation(superEntity)));
+            classBean.getSuperInterfaces().add(TypeUtil.type(context.getRepresentation(superEntity)));
         }
     }
 

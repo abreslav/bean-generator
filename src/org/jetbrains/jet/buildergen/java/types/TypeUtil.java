@@ -16,16 +16,21 @@
 
 package org.jetbrains.jet.buildergen.java.types;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.EntityBuilder;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author abreslav
  */
+@SuppressWarnings("unchecked")
 public class TypeUtil {
     public static <E> E constructedType(
             @NotNull TypeFactory<E> factory,
@@ -34,34 +39,36 @@ public class TypeUtil {
         return factory.constructedType(packageName, className, Arrays.asList(arguments));
     }
 
-    public static TypeData simpleType(@NotNull final ClassModel classModel) {
-        return simpleType(classModel.getPackageFqName(), classModel.getName());
-    }
-
-    public static TypeData simpleType(@NotNull final String packageName, @NotNull final String className) {
+    public static TypeData type(@NotNull final String packageName, @NotNull final String className, final TypeData... arguments) {
         return new TypeData() {
             @Override
-            public <E> E create(@NotNull TypeFactory<E> f) {
-                return constructedType(f, packageName, className);
+            public <E> E create(@NotNull final TypeFactory<E> f) {
+                List<E> argTypes = Lists.newArrayList(Collections2.transform(Arrays.asList(arguments),
+                                                                             new Function<TypeData, E>() {
+                                                                                 @Override
+                                                                                 public E apply(TypeData data) {
+                                                                                     return data.create(f);
+                                                                                 }
+                                                                             }));
+                return f.constructedType(packageName, className, argTypes);
             }
         };
     }
 
-    public static TypeData simpleType(@NotNull final Class<?> javaClass) {
-        return new TypeData() {
-            @Override
-            public <E> E create(@NotNull TypeFactory<E> f) {
-                return constructedType(f, javaClass.getPackage().getName(), javaClass.getSimpleName());
-            }
-        };
+    public static TypeData type(@NotNull ClassModel classModel, TypeData... arguments) {
+        return type(classModel.getPackageFqName(), classModel.getName(), arguments);
+    }
+
+    public static TypeData type(@NotNull Class<?> javaClass, TypeData... arguments) {
+        return type(javaClass.getPackage().getName(), javaClass.getSimpleName(), arguments);
     }
 
     public static TypeData _void() {
-        return simpleType("", "void");
+        return type("", "void");
     }
 
     public static TypeData getDataType(Entity entity) {
         EntityBuilder.ClassName dataClassName = entity.getData(EntityBuilder.DATA_CLASS);
-        return simpleType(dataClassName.getPackageFqName(), dataClassName.getClassName());
+        return type(dataClassName.getPackageFqName(), dataClassName.getClassName());
     }
 }

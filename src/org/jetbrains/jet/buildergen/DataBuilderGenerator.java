@@ -40,7 +40,6 @@ import java.util.List;
 import static org.jetbrains.jet.buildergen.EntityRepresentationGenerator.getSetterName;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil._for;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCall;
-import static org.jetbrains.jet.buildergen.java.types.TypeUtil.simpleType;
 
 /**
  * @author abreslav
@@ -73,9 +72,9 @@ public class DataBuilderGenerator {
         Collection<MethodBean> result = Lists.newArrayList();
         for (final Entity entity : beans.getEntities()) {
             ClassBean beanInterface = beans.getRepresentation(entity);
-            final TypeData beanInterfaceType = TypeUtil.simpleType(beanInterface);
+            final TypeData beanInterfaceType = TypeUtil.type(beanInterface);
             ClassBean builderClass = builders.getRepresentation(entity);
-            final TypeData builderType = TypeUtil.simpleType(builderClass);
+            final TypeData builderType = TypeUtil.type(builderClass);
             result.add(createBuilderMethod(entity, beanInterfaceType, builderType)
                                .put(
                                        ClassPrinter.METHOD_BODY,
@@ -97,7 +96,7 @@ public class DataBuilderGenerator {
                                                        }
                                                        else {
                                                            ClassBean subEntityClass = beans.getRepresentation(subEntity);
-                                                           TypeData subEntityType = simpleType(subEntityClass);
+                                                           TypeData subEntityType = TypeUtil.type(subEntityClass);
                                                            // for (SubEntity sub : entity.getSubEntities()) {
                                                            //     buildSubEntity(sub, builder.addSubEntity())
                                                            // }
