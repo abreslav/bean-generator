@@ -24,6 +24,7 @@ import org.jetbrains.jet.buildergen.java.types.TypeData;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * @author abreslav
@@ -57,6 +58,10 @@ public class CodeUtil {
 
     public static <E> E constructorCall(@NotNull CodeFactory<E> factory, @NotNull Class<?> javaClass, E... arguments) {
         return factory.constructorCall(getClassBean(javaClass), Collections.<TypeData>emptyList(), Arrays.asList(arguments));
+    }
+
+    public static <E> E constructorCall(@NotNull CodeFactory<E> factory, @NotNull Class<?> javaClass, List<TypeData> typeArguments, E... arguments) {
+        return factory.constructorCall(getClassBean(javaClass), typeArguments, Arrays.asList(arguments));
     }
 
     @NotNull
