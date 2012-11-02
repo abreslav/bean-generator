@@ -33,7 +33,7 @@ import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCall;
 import static org.jetbrains.jet.buildergen.processors.BeanProcessorGenerator.*;
 
 @SuppressWarnings("unchecked")
-public class CopyProcessorGenerator {
+public class BeanCopyProcessorGenerator {
 
     public static ClassModel generate(
             @NotNull String packageName,

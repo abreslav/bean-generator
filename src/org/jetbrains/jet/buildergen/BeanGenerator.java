@@ -21,7 +21,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.java.ClassPrinter;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
-import org.jetbrains.jet.buildergen.processors.CopyProcessorGenerator;
+import org.jetbrains.jet.buildergen.processors.BeanCopyProcessorGenerator;
 import org.jetbrains.jet.buildergen.processors.ToStringProcessorGenerator;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.descriptors.annotations.Annotated;
@@ -116,8 +116,9 @@ public class BeanGenerator {
                                                          context.mutableBeanImplementationClasses);
         ClassModel dataToBeanUtil = DataToBeanGenerator.generate(mutableBeanUtilPackage, "DataToBean", context.mutableBeanInterfaces,
                                                                  context.mutableBeanImplementationClasses);
-        ClassModel copyProcessor = CopyProcessorGenerator.generate(mutableBeanUtilPackage, "CopyProcessor", context.mutableBeanInterfaces,
-                                                                   context.mutableBeanImplementationClasses);
+        ClassModel copyProcessor = BeanCopyProcessorGenerator
+                .generate(mutableBeanUtilPackage, "CopyProcessor", context.mutableBeanInterfaces,
+                          context.mutableBeanImplementationClasses);
         ClassModel toStringProcessor = ToStringProcessorGenerator.generate(mutableBeanUtilPackage, "ToString", context.mutableBeanInterfaces);
 
         Collection<ClassModel> builderClasses = new BuilderClassGenerator().generate(
