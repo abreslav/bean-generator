@@ -31,7 +31,8 @@ public class LiteralReference<T> implements BeanReference<T> {
         this.data = data;
     }
 
-    public T getData() {
+    @Override
+    public T resolve() {
         return data;
     }
 }

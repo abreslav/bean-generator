@@ -18,18 +18,30 @@ package org.jetbrains.jet.buildergen.runtime;
 
 import org.jetbrains.annotations.NotNull;
 
-public class LiteralReferenceResolver implements ReferenceResolver {
-    public static final ReferenceResolver INSTANCE = new LiteralReferenceResolver();
+import java.util.Map;
 
-    private LiteralReferenceResolver() {}
+public class ReferenceBackedByMap<T> implements BeanReference<T> {
+
+    @NotNull
+    public static <T> ReferenceBackedByMap<T> create(@NotNull Map<?, ?> map, Object key, T _default) {
+        return new ReferenceBackedByMap<T>(map, key, _default);
+    }
+
+    private final Map<?, ?> map;
+    private final Object key;
+    private final T _default;
+
+    private ReferenceBackedByMap(@NotNull Map<?, ?> map, Object key, T _default) {
+        this.map = map;
+        this.key = key;
+        this._default = _default;
+    }
 
     @Override
-    public <T> T resolve(@NotNull BeanReference<T> reference) {
-        if (reference instanceof LiteralReference) {
-            LiteralReference literalReference = (LiteralReference) reference;
-            //noinspection unchecked
-            return (T) literalReference.getData();
+    public T resolve() {
+        if (map.containsKey(key)) {
+            return (T) map.get(key);
         }
-        throw new IllegalArgumentException("Unresolved reference: " + reference);
+        return _default;
     }
 }

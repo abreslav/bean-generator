@@ -17,4 +17,5 @@
 package org.jetbrains.jet.buildergen.runtime;
 
 public interface BeanReference<T> {
+    T resolve();
 }
