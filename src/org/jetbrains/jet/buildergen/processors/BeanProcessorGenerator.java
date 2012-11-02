@@ -63,7 +63,13 @@ public class BeanProcessorGenerator {
 
         <E> E expressionToAssignToOut(@NotNull CodeFactory<E> f, @NotNull Entity entity);
 
-        <E> void traceMethodBody(@NotNull CodeFactory<E> f, @NotNull Entity entity);
+        <E> void traceMethodBody(
+                @NotNull CodeFactory<E> f,
+                @NotNull Entity entity,
+                E inExpression,
+                E outExpression,
+                @NotNull List<E> statements
+        );
 
         <E> void assignRelation(
                 @NotNull CodeFactory<E> f,
@@ -369,7 +375,11 @@ public class BeanProcessorGenerator {
             GeneratorUtil.createMethodBody(method, new GeneratorUtil.MethodBody() {
                 @Override
                 public <E> void body(@NotNull CodeFactory<E> f, @NotNull List<E> statements) {
-                    m.traceMethodBody(f, entity);
+                    m.traceMethodBody(f,
+                                      entity,
+                                      f.variableReference(PROCESS_METHOD_PARAMETER_NAME),
+                                      f.variableReference(PROCESS_METHOD_RESULT_NAME),
+                                      statements);
                 }
             });
 
