@@ -22,6 +22,7 @@ import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.java.ClassPrinter;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
 import org.jetbrains.jet.buildergen.processors.CopyProcessorGenerator;
+import org.jetbrains.jet.buildergen.processors.ToStringProcessorGenerator;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.descriptors.annotations.Annotated;
 import org.jetbrains.jet.lang.types.JetType;
@@ -117,6 +118,7 @@ public class BeanGenerator {
                                                                  context.mutableBeanImplementationClasses);
         ClassModel copyProcessor = CopyProcessorGenerator.generate(mutableBeanUtilPackage, "CopyProcessor", context.mutableBeanInterfaces,
                                                                    context.mutableBeanImplementationClasses);
+        ClassModel toStringProcessor = ToStringProcessorGenerator.generate(mutableBeanUtilPackage, "ToString", context.mutableBeanInterfaces);
 
         Collection<ClassModel> builderClasses = new BuilderClassGenerator().generate(
                 entities,
@@ -137,9 +139,12 @@ public class BeanGenerator {
 
         writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeans);
         writeToFiles(generatedSourceRoot, mutableBeanClassPackage, mutableBeanClasses);
-        writeToFiles(generatedSourceRoot, mutableBeanUtilPackage, Collections.singletonList(beanUtil));
-        writeToFiles(generatedSourceRoot, mutableBeanUtilPackage, Collections.singletonList(dataToBeanUtil));
-        writeToFiles(generatedSourceRoot, mutableBeanUtilPackage, Collections.singletonList(copyProcessor));
+        writeToFiles(generatedSourceRoot, mutableBeanUtilPackage, Lists.newArrayList(
+                beanUtil,
+                dataToBeanUtil,
+                copyProcessor,
+                toStringProcessor
+        ));
         writeToFiles(generatedSourceRoot, builderClassPackage, builderClasses);
         writeToFiles(generatedSourceRoot, beanBuilderPackage, beanBuilderClasses);
         writeToFiles(generatedSourceRoot, builderClassPackage, Collections.singletonList(builderUtil));
