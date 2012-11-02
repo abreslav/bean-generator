@@ -17,13 +17,10 @@
 package org.jetbrains.jet.buildergen;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.intellij.openapi.util.io.FileUtil;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.java.ClassPrinter;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
-import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.descriptors.annotations.Annotated;
 import org.jetbrains.jet.lang.types.JetType;
@@ -36,7 +33,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author abreslav
@@ -164,37 +160,10 @@ public class BeanGenerator {
     }
 
     private static class Context {
-        RepresentationContext mutableBeanInterfaces = new RepresentationContext();
-        RepresentationContext mutableBeanImplementationClasses = new RepresentationContext();
-        RepresentationContext builderClasses = new RepresentationContext();
-        RepresentationContext dataClasses = new RepresentationContext();
-        RepresentationContext beanBuilders = new RepresentationContext();
+        EntityRepresentationContextImpl mutableBeanInterfaces = new EntityRepresentationContextImpl();
+        EntityRepresentationContextImpl mutableBeanImplementationClasses = new EntityRepresentationContextImpl();
+        EntityRepresentationContextImpl builderClasses = new EntityRepresentationContextImpl();
+        EntityRepresentationContextImpl dataClasses = new EntityRepresentationContextImpl();
+        EntityRepresentationContextImpl beanBuilders = new EntityRepresentationContextImpl();
     }
-
-    private static class RepresentationContext implements EntityRepresentationContext<ClassBean> {
-        private final Map<Entity, ClassBean> map = Maps.newLinkedHashMap();
-
-        @Override
-        public void registerRepresentation(@NotNull Entity entity, @NotNull ClassBean representation) {
-            map.put(entity, representation);
-        }
-
-        @Override
-        public ClassBean getRepresentation(@NotNull Entity entity) {
-            return map.get(entity);
-        }
-
-        @NotNull
-        @Override
-        public Collection<Entity> getEntities() {
-            return map.keySet();
-        }
-
-        @NotNull
-        @Override
-        public Collection<ClassBean> getRepresentations() {
-            return map.values();
-        }
-    }
-
 }
