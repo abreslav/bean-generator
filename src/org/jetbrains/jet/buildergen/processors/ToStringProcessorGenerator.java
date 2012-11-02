@@ -34,6 +34,7 @@ import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 import org.jetbrains.jet.buildergen.runtime.LiteralReferenceResolver;
 import org.jetbrains.jet.utils.Printer;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.jetbrains.jet.buildergen.java.ClassPrinter.FIELD_INITIALIZER;
@@ -42,6 +43,7 @@ import static org.jetbrains.jet.buildergen.java.code.CodeUtil.*;
 import static org.jetbrains.jet.buildergen.processors.BeanProcessorGenerator.*;
 import static org.jetbrains.jet.buildergen.processors.BeanProcessorGeneratorUtil.LOOP_ITEM;
 
+@SuppressWarnings("unchecked")
 public class ToStringProcessorGenerator {
 
     private static final String BUILDER = "builder";
@@ -133,16 +135,16 @@ public class ToStringProcessorGenerator {
                     E outExpression,
                     @NotNull List<E> statements
             ) {
-                statements.add(
-                        methodCallStatement(f, f.variableReference(PRINTER), "println",
-                                            f.string(entity.getName()),
-                                            f.string("@"),
-                                            methodCall(f, f.classReference(CodeUtil.getClassBean(Integer.class)), "toHexString",
-                                                methodCall(f, f.classReference(CodeUtil.getClassBean(System.class)), "identityHashCode", inExpression))
-                                            )
-                );
-                statements.add(
-                        methodCallStatement(f, f.variableReference(PRINTER), "pushIndent")
+                Collections.addAll(statements,
+                                   _printer.println(f,
+                                                    f.string(entity.getName()),
+                                                    f.string("@"),
+                                                    methodCall(f, f.classReference(CodeUtil.getClassBean(Integer.class)), "toHexString",
+                                                               methodCall(f, f.classReference(CodeUtil.getClassBean(System.class)),
+                                                                          "identityHashCode", inExpression))
+                                   ),
+
+                                   _printer.pushIndent(f)
                 );
             }
 
@@ -151,7 +153,7 @@ public class ToStringProcessorGenerator {
                     @NotNull CodeFactory<E> f, @NotNull Entity entity, E inExpression, E outExpression, @NotNull List<E> statements
             ) {
                 statements.add(
-                        methodCallStatement(f, f.variableReference(PRINTER), "popIndent")
+                        _printer.popIndent(f)
                 );
             }
 
@@ -212,59 +214,81 @@ public class ToStringProcessorGenerator {
                 return new RelationVisitorVoid() {
                     @Override
                     public void reference(@NotNull Relation<?> relation, @NotNull Entity target) {
-                        statements.add(
-                                methodCallStatement(f,
-                                                    f.variableReference(PRINTER), "print", f.string(relation.getName() + " = "))
-                        );
-                        statements.add(
-                                methodCallStatement(f, f.variableReference(PRINTER), "printlnWithNoIndent",
-                                                    methodCall(f,
-                                                        f.fieldReference(f.classReference(CodeUtil.getClassBean(LiteralReferenceResolver.class)), "INSTANCE"),
-                                                        "resolve", inExpression
-                                                        )
-                                )
-                        );
-                        statements.add(
-                                f._return(f._null())
+                        Collections.addAll(statements,
+                                           _printer.print(f, f.string(relation.getName() + " = ")),
+
+                                           _printer.printlnWithNoIndent(f,
+                                                                        methodCall(f,
+                                                                                   f.fieldReference(f.classReference(
+                                                                                           CodeUtil.getClassBean(
+                                                                                                   LiteralReferenceResolver.class)),
+                                                                                                    "INSTANCE"),
+                                                                                   "resolve", inExpression
+                                                                        )
+                                           ),
+
+                                           f._return(f._null())
                         );
                     }
 
                     @Override
                     public void entity(@NotNull Relation<?> relation, @NotNull Entity target) {
-                        statements.add(GeneratorUtil.ifExpressionIsNullReturnNullStatement(f, inExpression));
-                        statements.add(
-                                methodCallStatement(f,
-                                                    f.variableReference(PRINTER), "println", f.string(relation.getName() + " = "))
-                        );
-                        statements.add(
-                                methodCallStatement(f,
-                                                    f.variableReference(PRINTER), "pushIndent")
-                        );
-                        statements.add(
-                                methodCallStatement(f,
-                                                    null, BeanProcessorGenerator.processEntityMethodName(target), inExpression)
-                        );
-                        statements.add(
-                                methodCallStatement(f,
-                                                    f.variableReference(PRINTER), "popIndent")
-                        );
-                        statements.add(
-                                f._return(f._null())
+                        Collections.addAll(statements,
+                                           GeneratorUtil.ifExpressionIsNullReturnNullStatement(f, inExpression),
+
+                                           _printer.println(f, f.string(relation.getName() + " = ")),
+
+                                           _printer.pushIndent(f),
+
+                                           methodCallStatement(f, null,
+                                                               BeanProcessorGenerator.processEntityMethodName(target), inExpression),
+
+                                           _printer.popIndent(f),
+
+                                           f._return(f._null())
                         );
                     }
 
                     @Override
                     public void data(@NotNull Relation<?> relation) {
-                        statements.add(
-                                methodCallStatement(f,
-                                                    f.variableReference(PRINTER), "println", f.string(relation.getName() + " = "), inExpression)
-                        );
-                        statements.add(
+                        Collections.addAll(statements,
+                                _printer.println(f, f.string(relation.getName() + " = "), inExpression),
+
                                 f._return(f._null())
                         );
                     }
                 };
             }
         });
+    }
+
+    private static class _printer {
+        private static <E> E printerMethod(CodeFactory<E> f, String methodName, E... args) {
+            return methodCallStatement(f, f.variableReference(PRINTER), methodName, args);
+        }
+
+        private static <E> E println(CodeFactory<E> f, E... args) {
+            return printerMethod(f, "println", args);
+        }
+
+        private static <E> E print(CodeFactory<E> f, E... args) {
+            return printerMethod(f, "print", args);
+        }
+
+        private static <E> E printlnWithNoIndent(CodeFactory<E> f, E... args) {
+            return printerMethod(f, "printlnWithNoIndent", args);
+        }
+
+        private static <E> E printWithNoIndent(CodeFactory<E> f, E... args) {
+            return printerMethod(f, "printWithNoIndent", args);
+        }
+
+        private static <E> E pushIndent(CodeFactory<E> f) {
+            return printerMethod(f, "pushIndent");
+        }
+
+        private static <E> E popIndent(CodeFactory<E> f) {
+            return printerMethod(f, "popIndent");
+        }
     }
 }
