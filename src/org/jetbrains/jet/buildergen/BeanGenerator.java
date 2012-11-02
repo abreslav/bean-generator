@@ -21,6 +21,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.java.ClassPrinter;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
+import org.jetbrains.jet.buildergen.processors.CopyProcessorGenerator;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.descriptors.annotations.Annotated;
 import org.jetbrains.jet.lang.types.JetType;
@@ -114,6 +115,8 @@ public class BeanGenerator {
                                                          context.mutableBeanImplementationClasses);
         ClassModel dataToBeanUtil = DataToBeanGenerator.generate(mutableBeanUtilPackage, "DataToBean", context.mutableBeanInterfaces,
                                                                  context.mutableBeanImplementationClasses);
+        ClassModel copyProcessor = CopyProcessorGenerator.generate(mutableBeanUtilPackage, "CopyProcessor", context.mutableBeanInterfaces,
+                                                                   context.mutableBeanImplementationClasses);
 
         Collection<ClassModel> builderClasses = new BuilderClassGenerator().generate(
                 entities,
@@ -136,6 +139,7 @@ public class BeanGenerator {
         writeToFiles(generatedSourceRoot, mutableBeanClassPackage, mutableBeanClasses);
         writeToFiles(generatedSourceRoot, mutableBeanUtilPackage, Collections.singletonList(beanUtil));
         writeToFiles(generatedSourceRoot, mutableBeanUtilPackage, Collections.singletonList(dataToBeanUtil));
+        writeToFiles(generatedSourceRoot, mutableBeanUtilPackage, Collections.singletonList(copyProcessor));
         writeToFiles(generatedSourceRoot, builderClassPackage, builderClasses);
         writeToFiles(generatedSourceRoot, beanBuilderPackage, beanBuilderClasses);
         writeToFiles(generatedSourceRoot, builderClassPackage, Collections.singletonList(builderUtil));
