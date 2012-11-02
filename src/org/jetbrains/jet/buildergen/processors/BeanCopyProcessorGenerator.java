@@ -21,19 +21,28 @@ import org.jetbrains.jet.buildergen.EntityRepresentationContext;
 import org.jetbrains.jet.buildergen.TypeTransformer;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.entities.Relation;
+import org.jetbrains.jet.buildergen.java.ClassPrinter;
+import org.jetbrains.jet.buildergen.java.code.BinaryOperation;
 import org.jetbrains.jet.buildergen.java.code.CodeFactory;
 import org.jetbrains.jet.buildergen.java.code.CodeUtil;
+import org.jetbrains.jet.buildergen.java.code.PieceOfCode;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
+import org.jetbrains.jet.buildergen.java.declarations.Visibility;
+import org.jetbrains.jet.buildergen.java.declarations.beans.FieldBean;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCall;
+import static org.jetbrains.jet.buildergen.java.code.CodeUtil.*;
 import static org.jetbrains.jet.buildergen.processors.BeanProcessorGenerator.*;
 
 @SuppressWarnings("unchecked")
 public class BeanCopyProcessorGenerator {
+
+    private static final String TRACE = "trace";
 
     public static ClassModel generate(
             @NotNull String packageName,
@@ -45,17 +54,34 @@ public class BeanCopyProcessorGenerator {
             @NotNull
             @Override
             public TypeData getInType(@NotNull Entity entity) {
-                return TypeUtil.simpleType(interfaces.getRepresentation(entity));
+                return TypeUtil.type(interfaces.getRepresentation(entity));
             }
 
             @NotNull
             @Override
             public TypeData getOutType(@NotNull Entity entity) {
-                return TypeUtil.simpleType(interfaces.getRepresentation(entity));
+                return TypeUtil.type(interfaces.getRepresentation(entity));
             }
 
             @Override
             public void defineContextFields(@NotNull ClassModel generatorClass) {
+                // Map<Object, Object> trace
+                generatorClass.getFields().add(
+                        new FieldBean()
+                            .setVisibility(Visibility.PRIVATE)
+                            .setFinal(true)
+                            .setType(TypeUtil.type(Map.class, Object.class, Object.class))
+                            .setName(TRACE)
+                            .put(
+                                    ClassPrinter.FIELD_INITIALIZER,
+                                    new PieceOfCode() {
+                                        @Override
+                                        public <E> E create(@NotNull CodeFactory<E> f) {
+                                            return CodeUtil.constructorCall(f, HashMap.class, TypeUtil.javaClassesToTypes(Object.class, Object.class));
+                                        }
+                                    }
+                                 )
+                );
             }
 
             @Override
@@ -74,7 +100,24 @@ public class BeanCopyProcessorGenerator {
                     E inExpression,
                     E outExpression,
                     @NotNull List<E> statements
-            ) {}
+            ) {
+                statements.add(
+                    f._if(
+                            f.binary(
+                                    methodCall(f, f.variableReference(TRACE), "put", inExpression, outExpression),
+                                    BinaryOperation.NEQ,
+                                    f._null()
+                            ),
+                            f._throw(
+                                    constructorCall(f, IllegalStateException.class,
+                                                    concat(f,
+                                                           f.string("Probably there's a loop in the object graph: "),
+                                                           inExpression,
+                                                           f.string(" was encountered twice")))
+                            )
+                    )
+                );
+            }
 
             @Override
             public <E> void afterEntityMethodBody(
