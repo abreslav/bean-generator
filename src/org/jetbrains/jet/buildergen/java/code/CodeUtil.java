@@ -64,6 +64,10 @@ public class CodeUtil {
         return factory.constructorCall(getClassBean(javaClass), typeArguments, Arrays.asList(arguments));
     }
 
+    public static <E> E variableDeclarationStatement(@NotNull CodeFactory<E> factory, @NotNull TypeData type, @NotNull String name, @Nullable E initializer) {
+        return factory.statement(factory.variableDeclaration(type, name, initializer));
+    }
+
     @NotNull
     public static ClassBean getClassBean(@NotNull Class<?> javaClass) {
         return new ClassBean().setPackageFqName(javaClass.getPackage().getName()).setName(javaClass.getSimpleName());
