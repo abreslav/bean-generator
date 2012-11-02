@@ -63,7 +63,15 @@ public class BeanProcessorGenerator {
 
         <E> E expressionToAssignToOut(@NotNull CodeFactory<E> f, @NotNull Entity entity);
 
-        <E> void traceMethodBody(
+        <E> void beforeEntityMethodBody(
+                @NotNull CodeFactory<E> f,
+                @NotNull Entity entity,
+                E inExpression,
+                E outExpression,
+                @NotNull List<E> statements
+        );
+
+        <E> void afterEntityMethodBody(
                 @NotNull CodeFactory<E> f,
                 @NotNull Entity entity,
                 E inExpression,
@@ -183,7 +191,8 @@ public class BeanProcessorGenerator {
             }
 
             for (Entity entity : context.getEntities()) {
-                result.getMethods().add(generateTraceMethod(entity));
+                result.getMethods().add(generateTraceMethod(entity, true));
+                result.getMethods().add(generateTraceMethod(entity, false));
             }
 
             m.defineAdditionalMethods(result);
@@ -220,11 +229,13 @@ public class BeanProcessorGenerator {
                 if (in == null) return null;
 
                 Out out = new OutBean();
-                traceIn(in, out);
+                beforeIn(in, out);
 
                 processIn_R1(in, out);
                 processIn_R2(in, out);
                 processIn_R3(in, out);
+
+                afterIn(in, out);
 
                 return out;
             }
@@ -256,14 +267,15 @@ public class BeanProcessorGenerator {
                     )
             );
 
-            // trace (+ assert)
+            // before
             statements.add(
                     methodCallStatement(f, null,
-                                        traceMethodName(entity),
+                                        beforeEntityMethodName(entity),
                                         f.variableReference(PROCESS_METHOD_PARAMETER_NAME),
                                         f.variableReference(PROCESS_METHOD_RESULT_NAME))
             );
 
+            // relations
             for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
                 statements.add(
                         methodCallStatement(f, null,
@@ -273,6 +285,15 @@ public class BeanProcessorGenerator {
                 );
             }
 
+            // after
+            statements.add(
+                    methodCallStatement(f, null,
+                                        afterEntityMethodName(entity),
+                                        f.variableReference(PROCESS_METHOD_PARAMETER_NAME),
+                                        f.variableReference(PROCESS_METHOD_RESULT_NAME))
+            );
+
+            // return
             statements.add(
                     f._return(f.variableReference(PROCESS_METHOD_RESULT_NAME))
             );
@@ -286,9 +307,9 @@ public class BeanProcessorGenerator {
                     .setName(processRelationMethodName(entity, relation))
                     .addParameter(
                             new ParameterBean()
-                                .addAnnotation(NOT_NULL)
-                                .setType(m.getInType(entity))
-                                .setName(PROCESS_METHOD_PARAMETER_NAME)
+                                    .addAnnotation(NOT_NULL)
+                                    .setType(m.getInType(entity))
+                                    .setName(PROCESS_METHOD_PARAMETER_NAME)
                     )
                     .addParameter(
                             new ParameterBean()
@@ -303,7 +324,8 @@ public class BeanProcessorGenerator {
                                                    m.assignRelation(
                                                            f, entity, relation,
                                                            f.variableReference(PROCESS_METHOD_RESULT_NAME),
-                                                           getRelationExpression(f, relation, f.variableReference(PROCESS_METHOD_PARAMETER_NAME)),
+                                                           getRelationExpression(f, relation,
+                                                                                 f.variableReference(PROCESS_METHOD_PARAMETER_NAME)),
                                                            new ExpressionConverter() {
 
                                                                @Override
@@ -356,11 +378,12 @@ public class BeanProcessorGenerator {
         }
 
         @NotNull
-        private MethodModel generateTraceMethod(@NotNull final Entity entity) {
-            MethodBean method = new MethodBean()
+        private MethodModel generateTraceMethod(@NotNull final Entity entity, final boolean before) {
+            final MethodBean method = new MethodBean()
+                    .addAnnotation(NOT_NULL)
                     .setVisibility(Visibility.PUBLIC)
                     .setReturnType(TypeUtil._void())
-                    .setName(traceMethodName(entity))
+                    .setName(before ? beforeEntityMethodName(entity) : afterEntityMethodName(entity))
                     .addParameter(
                             new ParameterBean()
                                     .setType(TypeUtil.simpleType(Object.class))
@@ -375,11 +398,20 @@ public class BeanProcessorGenerator {
             GeneratorUtil.createMethodBody(method, new GeneratorUtil.MethodBody() {
                 @Override
                 public <E> void body(@NotNull CodeFactory<E> f, @NotNull List<E> statements) {
-                    m.traceMethodBody(f,
-                                      entity,
-                                      f.variableReference(PROCESS_METHOD_PARAMETER_NAME),
-                                      f.variableReference(PROCESS_METHOD_RESULT_NAME),
-                                      statements);
+                    if (before) {
+                        m.beforeEntityMethodBody(f,
+                                                 entity,
+                                                 f.variableReference(PROCESS_METHOD_PARAMETER_NAME),
+                                                 f.variableReference(PROCESS_METHOD_RESULT_NAME),
+                                                 statements);
+                    }
+                    else {
+                        m.afterEntityMethodBody(f,
+                                                entity,
+                                                f.variableReference(PROCESS_METHOD_PARAMETER_NAME),
+                                                f.variableReference(PROCESS_METHOD_RESULT_NAME),
+                                                statements);
+                    }
                 }
             });
 
@@ -399,8 +431,13 @@ public class BeanProcessorGenerator {
     }
 
     @NotNull
-    public static String traceMethodName(@NotNull Entity entity) {
-        return "trace" + entity.getName();
+    public static String beforeEntityMethodName(@NotNull Entity entity) {
+        return "before" + entity.getName();
+    }
+
+    @NotNull
+    public static String afterEntityMethodName(@NotNull Entity entity) {
+        return "after" + entity.getName();
     }
 
     @NotNull
