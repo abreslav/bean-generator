@@ -71,6 +71,8 @@ public class BeanGenerator {
 
         String generatedSourceRoot = "bean-generator/generated";
         String mutableBeanPackage = "beans";
+        String beanReferencePackage = "beans.references";
+        String beanReferenceImplPackage = "beans.references.impl";
         String mutableBeanClassPackage = "beans.impl";
         String mutableBeanUtilPackage = "beans.util";
         String builderClassPackage = "builders";
@@ -81,6 +83,8 @@ public class BeanGenerator {
                 generatedSourceRoot,
                 mutableBeanPackage,
                 mutableBeanClassPackage,
+                beanReferencePackage,
+                beanReferenceImplPackage,
                 mutableBeanUtilPackage,
                 builderClassPackage,
                 beanBuilderPackage
@@ -92,6 +96,8 @@ public class BeanGenerator {
             String generatedSourceRoot,
             String mutableBeanPackage,
             String mutableBeanClassPackage,
+            String beanReferencePackage,
+            String beanReferenceImplPackage,
             String mutableBeanUtilPackage,
             String builderClassPackage,
             String beanBuilderPackage
@@ -110,6 +116,24 @@ public class BeanGenerator {
                 entities,
                 context.mutableBeanImplementationClasses,
                 mutableBeanClassPackage
+        );
+
+        Collection<ClassModel> beanReferenceInterfaces = new BeanReferenceInterfaceGenerator().generate(
+                entities,
+                context.beanReferenceInterfaces,
+                beanReferencePackage
+        );
+
+        Collection<ClassModel> literalBeanReferenceClasses = new LiteralBeanReferenceClassGenerator(context.beanReferenceInterfaces).generate(
+                entities,
+                context.literalBeanReferenceClasses,
+                beanReferenceImplPackage
+        );
+
+        Collection<ClassModel> proxyBeanReferenceClasses = new ProxyBeanReferenceClassGenerator(context.beanReferenceInterfaces).generate(
+                entities,
+                context.proxyBeanReferenceClasses,
+                beanReferenceImplPackage
         );
 
         ClassModel beanUtil = BeanUtilGenerator.generate(mutableBeanUtilPackage, "BeanUtil", context.mutableBeanInterfaces,
@@ -140,6 +164,9 @@ public class BeanGenerator {
 
         writeToFiles(generatedSourceRoot, mutableBeanPackage, mutableBeans);
         writeToFiles(generatedSourceRoot, mutableBeanClassPackage, mutableBeanClasses);
+        writeToFiles(generatedSourceRoot, beanReferencePackage, beanReferenceInterfaces);
+        writeToFiles(generatedSourceRoot, beanReferenceImplPackage, literalBeanReferenceClasses);
+        writeToFiles(generatedSourceRoot, beanReferenceImplPackage, proxyBeanReferenceClasses);
         writeToFiles(generatedSourceRoot, mutableBeanUtilPackage, Lists.newArrayList(
                 beanUtil,
                 dataToBeanUtil,
@@ -175,5 +202,8 @@ public class BeanGenerator {
         EntityRepresentationContextImpl builderClasses = new EntityRepresentationContextImpl();
         EntityRepresentationContextImpl dataClasses = new EntityRepresentationContextImpl();
         EntityRepresentationContextImpl beanBuilders = new EntityRepresentationContextImpl();
+        EntityRepresentationContextImpl beanReferenceInterfaces = new EntityRepresentationContextImpl();
+        EntityRepresentationContextImpl literalBeanReferenceClasses = new EntityRepresentationContextImpl();
+        EntityRepresentationContextImpl proxyBeanReferenceClasses = new EntityRepresentationContextImpl();
     }
 }
