@@ -20,9 +20,11 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.buildergen.EntityBuilder;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
+import org.jetbrains.jet.buildergen.java.declarations.WildcardKind;
 
 import java.util.Arrays;
 import java.util.List;
@@ -94,5 +96,15 @@ public class TypeUtil {
     public static TypeData getDataType(Entity entity) {
         EntityBuilder.ClassName dataClassName = entity.getData(EntityBuilder.DATA_CLASS);
         return type(dataClassName.getPackageFqName(), dataClassName.getClassName());
+    }
+
+    @NotNull
+    public static TypeData wildcard(@Nullable final TypeData upperBound) {
+        return new TypeData() {
+            @Override
+            public <E> E create(@NotNull TypeFactory<E> f) {
+                return f.wildcardType(upperBound == null ? WildcardKind.BARE : WildcardKind.EXTENDS, upperBound == null ? null : upperBound.create(f));
+            }
+        };
     }
 }
