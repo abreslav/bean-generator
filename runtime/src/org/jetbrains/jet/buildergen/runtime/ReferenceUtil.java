@@ -17,31 +17,16 @@
 package org.jetbrains.jet.buildergen.runtime;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
+public class ReferenceUtil {
 
-public class ReferenceBackedByMap<K, V> implements BeanReference<V> {
-
-    @NotNull
-    public static <K, V> ReferenceBackedByMap<K, V> create(@NotNull Map<?, ?> map, K key, V _default) {
-        return new ReferenceBackedByMap<K, V>(map, key, _default);
-    }
-
-    private final Map<?, ?> map;
-    private final K key;
-    private final V _default;
-
-    private ReferenceBackedByMap(@NotNull Map<?, ?> map, K key, V _default) {
-        this.map = map;
-        this.key = key;
-        this._default = _default;
-    }
-
-    @Override
-    public V resolve() {
-        if (map.containsKey(key)) {
-            return (V) map.get(key);
+    @SuppressWarnings("unchecked")
+    public static <T> T checkClass(@NotNull Class<T> targetClass, @Nullable Object value) {
+        if (value == null) return null;
+        if (targetClass.isInstance(value)) {
+            return (T) value;
         }
-        return _default;
+        throw new IllegalArgumentException("Target '" + value + "' : " + value.getClass() + " is not an instance of " + targetClass);
     }
 }

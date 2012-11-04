@@ -18,9 +18,23 @@ package org.jetbrains.jet.buildergen.runtime;
 
 import org.jetbrains.annotations.NotNull;
 
-public interface BeanReference {
-    /**
-     * Throws an exception if the target type does not match
-     */
-    <T> T resolveTo(@NotNull Class<T> targetClass);
+import java.util.Map;
+
+public abstract class ProxyReference implements BeanReference {
+
+    private final Object key;
+    private final Map<?, ?> map;
+
+    protected ProxyReference(@NotNull Map<?, ?> map, Object key) {
+        this.key = key;
+        this.map = map;
+    }
+
+    @Override
+    public <T> T resolveTo(@NotNull Class<T> targetClass) {
+        if (!map.containsKey(key)) {
+            throw new IllegalStateException("No value for key '" + key + "'");
+        }
+        return ReferenceUtil.checkClass(targetClass, map.get(key));
+    }
 }

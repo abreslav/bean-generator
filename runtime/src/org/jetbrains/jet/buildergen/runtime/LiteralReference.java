@@ -18,21 +18,16 @@ package org.jetbrains.jet.buildergen.runtime;
 
 import org.jetbrains.annotations.NotNull;
 
-public class LiteralReference<T> implements BeanReference<T> {
+public abstract class LiteralReference implements BeanReference {
+    private final Object data;
 
-    @NotNull
-    public static <T> LiteralReference<T> create(T data) {
-        return new LiteralReference<T>(data);
-    }
-
-    private final T data;
-
-    public LiteralReference(T data) {
+    public LiteralReference(Object data) {
         this.data = data;
     }
 
     @Override
-    public T resolve() {
-        return data;
+    public <T> T resolveTo(@NotNull Class<T> targetClass) {
+        Object value = data;
+        return ReferenceUtil.checkClass(targetClass, value);
     }
 }
