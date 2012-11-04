@@ -31,7 +31,9 @@ import org.jetbrains.jet.buildergen.java.declarations.Visibility;
 import org.jetbrains.jet.buildergen.java.declarations.beans.FieldBean;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
+import org.jetbrains.jet.buildergen.runtime.ReferenceBackedByMap;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,7 @@ import static org.jetbrains.jet.buildergen.processors.BeanProcessorGenerator.*;
 public class BeanCopyProcessorGenerator {
 
     private static final String TRACE = "trace";
+    private static final String TARGET = "target";
 
     public static ClassModel generate(
             @NotNull String packageName,
@@ -158,8 +161,19 @@ public class BeanCopyProcessorGenerator {
                 return new RelationVisitorVoid() {
                     @Override
                     public void reference(@NotNull Relation<?> relation, @NotNull Entity target) {
-                        statements.add(
-                                f._return(inExpression)
+                        TypeData targetType = TypeUtil.getDataType(target);
+                        Collections.addAll(statements,
+                                           variableDeclarationStatement(f, targetType, TARGET, methodCall(f, inExpression, "resolve")),
+                                           f._return(
+                                                   methodCall(f,
+                                                                              f.classReference(
+                                                                                      CodeUtil.getClassBean(ReferenceBackedByMap.class)),
+                                                                              "create",
+                                                                                  f.variableReference(TRACE),
+                                                                                  f.variableReference(TARGET),
+                                                                                  f.variableReference(TARGET)
+                                                                              )
+                                           )
                         );
                     }
 

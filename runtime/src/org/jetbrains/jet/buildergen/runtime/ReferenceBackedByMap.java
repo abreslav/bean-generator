@@ -20,27 +20,27 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public class ReferenceBackedByMap<T> implements BeanReference<T> {
+public class ReferenceBackedByMap<K, V> implements BeanReference<V> {
 
     @NotNull
-    public static <T> ReferenceBackedByMap<T> create(@NotNull Map<?, ?> map, Object key, T _default) {
-        return new ReferenceBackedByMap<T>(map, key, _default);
+    public static <K, V> ReferenceBackedByMap<K, V> create(@NotNull Map<?, ?> map, K key, V _default) {
+        return new ReferenceBackedByMap<K, V>(map, key, _default);
     }
 
     private final Map<?, ?> map;
-    private final Object key;
-    private final T _default;
+    private final K key;
+    private final V _default;
 
-    private ReferenceBackedByMap(@NotNull Map<?, ?> map, Object key, T _default) {
+    private ReferenceBackedByMap(@NotNull Map<?, ?> map, K key, V _default) {
         this.map = map;
         this.key = key;
         this._default = _default;
     }
 
     @Override
-    public T resolve() {
+    public V resolve() {
         if (map.containsKey(key)) {
-            return (T) map.get(key);
+            return (V) map.get(key);
         }
         return _default;
     }
