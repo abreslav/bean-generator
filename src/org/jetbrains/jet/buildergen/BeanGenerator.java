@@ -137,10 +137,9 @@ public class BeanGenerator {
         ClassModel beanUtil = BeanUtilGenerator.generate(mutableBeanUtilPackage, "BeanUtil", beanGenerationContext);
         ClassModel dataToBeanUtil = DataToBeanGenerator.generate(mutableBeanUtilPackage, "DataToBean", beanGenerationContext);
         ClassModel copyProcessor = BeanCopyProcessorGenerator
-                .generate(mutableBeanUtilPackage, "CopyProcessor", beanGenerationContext.getBeanInterfaces(),
-                          beanGenerationContext.getBeanImplementations());
+                .generate(mutableBeanUtilPackage, "CopyProcessor", beanGenerationContext);
         ClassModel toStringProcessor = ToStringProcessorGenerator.generate(mutableBeanUtilPackage, "ToString",
-                                                                           beanGenerationContext.getBeanInterfaces());
+                                                                           beanGenerationContext);
 
         Collection<ClassModel> builderClasses = BuilderClassGenerator.generate(
                 beanGenerationContext,

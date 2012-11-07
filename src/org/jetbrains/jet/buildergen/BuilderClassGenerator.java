@@ -22,7 +22,6 @@ import org.jetbrains.jet.buildergen.dataholder.DataHolderKey;
 import org.jetbrains.jet.buildergen.dataholder.DataHolderKeyImpl;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.entities.EntityUtil;
-import org.jetbrains.jet.buildergen.entities.Multiplicity;
 import org.jetbrains.jet.buildergen.entities.Relation;
 import org.jetbrains.jet.buildergen.java.ClassPrinter;
 import org.jetbrains.jet.buildergen.java.code.BinaryOperation;
@@ -74,29 +73,34 @@ public class BuilderClassGenerator {
 
                     @Override
                     public void generateEntity(@NotNull Entity entity, @NotNull ClassBean classBean) {
-                        generateClassMembers(trace, classBean, entity);
+                        generateClassMembers(context, trace, classBean, entity);
                     }
                 }
         );
     }
 
 
-    protected static void generateClassMembers(EntityRepresentationContext<? extends ClassModel> context, ClassBean classBean, Entity entity) {
+    protected static void generateClassMembers(
+            BeanGenerationContext beanGenerationContext,
+            EntityRepresentationContext<? extends ClassModel> context,
+            ClassBean classBean,
+            Entity entity
+    ) {
         classBean.setAbstract(true);
 
         createDelegateFieldAndConstructors(classBean);
 
         List<Relation<?>> relationsToNonEntities = Lists.newArrayList();
-        TypeTransformer types = new TypeTransformer(context);
+        TypeTransformer types = new TypeTransformer(beanGenerationContext);
         for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
             Object target = relation.getTarget();
             if (target instanceof Entity) {
                 Entity targetEntity = (Entity) target;
                 if (EntityUtil.isReference(relation)) {
-                    classBean.getMethods().add(createSetterMethod(types, relation, targetEntity));
+                    classBean.getMethods().add(createSetterMethod(relation, targetEntity));
                 }
                 else {
-                    classBean.getMethods().add(createRelationBuilderMethod(types, relation, targetEntity));
+                    classBean.getMethods().add(createRelationBuilderMethod(context, relation, targetEntity));
                 }
             }
             else {
@@ -155,7 +159,7 @@ public class BuilderClassGenerator {
             );
     }
 
-    private static MethodModel createSetterMethod(TypeTransformer types, Relation<?> relation, Entity targetEntity) {
+    private static MethodModel createSetterMethod(Relation<?> relation, Entity targetEntity) {
         final String name = getSetterName(relation);
         return new MethodBean()
                 .setVisibility(Visibility.PUBLIC)
@@ -176,7 +180,7 @@ public class BuilderClassGenerator {
     }
 
     private static MethodModel createRelationBuilderMethod(
-            TypeTransformer types,
+            EntityRepresentationContext<? extends ClassModel> builders,
             Relation<?> relation,
             Entity targetEntity
     ) {
@@ -184,7 +188,7 @@ public class BuilderClassGenerator {
         return new MethodBean()
                 .addAnnotation(CommonAnnotations.NOT_NULL)
                 .setVisibility(Visibility.PUBLIC)
-                .setReturnType(types.relationToType(relation, Multiplicity.ONE))
+                .setReturnType(TypeUtil.type(builders.getRepresentation(targetEntity)))
                 .setName(name)
                 .put(ClassPrinter.METHOD_BODY,
                      new PieceOfCode() {

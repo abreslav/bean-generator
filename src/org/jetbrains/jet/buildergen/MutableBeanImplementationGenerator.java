@@ -86,7 +86,7 @@ public class MutableBeanImplementationGenerator {
     private static void generateClassMembers(BeanGenerationContext context, ClassBean classBean, Entity entity) {
         EntityRepresentationContext<ClassModel> mutableBeanInterfaces = context.getBeanInterfaces();
         ClassModel interfaceBean = mutableBeanInterfaces.getRepresentation(entity);
-        EntityContext c = new EntityContext(mutableBeanInterfaces, entity, classBean);
+        EntityContext c = new EntityContext(context, entity, classBean);
         Map<String, MethodModel> methodsToImplement = Maps.newLinkedHashMap();
         collectAllMethodsToImplement(methodsToImplement, entity, mutableBeanInterfaces, IMPLS.keySet());
         for (MethodModel method : methodsToImplement.values()) {
@@ -265,13 +265,15 @@ public class MutableBeanImplementationGenerator {
     private static class EntityContext {
         private final Entity entity;
         private final ClassBean classBean;
-        private final EntityRepresentationContext<? extends ClassModel> context;
         private final TypeTransformer types;
         private final Map<Relation<?>, FieldModel> fields = Maps.newHashMap();
 
-        private EntityContext(EntityRepresentationContext<? extends ClassModel> context, Entity entity, ClassBean classBean) {
-            this.context = context;
-            this.types = new TypeTransformer(context);
+        private EntityContext(
+                BeanGenerationContext beanGenerationContext,
+                Entity entity,
+                ClassBean classBean
+        ) {
+            this.types = new TypeTransformer(beanGenerationContext);
             this.entity = entity;
             this.classBean = classBean;
         }

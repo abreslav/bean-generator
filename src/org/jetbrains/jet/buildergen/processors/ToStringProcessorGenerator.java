@@ -17,6 +17,7 @@
 package org.jetbrains.jet.buildergen.processors;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.buildergen.BeanGenerationContext;
 import org.jetbrains.jet.buildergen.EntityRepresentationContext;
 import org.jetbrains.jet.buildergen.GeneratorUtil;
 import org.jetbrains.jet.buildergen.TypeTransformer;
@@ -51,8 +52,9 @@ public class ToStringProcessorGenerator {
     public static ClassModel generate(
             @NotNull String packageName,
             @NotNull String className,
-            @NotNull final EntityRepresentationContext<? extends ClassModel> interfaces) {
-        final TypeTransformer interfaceTypes = new TypeTransformer(interfaces);
+            @NotNull BeanGenerationContext context) {
+        final TypeTransformer interfaceTypes = new TypeTransformer(context);
+        final EntityRepresentationContext<? extends ClassModel> interfaces = context.getBeanInterfaces();
         return BeanProcessorGenerator.generate(packageName, className, interfaces, new BeanProcessorGenerationStrategy() {
             @NotNull
             @Override

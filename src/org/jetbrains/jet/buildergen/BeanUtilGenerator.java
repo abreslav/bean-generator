@@ -152,7 +152,7 @@ public class BeanUtilGenerator {
                                                        }
                                                    }
                                                    else {
-                                                       statement = deepCopyCollectionStatement(f, relation, context.getBeanInterfaces());
+                                                       statement = deepCopyCollectionStatement(f, relation, context);
                                                    }
                                                    statements.add(statement);
                                                }
@@ -196,7 +196,7 @@ public class BeanUtilGenerator {
                                    methodCall(f, f.variableReference(ORIGINAL), getterName));
     }
 
-    private static <E> E deepCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation, EntityRepresentationContext<? extends ClassModel> context) {
+    private static <E> E deepCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation, BeanGenerationContext context) {
         TypeTransformer typeTransformer = new TypeTransformer(context);
         TypeData elementType = typeTransformer.relationToType(relation, Multiplicity.ONE);
         String getterName = EntityRepresentationGeneratorUtil.getGetterName(relation);

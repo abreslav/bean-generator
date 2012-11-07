@@ -66,7 +66,7 @@ public class MutableBeanInterfaceGenerator {
                                 entitiesToTypes(context.getBeanInterfaces(), entity.getSuperEntities())
                         );
 
-                        EntityContext c = new EntityContext(context.getBeanInterfaces(), entity, classBean);
+                        EntityContext c = new EntityContext(context, entity, classBean);
                         createGetters(c);
                         createSettersAndAdders(c);
                     }
@@ -157,12 +157,10 @@ public class MutableBeanInterfaceGenerator {
     private static class EntityContext {
         private final Entity entity;
         private final ClassBean classBean;
-        private final EntityRepresentationContext<? extends ClassModel> context;
         private final TypeTransformer types;
 
-        private EntityContext(EntityRepresentationContext<? extends ClassModel> context, Entity entity, ClassBean classBean) {
-            this.context = context;
-            this.types = new TypeTransformer(context);
+        private EntityContext(BeanGenerationContext beanGenerationContext, Entity entity, ClassBean classBean) {
+            this.types = new TypeTransformer(beanGenerationContext);
             this.entity = entity;
             this.classBean = classBean;
         }

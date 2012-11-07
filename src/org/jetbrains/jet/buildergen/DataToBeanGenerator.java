@@ -113,7 +113,7 @@ public class DataToBeanGenerator {
                                                        }
                                                    }
                                                    else {
-                                                        statement = deepCopyCollectionStatement(f, relation, context.getBeanImplementations());
+                                                        statement = deepCopyCollectionStatement(f, relation, context);
                                                    }
                                                    statements.add(statement);
                                                }
@@ -159,7 +159,7 @@ public class DataToBeanGenerator {
         );
     }
 
-    private static <E> E deepCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation, EntityRepresentationContext<? extends ClassModel> context) {
+    private static <E> E deepCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation, BeanGenerationContext context) {
         TypeData elementType;
         Object target = relation.getTarget();
         if (target instanceof Entity) {

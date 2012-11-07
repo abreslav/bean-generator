@@ -25,12 +25,10 @@ import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.entities.EntityUtil;
 import org.jetbrains.jet.buildergen.entities.Multiplicity;
 import org.jetbrains.jet.buildergen.entities.Relation;
-import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
 import org.jetbrains.jet.buildergen.java.declarations.WildcardKind;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeFactory;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
-import org.jetbrains.jet.buildergen.runtime.BeanReference;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -50,9 +48,9 @@ public class TypeTransformer {
         OUT
     }
 
-    private final EntityRepresentationContext<? extends ClassModel> context;
+    private final BeanGenerationContext context;
 
-    public TypeTransformer(EntityRepresentationContext<? extends ClassModel> context) {
+    public TypeTransformer(@NotNull BeanGenerationContext context) {
         this.context = context;
     }
 
@@ -75,37 +73,25 @@ public class TypeTransformer {
             Entity entity = (Entity) target;
             TypeData elementType;
             if (isReference) {
-                elementType = makeReferenceIfNeeded(TypeUtil.getDataType(entity), isReference);
+                elementType = makeReferenceIfNeeded(entity, isReference);
             }
             else {
-                elementType = TypeUtil.type(context.getRepresentation(entity));
+                elementType = TypeUtil.type(context.getBeanInterfaces().getRepresentation(entity));
             }
             return typeWithMultiplicity(multiplicity, elementType, variance);
         }
         else if (target instanceof Type) {
             Type type = (Type) target;
-            return typeWithMultiplicity(multiplicity, makeReferenceIfNeeded(reflectionType(type), isReference), variance);
+            return typeWithMultiplicity(multiplicity, reflectionType(type), variance);
         }
         throw new IllegalArgumentException("Unsupported target type:" + target);
     }
 
-    private TypeData makeReferenceIfNeeded(TypeData typeData, boolean isReference) {
+    private TypeData makeReferenceIfNeeded(Entity entity, boolean isReference) {
         if (isReference) {
-            return referenceType(typeData);
+            return TypeUtil.type(context.getReferenceInterfaces().getRepresentation(entity));
         }
-        return typeData;
-    }
-
-    private TypeData referenceType(@NotNull final TypeData typeData) {
-        return new TypeData() {
-            @Override
-            public <E> E create(@NotNull TypeFactory<E> f) {
-                Class<BeanReference> beanReferenceClass = BeanReference.class;
-                return TypeUtil.constructedType(f,
-                                                beanReferenceClass.getPackage().getName(), beanReferenceClass.getSimpleName(),
-                                                typeData.create(f));
-            }
-        };
+        return TypeUtil.getDataType(entity);
     }
 
     public static TypeData typeWithMultiplicity(Multiplicity multiplicity, TypeData elementType, Variance variance) {
