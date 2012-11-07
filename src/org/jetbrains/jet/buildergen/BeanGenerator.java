@@ -102,61 +102,54 @@ public class BeanGenerator {
             String builderClassPackage,
             String beanBuilderPackage
     ) throws IOException {
+
         Context context = new Context();
         EntityBuilder.javaClassesToEntities(classesWithBuilders, context.dataClasses);
         Collection<Entity> entities = context.dataClasses.getEntities();
 
-        Collection<ClassModel> mutableBeans = new MutableBeanInterfaceGenerator().generate(
-                entities,
-                context.mutableBeanInterfaces,
-                mutableBeanPackage
-        );
+        BeanGenerationContextImpl beanGenerationContext = new BeanGenerationContextImpl(entities);
 
-        Collection<ClassModel> mutableBeanClasses = new MutableBeanImplementationGenerator(context.mutableBeanInterfaces).generate(
-                entities,
-                context.mutableBeanImplementationClasses,
-                mutableBeanClassPackage
-        );
-
-        Collection<ClassModel> beanReferenceInterfaces = new BeanReferenceInterfaceGenerator().generate(
-                entities,
-                context.beanReferenceInterfaces,
+        Collection<ClassModel> beanReferenceInterfaces = BeanReferenceGenerator.generateInterfaces(
+                beanGenerationContext,
                 beanReferencePackage
         );
 
-        Collection<ClassModel> literalBeanReferenceClasses = new LiteralBeanReferenceClassGenerator(context.beanReferenceInterfaces).generate(
-                entities,
-                context.literalBeanReferenceClasses,
+        Collection<ClassModel> literalBeanReferenceClasses = BeanReferenceGenerator.generateLiteralClasses(
+                beanGenerationContext,
                 beanReferenceImplPackage
         );
 
-        Collection<ClassModel> proxyBeanReferenceClasses = new ProxyBeanReferenceClassGenerator(context.beanReferenceInterfaces).generate(
-                entities,
-                context.proxyBeanReferenceClasses,
+        Collection<ClassModel> proxyBeanReferenceClasses = BeanReferenceGenerator.generateProxyClasses(
+                beanGenerationContext,
                 beanReferenceImplPackage
         );
 
-        ClassModel beanUtil = BeanUtilGenerator.generate(mutableBeanUtilPackage, "BeanUtil", context.mutableBeanInterfaces,
-                                                         context.mutableBeanImplementationClasses);
-        ClassModel dataToBeanUtil = DataToBeanGenerator.generate(mutableBeanUtilPackage, "DataToBean", context.mutableBeanInterfaces,
-                                                                 context.mutableBeanImplementationClasses);
+        Collection<ClassModel> mutableBeans = MutableBeanInterfaceGenerator.generate(
+                beanGenerationContext,
+                mutableBeanPackage
+        );
+
+        Collection<ClassModel> mutableBeanClasses = MutableBeanImplementationGenerator.generate(
+                beanGenerationContext,
+                mutableBeanClassPackage
+        );
+
+        ClassModel beanUtil = BeanUtilGenerator.generate(mutableBeanUtilPackage, "BeanUtil", beanGenerationContext);
+        ClassModel dataToBeanUtil = DataToBeanGenerator.generate(mutableBeanUtilPackage, "DataToBean", beanGenerationContext);
         ClassModel copyProcessor = BeanCopyProcessorGenerator
-                .generate(mutableBeanUtilPackage, "CopyProcessor", context.mutableBeanInterfaces,
-                          context.mutableBeanImplementationClasses);
-        ClassModel toStringProcessor = ToStringProcessorGenerator.generate(mutableBeanUtilPackage, "ToString", context.mutableBeanInterfaces);
+                .generate(mutableBeanUtilPackage, "CopyProcessor", beanGenerationContext.getBeanInterfaces(),
+                          beanGenerationContext.getBeanImplementations());
+        ClassModel toStringProcessor = ToStringProcessorGenerator.generate(mutableBeanUtilPackage, "ToString",
+                                                                           beanGenerationContext.getBeanInterfaces());
 
-        Collection<ClassModel> builderClasses = new BuilderClassGenerator().generate(
-                entities,
+        Collection<ClassModel> builderClasses = BuilderClassGenerator.generate(
+                beanGenerationContext,
                 context.builderClasses,
                 builderClassPackage
         );
 
-        Collection<ClassModel> beanBuilderClasses = new BeanBuilderClassGenerator(
-                context.mutableBeanInterfaces, context.mutableBeanImplementationClasses, context.builderClasses
-        ).generate(
-                entities,
-                context.beanBuilders,
-                beanBuilderPackage
+        Collection<ClassModel> beanBuilderClasses = BeanBuilderClassGenerator.generate(
+                beanGenerationContext, context.builderClasses, context.beanBuilders, beanBuilderPackage
         );
 
         ClassModel builderUtil = DataBuilderGenerator.generate(builderClassPackage, "DataBuilder", context.dataClasses,

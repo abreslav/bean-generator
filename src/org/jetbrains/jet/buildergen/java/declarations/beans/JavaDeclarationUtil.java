@@ -17,7 +17,7 @@
 package org.jetbrains.jet.buildergen.java.declarations.beans;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.buildergen.EntityRepresentationGenerator;
+import org.jetbrains.jet.buildergen.CommonAnnotations;
 import org.jetbrains.jet.buildergen.java.declarations.MethodModel;
 import org.jetbrains.jet.buildergen.java.declarations.Visibility;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
@@ -43,7 +43,7 @@ public class JavaDeclarationUtil {
 
     public static ParameterBean notNullParameter(TypeData beanInterfaceType, String name) {
         return new ParameterBean()
-                .addAnnotation(EntityRepresentationGenerator.NOT_NULL)
+                .addAnnotation(CommonAnnotations.NOT_NULL)
                 .setType(beanInterfaceType)
                 .setName(name);
     }

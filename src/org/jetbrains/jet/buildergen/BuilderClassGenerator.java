@@ -28,24 +28,23 @@ import org.jetbrains.jet.buildergen.java.ClassPrinter;
 import org.jetbrains.jet.buildergen.java.code.BinaryOperation;
 import org.jetbrains.jet.buildergen.java.code.CodeFactory;
 import org.jetbrains.jet.buildergen.java.code.PieceOfCode;
-import org.jetbrains.jet.buildergen.java.declarations.ClassKind;
-import org.jetbrains.jet.buildergen.java.declarations.MethodModel;
-import org.jetbrains.jet.buildergen.java.declarations.ParameterModel;
-import org.jetbrains.jet.buildergen.java.declarations.Visibility;
+import org.jetbrains.jet.buildergen.java.declarations.*;
 import org.jetbrains.jet.buildergen.java.declarations.beans.*;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import static org.jetbrains.jet.buildergen.EntityRepresentationGeneratorUtil.*;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.*;
 import static org.jetbrains.jet.buildergen.java.types.TypeUtil._void;
 
 /**
  * @author abreslav
  */
-public class BuilderClassGenerator extends EntityRepresentationGenerator {
+public class BuilderClassGenerator {
 
     public static final DataHolderKey<ParameterModel, Relation<?>> RELATION_FOR_PARAMETER = DataHolderKeyImpl.create("RELATION_FOR_PARAMETER");
     public static final DataHolderKey<MethodModel, Relation<?>> RELATION_FOR_METHOD = DataHolderKeyImpl.create("RELATION_FOR_METHOD");
@@ -56,23 +55,33 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
     public static final String ENTITY = "entity";
 
     @NotNull
-    @Override
-    protected ClassKind getClassKind() {
-        return ClassKind.CLASS;
+    public static Collection<ClassModel> generate(
+            @NotNull final BeanGenerationContext context,
+            @NotNull final EntityRepresentationContextImpl trace,
+            @NotNull String packageFqName
+    ) {
+        return EntityRepresentationGeneratorUtil.generateEntityRepresentations(
+                context.getEntities(),
+                ClassKind.CLASS,
+                trace,
+                packageFqName,
+                new EntityBeanGenerationStrategy() {
+                    @NotNull
+                    @Override
+                    public String getEntityRepresentationName(@NotNull Entity entity) {
+                        return entity.getName() + "Builder";
+                    }
+
+                    @Override
+                    public void generateEntity(@NotNull Entity entity, @NotNull ClassBean classBean) {
+                        generateClassMembers(trace, classBean, entity);
+                    }
+                }
+        );
     }
 
-    @Override
-    public String getEntityRepresentationName(@NotNull Entity entity) {
-        return entity.getName() + "Builder";
-    }
 
-    @Override
-    protected void generateSupertypes(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
-        // No supertypes
-    }
-
-    @Override
-    protected void generateClassMembers(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
+    protected static void generateClassMembers(EntityRepresentationContext<? extends ClassModel> context, ClassBean classBean, Entity entity) {
         classBean.setAbstract(true);
 
         createDelegateFieldAndConstructors(classBean);
@@ -137,10 +146,10 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
                      });
     }
 
-    public static MethodBean constructorDeclaration(ClassBean classBean) {
+    public static MethodBean constructorDeclaration(ClassModel classBean) {
         return JavaDeclarationUtil.publicConstructor()
             .addParameter(new ParameterBean()
-                                  .addAnnotation(NULLABLE)
+                                  .addAnnotation(CommonAnnotations.NULLABLE)
                                   .setType(TypeUtil.type(classBean))
                                   .setName(DELEGATE)
             );
@@ -173,7 +182,7 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
     ) {
         final String name = getBuilderMethodName(relation);
         return new MethodBean()
-                .addAnnotation(NOT_NULL)
+                .addAnnotation(CommonAnnotations.NOT_NULL)
                 .setVisibility(Visibility.PUBLIC)
                 .setReturnType(types.relationToType(relation, Multiplicity.ONE))
                 .setName(name)
@@ -262,4 +271,6 @@ public class BuilderClassGenerator extends EntityRepresentationGenerator {
     private static String singularize(String name) {
         return name.endsWith("s") ? name.substring(0, name.length() - 1) : name;
     }
+
+    private BuilderClassGenerator() {}
 }

@@ -16,37 +16,28 @@
 
 package org.jetbrains.jet.buildergen;
 
-import com.google.common.collect.Maps;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
-import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
 
 import java.util.Collection;
-import java.util.Map;
 
-public class EntityRepresentationContextImpl implements EntityRepresentationContext<ClassModel>, EntityRepresentationTrace<ClassBean> {
-    private final Map<Entity, ClassBean> map = Maps.newLinkedHashMap();
-
-    @Override
-    public void registerRepresentation(@NotNull Entity entity, @NotNull ClassBean representation) {
-        map.put(entity, representation);
-    }
-
-    @Override
-    public ClassModel getRepresentation(@NotNull Entity entity) {
-        return map.get(entity);
-    }
+public interface BeanGenerationContext {
+    @NotNull
+    Collection<Entity> getEntities();
 
     @NotNull
-    @Override
-    public Collection<Entity> getEntities() {
-        return map.keySet();
-    }
+    EntityRepresentationContext<ClassModel> getBeanInterfaces();
 
     @NotNull
-    @Override
-    public Collection<ClassModel> getRepresentations() {
-        return (Collection) map.values();
-    }
+    EntityRepresentationContext<ClassModel> getBeanImplementations();
+
+    @NotNull
+    EntityRepresentationContext<ClassModel> getReferenceInterfaces();
+
+    @NotNull
+    EntityRepresentationContext<ClassModel> getLiteralReferenceClasses();
+
+    @NotNull
+    EntityRepresentationContext<ClassModel> getProxyReferenceClasses();
 }

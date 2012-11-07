@@ -41,10 +41,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Queue;
 
+import static org.jetbrains.jet.buildergen.EntityRepresentationGeneratorUtil.*;
+
 /**
 * @author abreslav
 */
-public class MutableBeanImplementationGenerator extends EntityRepresentationGenerator {
+public class MutableBeanImplementationGenerator {
 
     private static final ClassModel ARRAY_LIST = new ClassBean()
             .setPackageFqName("java.util")
@@ -54,31 +56,36 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
             .setPackageFqName("java.util")
             .setName("HashSet");
 
-    private final EntityRepresentationContext<ClassBean> mutableBeanInterfaces;
-
-    public MutableBeanImplementationGenerator(EntityRepresentationContext<ClassBean> mutableBeanInterfaces) {
-        this.mutableBeanInterfaces = mutableBeanInterfaces;
-    }
-
     @NotNull
-    @Override
-    protected ClassKind getClassKind() {
-        return ClassKind.CLASS;
+    public static Collection<ClassModel> generate(
+            @NotNull final BeanGenerationContextImpl context,
+            @NotNull String packageFqName
+    ) {
+        return generateEntityRepresentations(
+                context.getEntities(),
+                ClassKind.CLASS,
+                context.getBeanImplementations(),
+                packageFqName,
+                new EntityBeanGenerationStrategy() {
+                    @NotNull
+                    @Override
+                    public String getEntityRepresentationName(@NotNull Entity entity) {
+                        return entity.getName() + "BeanImpl";
+                    }
+
+                    @Override
+                    public void generateEntity(@NotNull Entity entity, @NotNull ClassBean classBean) {
+                        classBean.getSuperInterfaces().add(TypeUtil.type(context.getBeanInterfaces().getRepresentation(entity)));
+
+                        generateClassMembers(context, classBean, entity);
+                    }
+                }
+        );
     }
 
-    @Override
-    public String getEntityRepresentationName(@NotNull Entity entity) {
-        return entity.getName() + "BeanImpl";
-    }
-
-    @Override
-    protected void generateSupertypes(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
-        classBean.getSuperInterfaces().add(TypeUtil.type(mutableBeanInterfaces.getRepresentation(entity)));
-    }
-
-    @Override
-    protected void generateClassMembers(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
-        ClassBean interfaceBean = mutableBeanInterfaces.getRepresentation(entity);
+    private static void generateClassMembers(BeanGenerationContext context, ClassBean classBean, Entity entity) {
+        EntityRepresentationContext<ClassModel> mutableBeanInterfaces = context.getBeanInterfaces();
+        ClassModel interfaceBean = mutableBeanInterfaces.getRepresentation(entity);
         EntityContext c = new EntityContext(mutableBeanInterfaces, entity, classBean);
         Map<String, MethodModel> methodsToImplement = Maps.newLinkedHashMap();
         collectAllMethodsToImplement(methodsToImplement, entity, mutableBeanInterfaces, IMPLS.keySet());
@@ -103,14 +110,14 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
     private static void collectAllMethodsToImplement(
             Map<String, MethodModel> result,
             Entity start,
-            EntityRepresentationContext<ClassBean> context,
+            EntityRepresentationContext<ClassModel> context,
             Collection<DataHolderKey<? super MethodModel, Relation<?>>> keys
     ) {
         Queue<Entity> queue = Lists.newLinkedList();
         queue.offer(start);
         while (!queue.isEmpty()) {
             Entity entity = queue.remove();
-            ClassBean classBean = context.getRepresentation(entity);
+            ClassModel classBean = context.getRepresentation(entity);
             for (MethodModel method : classBean.getMethods()) {
                 for (DataHolderKey<? super MethodModel, Relation<?>> key : keys) {
                     Relation<?> relation = method.getData(key);
@@ -162,7 +169,7 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
 
     private static MethodBean implement(MethodModel method, PieceOfCode body) {
         return JavaDeclarationUtil.copy(method)
-                .addAnnotation(OVERRIDE)
+                .addAnnotation(CommonAnnotations.OVERRIDE)
                 .setAbstract(false)
                 .put(ClassPrinter.METHOD_BODY, body);
     }
@@ -258,13 +265,13 @@ public class MutableBeanImplementationGenerator extends EntityRepresentationGene
     private static class EntityContext {
         private final Entity entity;
         private final ClassBean classBean;
-        private final EntityRepresentationContext<ClassBean> context;
+        private final EntityRepresentationContext<? extends ClassModel> context;
         private final TypeTransformer types;
         private final Map<Relation<?>, FieldModel> fields = Maps.newHashMap();
 
-        private EntityContext(EntityRepresentationContext<ClassBean> context, Entity entity, ClassBean classBean) {
+        private EntityContext(EntityRepresentationContext<? extends ClassModel> context, Entity entity, ClassBean classBean) {
             this.context = context;
-            this.types = types(context);
+            this.types = new TypeTransformer(context);
             this.entity = entity;
             this.classBean = classBean;
         }

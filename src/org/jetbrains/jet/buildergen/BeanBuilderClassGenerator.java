@@ -24,68 +24,75 @@ import org.jetbrains.jet.buildergen.entities.Relation;
 import org.jetbrains.jet.buildergen.java.ClassPrinter;
 import org.jetbrains.jet.buildergen.java.code.CodeFactory;
 import org.jetbrains.jet.buildergen.java.code.PieceOfCode;
-import org.jetbrains.jet.buildergen.java.declarations.ClassKind;
-import org.jetbrains.jet.buildergen.java.declarations.MethodModel;
-import org.jetbrains.jet.buildergen.java.declarations.ParameterModel;
-import org.jetbrains.jet.buildergen.java.declarations.Visibility;
+import org.jetbrains.jet.buildergen.java.declarations.*;
 import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
 import org.jetbrains.jet.buildergen.java.declarations.beans.FieldBean;
 import org.jetbrains.jet.buildergen.java.declarations.beans.JavaDeclarationUtil;
 import org.jetbrains.jet.buildergen.java.declarations.beans.MethodBean;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
+import java.util.Collection;
 import java.util.List;
 
 import static org.jetbrains.jet.buildergen.BuilderClassGenerator.DELEGATE;
 import static org.jetbrains.jet.buildergen.BuilderClassGenerator.RELATION_FOR_PARAMETER;
+import static org.jetbrains.jet.buildergen.CommonAnnotations.NOT_NULL;
 import static org.jetbrains.jet.buildergen.java.ClassPrinter.METHOD_BODY;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.*;
 
 /**
  * @author abreslav
  */
-public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
+public class BeanBuilderClassGenerator {
 
     private static final String BEAN = "bean";
     private static final String BUILD_RESULT = "buildResult";
 
-    private final EntityRepresentationContext<ClassBean> builders;
-    private final EntityRepresentationContext<ClassBean> beanInterfaces;
-    private final EntityRepresentationContext<ClassBean> beanImpls;
-
-    public BeanBuilderClassGenerator(
-            @NotNull EntityRepresentationContext<ClassBean> beanInterfaces,
-            @NotNull EntityRepresentationContext<ClassBean> beanImpls,
-            @NotNull EntityRepresentationContext<ClassBean> builders
-    ) {
-        this.builders = builders;
-        this.beanInterfaces = beanInterfaces;
-        this.beanImpls = beanImpls;
-    }
-
-
     @NotNull
-    @Override
-    protected ClassKind getClassKind() {
-        return ClassKind.CLASS;
+    public static Collection<ClassModel> generate(
+            @NotNull final BeanGenerationContext context,
+            @NotNull final EntityRepresentationContext<? extends ClassModel> builders,
+            @NotNull final EntityRepresentationContextImpl beanBuilders,
+            @NotNull String targetPackageFqName
+    ) {
+        return EntityRepresentationGeneratorUtil.generateEntityRepresentations(
+            context.getBeanInterfaces().getEntities(),
+            ClassKind.CLASS,
+            beanBuilders,
+            targetPackageFqName,
+            new EntityBeanGenerationStrategy() {
+                @NotNull
+                @Override
+                public String getEntityRepresentationName(@NotNull Entity entity) {
+                    return entity.getName() + "BeanBuilder";
+                }
+
+                @Override
+                public void generateEntity(@NotNull Entity entity, @NotNull ClassBean classBean) {
+                    classBean.setSuperClass(TypeUtil.type(builders.getRepresentation(entity)));
+
+                    generateClassMembers(
+                            context,
+                            builders,
+                            beanBuilders,
+                            classBean,
+                            entity
+                    );
+                }
+            }
+        );
     }
 
-    @Override
-    public String getEntityRepresentationName(@NotNull Entity entity) {
-        return entity.getName() + "BeanBuilder";
-    }
-
-    @Override
-    protected void generateSupertypes(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
-        classBean.setSuperClass(TypeUtil.type(builders.getRepresentation(entity)));
-    }
-
-    @Override
-    protected void generateClassMembers(final EntityRepresentationContext<ClassBean> beanBuilders, ClassBean classBean, Entity entity) {
-
-        ClassBean builderClass = builders.getRepresentation(entity);
-        ClassBean beanInterface = beanInterfaces.getRepresentation(entity);
-        ClassBean beanImpl = beanImpls.getRepresentation(entity);
+    private static void generateClassMembers(
+            BeanGenerationContext context,
+            EntityRepresentationContext<? extends ClassModel> builders,
+            EntityRepresentationContextImpl beanBuilders,
+            ClassBean classBean,
+            Entity entity
+    ) {
+        ClassModel builderClass = builders.getRepresentation(entity);
+        ClassModel beanInterface = context.getBeanInterfaces().getRepresentation(entity);
+        ClassModel beanImpl = context.getBeanImplementations().getRepresentation(entity);
 
         classBean.getFields().add(beanField(beanInterface, beanImpl));
         classBean.getConstructors().add(implementConstructor(builderClass));
@@ -94,7 +101,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
 
         for (final MethodModel method : builderClass.getMethods()) {
             MethodBean impl = JavaDeclarationUtil.copy(method)
-                                    .addAnnotation(OVERRIDE)
+                                    .addAnnotation(CommonAnnotations.OVERRIDE)
                                     .setAbstract(false);
             final Relation<?> relation = method.getData(BuilderClassGenerator.RELATION_FOR_METHOD);
 
@@ -123,7 +130,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
         }
     }
 
-    private static FieldBean beanField(ClassBean beanInterface, final ClassBean beanImpl) {
+    private static FieldBean beanField(ClassModel beanInterface, final ClassModel beanImpl) {
         return new FieldBean()
                 .setVisibility(Visibility.PRIVATE)
                 .setFinal(true)
@@ -138,7 +145,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                      });
     }
 
-    private static MethodBean implementConstructor(ClassBean builderClass) {
+    private static MethodBean implementConstructor(ClassModel builderClass) {
         return BuilderClassGenerator.constructorDeclaration(builderClass)
                 .put(METHOD_BODY,
                      new PieceOfCode() {
@@ -158,7 +165,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                     Relation<?> relation = parameter.getData(RELATION_FOR_PARAMETER);
                     String name = relation.getMultiplicity().isCollection()
                                   ? MutableBeanInterfaceGenerator.getAllElementAdderName(relation)
-                                  : getSetterName(relation);
+                                  : EntityRepresentationGeneratorUtil.getSetterName(relation);
                     statements.add(
                             methodCallStatement(f, bean(f), name, f.variableReference(parameter.getName()))
                     );
@@ -180,18 +187,18 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
     }
 
     private static PieceOfCode builderMethodBody(
-            final EntityRepresentationContext<ClassBean> beanBuilders,
+            final EntityRepresentationContext<? extends ClassModel> beanBuilders,
             final Relation<?> relation,
             final Entity targetEntity
     ) {
         return new PieceOfCode() {
             @Override
             public <E> E create(@NotNull CodeFactory<E> f) {
-                ClassBean targetBeanBuilder = beanBuilders.getRepresentation(targetEntity);
+                ClassModel targetBeanBuilder = beanBuilders.getRepresentation(targetEntity);
                 String subBuilder = "subBuilder";
                 String methodName = relation.getMultiplicity().isCollection()
                               ? MutableBeanInterfaceGenerator.getSingleElementAdderName(relation)
-                              : getSetterName(relation);
+                              : EntityRepresentationGeneratorUtil.getSetterName(relation);
                 return block(f,
                     // TargetEntityBeanBuilder subBuilder = new TargetEntityBeanBuilder();
                     f.statement(f.variableDeclaration(TypeUtil.type(targetBeanBuilder), subBuilder,
@@ -210,7 +217,7 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
         return f.fieldReference(f._this(), BEAN);
     }
 
-    private static MethodBean beanGetter(ClassBean beanInterface) {
+    private static MethodBean beanGetter(ClassModel beanInterface) {
         return new MethodBean()
             .addAnnotation(NOT_NULL)
             .setVisibility(Visibility.PUBLIC)
@@ -224,4 +231,6 @@ public class BeanBuilderClassGenerator extends EntityRepresentationGenerator {
                      }
                  });
     }
+
+    private BeanBuilderClassGenerator() {}
 }

@@ -17,7 +17,7 @@
 package org.jetbrains.jet.buildergen.processors;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.buildergen.EntityRepresentationGenerator;
+import org.jetbrains.jet.buildergen.EntityRepresentationGeneratorUtil;
 import org.jetbrains.jet.buildergen.MutableBeanInterfaceGenerator;
 import org.jetbrains.jet.buildergen.TypeTransformer;
 import org.jetbrains.jet.buildergen.entities.Entity;
@@ -55,7 +55,7 @@ public class BeanProcessorGeneratorUtil {
             );
         }
         else {
-            String setterName = EntityRepresentationGenerator.getSetterName(relation);
+            String setterName = EntityRepresentationGeneratorUtil.getSetterName(relation);
             statements.add(
                     methodCallStatement(f, outExpression, setterName,
                                         converter.convertedExpression(f, inExpression))

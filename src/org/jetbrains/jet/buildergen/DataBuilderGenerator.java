@@ -37,7 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jetbrains.jet.buildergen.EntityRepresentationGenerator.getSetterName;
+import static org.jetbrains.jet.buildergen.EntityRepresentationGeneratorUtil.getSetterName;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil._for;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCall;
 
@@ -53,8 +53,8 @@ public class DataBuilderGenerator {
     public static ClassModel generate(
             String packageName,
             String className,
-            EntityRepresentationContext<ClassBean> beans,
-            EntityRepresentationContext<ClassBean> builders
+            EntityRepresentationContext<? extends ClassModel> beans,
+            EntityRepresentationContext<? extends ClassModel> builders
     ) {
         ClassBean utilClass = new ClassBean()
                 .setVisibility(Visibility.PUBLIC)
@@ -66,14 +66,14 @@ public class DataBuilderGenerator {
     }
 
     private static Collection<MethodBean> generateBeanToBuilderMethods(
-            final EntityRepresentationContext<ClassBean> beans,
-            final EntityRepresentationContext<ClassBean> builders
+            final EntityRepresentationContext<? extends ClassModel> beans,
+            final EntityRepresentationContext<? extends ClassModel> builders
     ) {
         Collection<MethodBean> result = Lists.newArrayList();
         for (final Entity entity : beans.getEntities()) {
-            ClassBean beanInterface = beans.getRepresentation(entity);
+            ClassModel beanInterface = beans.getRepresentation(entity);
             final TypeData beanInterfaceType = TypeUtil.type(beanInterface);
-            ClassBean builderClass = builders.getRepresentation(entity);
+            ClassModel builderClass = builders.getRepresentation(entity);
             final TypeData builderType = TypeUtil.type(builderClass);
             result.add(createBuilderMethod(entity, beanInterfaceType, builderType)
                                .put(
@@ -95,7 +95,7 @@ public class DataBuilderGenerator {
                                                                    buildEntityStatement(f, relation, getterCall(f, relation), subEntity);
                                                        }
                                                        else {
-                                                           ClassBean subEntityClass = beans.getRepresentation(subEntity);
+                                                           ClassModel subEntityClass = beans.getRepresentation(subEntity);
                                                            TypeData subEntityType = TypeUtil.type(subEntityClass);
                                                            // for (SubEntity sub : entity.getSubEntities()) {
                                                            //     buildSubEntity(sub, builder.addSubEntity())
@@ -147,7 +147,7 @@ public class DataBuilderGenerator {
     }
 
     private static <E> E getterCall(CodeFactory<E> f, Relation<?> relation) {
-        return methodCall(f, f.variableReference(ENTITY), EntityRepresentationGenerator.getGetterName(relation));
+        return methodCall(f, f.variableReference(ENTITY), EntityRepresentationGeneratorUtil.getGetterName(relation));
     }
 
     private static String getBuilderMethodName(Entity entity) {

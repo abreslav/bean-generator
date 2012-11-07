@@ -18,18 +18,11 @@ package org.jetbrains.jet.buildergen;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.entities.Entity;
+import org.jetbrains.jet.buildergen.java.declarations.beans.ClassBean;
 
-import java.util.Collection;
-
-/**
- * @author abreslav
- */
-public interface EntityRepresentationContext<R> {
-    R getRepresentation(@NotNull Entity entity);
-
+public interface EntityBeanGenerationStrategy {
     @NotNull
-    Collection<Entity> getEntities();
+    String getEntityRepresentationName(@NotNull Entity entity);
 
-    @NotNull
-    Collection<R> getRepresentations();
+    void generateEntity(@NotNull Entity entity, @NotNull ClassBean classBean);
 }

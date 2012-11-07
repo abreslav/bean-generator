@@ -19,17 +19,6 @@ package org.jetbrains.jet.buildergen;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.entities.Entity;
 
-import java.util.Collection;
-
-/**
- * @author abreslav
- */
-public interface EntityRepresentationContext<R> {
-    R getRepresentation(@NotNull Entity entity);
-
-    @NotNull
-    Collection<Entity> getEntities();
-
-    @NotNull
-    Collection<R> getRepresentations();
+public interface EntityRepresentationTrace<R> {
+    void registerRepresentation(@NotNull Entity entity, @NotNull R representation);
 }

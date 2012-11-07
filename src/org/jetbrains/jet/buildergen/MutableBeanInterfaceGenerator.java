@@ -29,10 +29,14 @@ import org.jetbrains.jet.buildergen.java.declarations.beans.ParameterBean;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
+import java.util.Collection;
+
+import static org.jetbrains.jet.buildergen.EntityRepresentationGeneratorUtil.*;
+
 /**
  * @author abreslav
  */
-public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator {
+public class MutableBeanInterfaceGenerator {
 
     public static DataHolderKey<MethodModel, Relation<?>> GETTER = DataHolderKeyImpl.create("GETTER");
     public static DataHolderKey<MethodModel, Relation<?>> SETTER = DataHolderKeyImpl.create("SETTER");
@@ -40,27 +44,34 @@ public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator
     public static DataHolderKey<MethodModel, Relation<?>> ALL_ADDER = DataHolderKeyImpl.create("ALL_ADDER");
 
     @NotNull
-    @Override
-    protected ClassKind getClassKind() {
-        return ClassKind.INTERFACE;
-    }
+    public static Collection<ClassModel> generate(
+            @NotNull final BeanGenerationContextImpl context,
+            @NotNull String packageFqName
+    ) {
+        return generateEntityRepresentations(
+                context.getEntities(),
+                ClassKind.INTERFACE,
+                context.getBeanInterfaces(),
+                packageFqName,
+                new EntityBeanGenerationStrategy() {
+                    @NotNull
+                    @Override
+                    public String getEntityRepresentationName(@NotNull Entity entity) {
+                        return entity.getName() + "Bean";
+                    }
 
-    @Override
-    public String getEntityRepresentationName(@NotNull Entity entity) {
-        return entity.getName() + "Bean";
-    }
+                    @Override
+                    public void generateEntity(@NotNull Entity entity, @NotNull ClassBean classBean) {
+                        classBean.getSuperInterfaces().addAll(
+                                entitiesToTypes(context.getBeanInterfaces(), entity.getSuperEntities())
+                        );
 
-    @Override
-    protected void generateSupertypes(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
-        generateSupertypesFromSuperEntities(context, classBean, entity);
-    }
-
-    @Override
-    protected void generateClassMembers(EntityRepresentationContext<ClassBean> context, ClassBean classBean, Entity entity) {
-        EntityContext c = new EntityContext(context, entity, classBean);
-
-        createGetters(c);
-        createSettersAndAdders(c);
+                        EntityContext c = new EntityContext(context.getBeanInterfaces(), entity, classBean);
+                        createGetters(c);
+                        createSettersAndAdders(c);
+                    }
+                }
+        );
     }
 
     private static void createGetters(EntityContext context) {
@@ -124,7 +135,7 @@ public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator
     private static ParameterBean createAllAdderParameter(TypeTransformer types, Relation<?> relation) {
         assert relation.getMultiplicity().isCollection();
         TypeData type = types.relationToType(relation, Multiplicity.COLLECTION, TypeTransformer.Variance.OUT);
-        return new ParameterBean().addAnnotation(NOT_NULL).setType(type).setName("values");
+        return new ParameterBean().addAnnotation(CommonAnnotations.NOT_NULL).setType(type).setName("values");
     }
 
     public static String getAllElementAdderName(Relation<?> relation) {
@@ -137,7 +148,7 @@ public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator
 
     private static MethodBean createSelfReturningMethod(ClassBean classBean) {
         return new MethodBean()
-                        .addAnnotation(NOT_NULL)
+                        .addAnnotation(CommonAnnotations.NOT_NULL)
                         .setVisibility(Visibility.PUBLIC)
                         .setAbstract(true)
                         .setReturnType(TypeUtil.type(classBean));
@@ -146,12 +157,12 @@ public class MutableBeanInterfaceGenerator extends EntityRepresentationGenerator
     private static class EntityContext {
         private final Entity entity;
         private final ClassBean classBean;
-        private final EntityRepresentationContext<ClassBean> context;
+        private final EntityRepresentationContext<? extends ClassModel> context;
         private final TypeTransformer types;
 
-        private EntityContext(EntityRepresentationContext<ClassBean> context, Entity entity, ClassBean classBean) {
+        private EntityContext(EntityRepresentationContext<? extends ClassModel> context, Entity entity, ClassBean classBean) {
             this.context = context;
-            this.types = types(context);
+            this.types = new TypeTransformer(context);
             this.entity = entity;
             this.classBean = classBean;
         }

@@ -59,9 +59,8 @@ public class EntityBuilder {
             .put(boolean.class, Boolean.class)
             .build();
 
-    @NotNull
-    public static void javaClassesToEntities(@NotNull Collection<? extends Class<?>> entityClassesCollection, @NotNull EntityRepresentationContext<ClassBean> context) {
-        Context c = new Context(entityClassesCollection);
+    public static void javaClassesToEntities(@NotNull Collection<? extends Class<?>> entityClasses, @NotNull EntityRepresentationContextImpl context) {
+        Context c = new Context(entityClasses);
 
         createEmptyEntities(c, context);
 
@@ -81,7 +80,7 @@ public class EntityBuilder {
         removeSkippedRelations(c.getEntities());
     }
 
-    private static void createEmptyEntities(Context c, EntityRepresentationContext<ClassBean> context) {
+    private static void createEmptyEntities(Context c, EntityRepresentationContextImpl context) {
         for (Class<?> entityClass : c.entityClasses) {
             String name = entityClass.getSimpleName();
             EntityImpl entity = new EntityImpl(name);

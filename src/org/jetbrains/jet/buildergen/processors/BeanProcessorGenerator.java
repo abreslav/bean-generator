@@ -18,7 +18,7 @@ package org.jetbrains.jet.buildergen.processors;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.EntityRepresentationContext;
-import org.jetbrains.jet.buildergen.EntityRepresentationGenerator;
+import org.jetbrains.jet.buildergen.EntityRepresentationGeneratorUtil;
 import org.jetbrains.jet.buildergen.GeneratorUtil;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.entities.EntityUtil;
@@ -36,7 +36,7 @@ import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
 import java.util.List;
 
-import static org.jetbrains.jet.buildergen.EntityRepresentationGenerator.NOT_NULL;
+import static org.jetbrains.jet.buildergen.CommonAnnotations.NOT_NULL;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCall;
 import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCallStatement;
 
@@ -418,7 +418,7 @@ public class BeanProcessorGenerator {
         }
 
         private <E> E getRelationExpression(@NotNull CodeFactory<E> f, @NotNull Relation<?> relation, E receiver) {
-            String getterName = EntityRepresentationGenerator.getGetterName(relation);
+            String getterName = EntityRepresentationGeneratorUtil.getGetterName(relation);
             return methodCall(f, receiver, getterName);
         }
 

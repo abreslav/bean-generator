@@ -50,38 +50,36 @@ public class DataToBeanGenerator {
     private static final String LOOP_INDEX = "item";
 
     public static ClassModel generate(
-            String packageName,
-            String className,
-            EntityRepresentationContext<ClassBean> interfaces,
-            EntityRepresentationContext<ClassBean> implementations
+            @NotNull String packageName,
+            @NotNull String className,
+            @NotNull BeanGenerationContext context
     ) {
         ClassBean utilClass = new ClassBean()
                 .setVisibility(Visibility.PUBLIC)
                 .setKind(ClassKind.CLASS)
                 .setPackageFqName(packageName)
                 .setName(className);
-        utilClass.getMethods().addAll(generateDeepCopyMethods(interfaces, implementations));
+        utilClass.getMethods().addAll(generateDataToBeanMethods(context));
         return utilClass;
     }
 
-    private static Collection<MethodBean> generateDeepCopyMethods(
-            final EntityRepresentationContext<ClassBean> interfaces,
-            final EntityRepresentationContext<ClassBean> implementations
+    private static Collection<MethodBean> generateDataToBeanMethods(
+            final BeanGenerationContext context
     ) {
         Collection<MethodBean> result = Lists.newArrayList();
-        for (final Entity entity : interfaces.getEntities()) {
-            ClassBean beanInterface = interfaces.getRepresentation(entity);
+        for (final Entity entity : context.getEntities()) {
+            ClassModel beanInterface = context.getBeanInterfaces().getRepresentation(entity);
             final TypeData beanInterfaceType = TypeUtil.type(beanInterface);
             TypeData dataType = TypeUtil.getDataType(entity);
             result.add(new MethodBean()
                                .setVisibility(Visibility.PUBLIC)
                                .setStatic(true)
-                               //.addAnnotation(EntityRepresentationGenerator.NOT_NULL)
+                               //.addAnnotation(EntityRepresentationGeneratorUtil.NOT_NULL)
                                .setReturnType(beanInterfaceType)
                                .setName(DATA_TO_BEAN)
                                .addParameter(
                                        new ParameterBean()
-                                               //.addAnnotation(EntityRepresentationGenerator.NOT_NULL)
+                                               //.addAnnotation(EntityRepresentationGeneratorUtil.NOT_NULL)
                                                .setType(dataType)
                                                .setName(ORIGINAL)
                                )
@@ -95,7 +93,8 @@ public class DataToBeanGenerator {
                                                statements.add(GeneratorUtil.ifVariableIsNullReturnNullStatement(f, ORIGINAL));
 
                                                statements.add(resultVariableDeclarationStatement(f,
-                                                                                                 beanInterfaceType, implementations
+                                                                                                 beanInterfaceType,
+                                                                                                 context.getBeanImplementations()
                                                        .getRepresentation(entity)));
                                                for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
                                                    E statement;
@@ -114,7 +113,7 @@ public class DataToBeanGenerator {
                                                        }
                                                    }
                                                    else {
-                                                        statement = deepCopyCollectionStatement(f, relation, interfaces);
+                                                        statement = deepCopyCollectionStatement(f, relation, context.getBeanImplementations());
                                                    }
                                                    statements.add(statement);
                                                }
@@ -128,22 +127,22 @@ public class DataToBeanGenerator {
         return result;
     }
 
-    private static <E> E resultVariableDeclarationStatement(CodeFactory<E> f, TypeData type, ClassBean classBean) {
+    private static <E> E resultVariableDeclarationStatement(CodeFactory<E> f, TypeData type, ClassModel classBean) {
         return f.statement(
                 f.variableDeclaration(type, RESULT, constructorCall(f, classBean))
         );
     }
 
     private static <E> E directCopyStatement(CodeFactory<E> f, Relation<?> relation) {
-        String setterName = EntityRepresentationGenerator.getSetterName(relation);
-        String getterName = EntityRepresentationGenerator.getGetterName(relation);
+        String setterName = EntityRepresentationGeneratorUtil.getSetterName(relation);
+        String getterName = EntityRepresentationGeneratorUtil.getGetterName(relation);
         return methodCallStatement(f, f.variableReference(RESULT), setterName,
                                    methodCall(f, f.variableReference(ORIGINAL), getterName));
     }
 
     private static <E> E deepCopyStatement(CodeFactory<E> f, Relation<?> relation) {
-        String getterName = EntityRepresentationGenerator.getGetterName(relation);
-        String setterName = EntityRepresentationGenerator.getSetterName(relation);
+        String getterName = EntityRepresentationGeneratorUtil.getGetterName(relation);
+        String setterName = EntityRepresentationGeneratorUtil.getSetterName(relation);
         return methodCallStatement(f, f.variableReference(RESULT),
                                    setterName,
                                    methodCall(f, null, DATA_TO_BEAN,
@@ -152,15 +151,15 @@ public class DataToBeanGenerator {
     }
 
     private static <E> E copyAsLiteralReference(CodeFactory<E> f, Relation<?> relation, Entity target) {
-        String getterName = EntityRepresentationGenerator.getGetterName(relation);
-        String setterName = EntityRepresentationGenerator.getSetterName(relation);
+        String getterName = EntityRepresentationGeneratorUtil.getGetterName(relation);
+        String setterName = EntityRepresentationGeneratorUtil.getSetterName(relation);
         return methodCallStatement(f, f.variableReference(RESULT),
                                    setterName,
                                    GeneratorUtil.createLiteralReference(f, target, methodCall(f, f.variableReference(ORIGINAL), getterName))
         );
     }
 
-    private static <E> E deepCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation, EntityRepresentationContext<ClassBean> context) {
+    private static <E> E deepCopyCollectionStatement(CodeFactory<E> f, Relation<?> relation, EntityRepresentationContext<? extends ClassModel> context) {
         TypeData elementType;
         Object target = relation.getTarget();
         if (target instanceof Entity) {
@@ -170,7 +169,7 @@ public class DataToBeanGenerator {
         else {
             elementType = new TypeTransformer(context).relationToType(relation, Multiplicity.ONE);
         }
-        String getterName = EntityRepresentationGenerator.getGetterName(relation);
+        String getterName = EntityRepresentationGeneratorUtil.getGetterName(relation);
         return _for(f, elementType, LOOP_INDEX, methodCall(f, f.variableReference(ORIGINAL), getterName),
                     copyCollectionElementStatement(f, relation)
         );
