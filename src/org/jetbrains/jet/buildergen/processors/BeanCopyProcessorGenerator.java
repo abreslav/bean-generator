@@ -19,6 +19,7 @@ package org.jetbrains.jet.buildergen.processors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.buildergen.BeanGenerationContext;
 import org.jetbrains.jet.buildergen.EntityRepresentationContext;
+import org.jetbrains.jet.buildergen.GeneratorUtil;
 import org.jetbrains.jet.buildergen.TypeTransformer;
 import org.jetbrains.jet.buildergen.entities.Entity;
 import org.jetbrains.jet.buildergen.entities.Relation;
@@ -33,6 +34,7 @@ import org.jetbrains.jet.buildergen.java.declarations.beans.FieldBean;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -161,8 +163,15 @@ public class BeanCopyProcessorGenerator {
                 return new RelationVisitorVoid() {
                     @Override
                     public void reference(@NotNull Relation<?> relation, @NotNull Entity target) {
-                        statements.add(
-                                f._return(inExpression)
+                        Collections.addAll(statements,
+                                           GeneratorUtil.ifExpressionIsNullReturnNullStatement(f, inExpression),
+                                           f._return(
+                                                   constructorCall(f,
+                                                                   context.getProxyReferenceClasses().getRepresentation(target),
+                                                                   f.variableReference(TRACE),
+                                                                   methodCall(f, inExpression, "resolveTo", classLiteral(f, Object.class))
+                                                   )
+                                           )
                         );
                     }
 
