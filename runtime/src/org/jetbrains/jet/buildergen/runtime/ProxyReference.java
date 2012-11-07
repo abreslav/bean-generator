@@ -24,17 +24,18 @@ public abstract class ProxyReference implements BeanReference {
 
     private final Object key;
     private final Map<?, ?> map;
+    private final Object _default;
 
-    protected ProxyReference(@NotNull Map<?, ?> map, Object key) {
+    protected ProxyReference(@NotNull Map<?, ?> map, Object key, Object _default) {
         this.key = key;
         this.map = map;
+        this._default = _default;
     }
 
     @Override
     public <T> T resolveTo(@NotNull Class<T> targetClass) {
-        if (!map.containsKey(key)) {
-            throw new IllegalStateException("No value for key '" + key + "'");
-        }
-        return ReferenceUtil.checkClass(targetClass, map.get(key));
+        Object value = map.containsKey(key) ? map.get(key) : _default;
+
+        return ReferenceUtil.checkClass(targetClass, value);
     }
 }

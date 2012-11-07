@@ -165,11 +165,14 @@ public class BeanCopyProcessorGenerator {
                     public void reference(@NotNull Relation<?> relation, @NotNull Entity target) {
                         Collections.addAll(statements,
                                            GeneratorUtil.ifExpressionIsNullReturnNullStatement(f, inExpression),
+                                           variableDeclarationStatement(f, TypeUtil.type(Object.class), TARGET,
+                                                                        methodCall(f, inExpression, "resolveTo", classLiteral(f, Object.class))),
                                            f._return(
                                                    constructorCall(f,
                                                                    context.getProxyReferenceClasses().getRepresentation(target),
                                                                    f.variableReference(TRACE),
-                                                                   methodCall(f, inExpression, "resolveTo", classLiteral(f, Object.class))
+                                                                   f.variableReference(TARGET),
+                                                                   f.variableReference(TARGET)
                                                    )
                                            )
                         );

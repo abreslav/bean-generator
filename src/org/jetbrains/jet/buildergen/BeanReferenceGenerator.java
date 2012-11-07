@@ -157,6 +157,7 @@ public class BeanReferenceGenerator {
     private static MethodBean createProxyBeanReferenceConstructor() {
         final String map = "map";
         final String key = "key";
+        final String _default = "_default";
         return JavaDeclarationUtil.publicConstructor()
                 .addParameter(
                         new ParameterBean()
@@ -169,12 +170,20 @@ public class BeanReferenceGenerator {
                                 .setType(TypeUtil.type(Object.class))
                                 .setName(key)
                 )
+                .addParameter(
+                        new ParameterBean()
+                                .setType(TypeUtil.type(Object.class))
+                                .setName(_default)
+                )
                 .put(
                         ClassPrinter.METHOD_BODY,
                         new PieceOfCode() {
                             @Override
                             public <E> E create(@NotNull CodeFactory<E> f) {
-                                return CodeUtil.methodCallStatement(f, null, "super", f.variableReference(map), f.variableReference(key));
+                                return CodeUtil.methodCallStatement(f, null, "super",
+                                                                    f.variableReference(map),
+                                                                    f.variableReference(key),
+                                                                    f.variableReference(_default));
                             }
                         }
                 );
