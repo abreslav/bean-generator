@@ -27,28 +27,17 @@ import org.jetbrains.jet.buildergen.java.code.BinaryOperation;
 import org.jetbrains.jet.buildergen.java.code.CodeFactory;
 import org.jetbrains.jet.buildergen.java.code.PieceOfCode;
 import org.jetbrains.jet.buildergen.java.declarations.beans.MethodBean;
-import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 import org.jetbrains.jet.buildergen.runtime.LiteralReference;
 
 import java.util.List;
 
-import static org.jetbrains.jet.buildergen.java.code.CodeUtil.classReference;
-import static org.jetbrains.jet.buildergen.java.code.CodeUtil.methodCallWithTypeArgument;
+import static org.jetbrains.jet.buildergen.java.code.CodeUtil.constructorCall;
 
 public class GeneratorUtil {
 
     @NotNull
     public static String variableNameByRelation(@NotNull Relation<?> relation) {
         return JavaKeyWords.escapeJavaKeyWordWithUnderscore(StringUtil.decapitalize(relation.getName()));
-    }
-
-    static <E> E createLiteralReference(CodeFactory<E> f, Entity target, E referee) {
-        Class<LiteralReference> literalReferenceClass = LiteralReference.class;
-        return methodCallWithTypeArgument(f, classReference(f, literalReferenceClass.getPackage().getName(),
-                                                                literalReferenceClass.getSimpleName()),
-                                              "create",
-                                              TypeUtil.getDataType(target),
-                                              referee);
     }
 
     public static <E> E ifVariableIsNullReturnNullStatement(CodeFactory<E> f, String variableName) {

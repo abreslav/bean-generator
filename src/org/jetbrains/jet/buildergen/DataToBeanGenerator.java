@@ -95,14 +95,14 @@ public class DataToBeanGenerator {
                                                statements.add(resultVariableDeclarationStatement(f,
                                                                                                  beanInterfaceType,
                                                                                                  context.getBeanImplementations()
-                                                       .getRepresentation(entity)));
+                                                                                                         .getRepresentation(entity)));
                                                for (Relation<?> relation : EntityUtil.getAllRelations(entity)) {
                                                    E statement;
                                                    if (!relation.getMultiplicity().isCollection()) {
                                                        Object target = relation.getTarget();
                                                        if (target instanceof Entity) {
                                                            if (EntityUtil.isReference(relation)) {
-                                                                statement = copyAsLiteralReference(f, relation, (Entity) target);
+                                                                statement = copyAsLiteralReference(context, f, relation, (Entity) target);
                                                            }
                                                            else {
                                                                 statement = deepCopyStatement(f, relation);
@@ -150,12 +150,12 @@ public class DataToBeanGenerator {
         );
     }
 
-    private static <E> E copyAsLiteralReference(CodeFactory<E> f, Relation<?> relation, Entity target) {
+    private static <E> E copyAsLiteralReference(BeanGenerationContext context, CodeFactory<E> f, Relation<?> relation, Entity target) {
         String getterName = EntityRepresentationGeneratorUtil.getGetterName(relation);
         String setterName = EntityRepresentationGeneratorUtil.getSetterName(relation);
         return methodCallStatement(f, f.variableReference(RESULT),
                                    setterName,
-                                   GeneratorUtil.createLiteralReference(f, target, methodCall(f, f.variableReference(ORIGINAL), getterName))
+                                   createLiteralReference(context, f, target, methodCall(f, f.variableReference(ORIGINAL), getterName))
         );
     }
 
@@ -171,16 +171,17 @@ public class DataToBeanGenerator {
         }
         String getterName = EntityRepresentationGeneratorUtil.getGetterName(relation);
         return _for(f, elementType, LOOP_INDEX, methodCall(f, f.variableReference(ORIGINAL), getterName),
-                    copyCollectionElementStatement(f, relation)
+                    copyCollectionElementStatement(context, f, relation)
         );
     }
 
-    private static <E> E copyCollectionElementStatement(CodeFactory<E> f, Relation<?> relation) {
+
+    private static <E> E copyCollectionElementStatement(BeanGenerationContext context, CodeFactory<E> f, Relation<?> relation) {
         String oneElementAdderName = MutableBeanInterfaceGenerator.getSingleElementAdderName(relation);
         if (relation.getTarget() instanceof Entity) {
             if (EntityUtil.isReference(relation)) {
                 return methodCallStatement(f, f.variableReference(RESULT), oneElementAdderName,
-                                           GeneratorUtil.createLiteralReference(f, (Entity) relation.getTarget(), f.variableReference(LOOP_INDEX)));
+                                           createLiteralReference(context, f, (Entity) relation.getTarget(), f.variableReference(LOOP_INDEX)));
             }
             else {
                 return methodCallStatement(f, f.variableReference(RESULT), oneElementAdderName,
@@ -191,5 +192,9 @@ public class DataToBeanGenerator {
             return methodCallStatement(f, f.variableReference(RESULT), oneElementAdderName,
                                             f.variableReference(LOOP_INDEX));
         }
+    }
+
+    private static <E> E createLiteralReference(BeanGenerationContext context, CodeFactory<E> f, Entity target, E referee) {
+        return constructorCall(f, context.getLiteralReferenceClasses().getRepresentation(target), referee);
     }
 }

@@ -45,6 +45,9 @@ public interface CodeFactory<E> {
 
     E assignment(E lhs, E rhs);
 
+    // Foo.class
+    E classLiteral(@NotNull ClassModel classModel);
+
     E _return(@Nullable E subj);
 
     E string(String s);

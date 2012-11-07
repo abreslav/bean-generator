@@ -22,6 +22,7 @@ import org.jetbrains.jet.buildergen.java.declarations.ClassModel;
 import org.jetbrains.jet.buildergen.java.types.TypeData;
 import org.jetbrains.jet.buildergen.java.types.TypeFactory;
 import org.jetbrains.jet.buildergen.java.types.TypeRenderer;
+import org.jetbrains.jet.buildergen.java.types.TypeUtil;
 import org.jetbrains.jet.utils.Printer;
 
 import java.util.Collections;
@@ -207,6 +208,16 @@ public class CodePrinter implements CodeFactory<PrintAction> {
                 p.printWithNoIndent(" = ");
                 rhs.print(p);
                 p.printlnWithNoIndent(";");
+            }
+        };
+    }
+
+    @Override
+    public PrintAction classLiteral(@NotNull final ClassModel classModel) {
+        return new PrintAction() {
+            @Override
+            public void print(Printer p) {
+                p.printWithNoIndent(typeRenderer.renderType(TypeUtil.type(classModel)), ".class");
             }
         };
     }

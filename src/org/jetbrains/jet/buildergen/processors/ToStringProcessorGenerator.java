@@ -219,7 +219,7 @@ public class ToStringProcessorGenerator {
                                            _printer.print(f, f.string(relation.getName() + " = ")),
 
                                            _printer.printlnWithNoIndent(f,
-                                                        methodCall(f, inExpression, "resolve")
+                                                        methodCall(f, inExpression, "resolveTo", classLiteral(f, Object.class))
                                            ),
 
                                            f._return(f._null())

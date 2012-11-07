@@ -78,6 +78,10 @@ public class CodeUtil {
         return factory.classReference(classBean);
     }
 
+    public static <E> E classLiteral(@NotNull CodeFactory<E> factory, @NotNull Class<?> javaClass) {
+        return factory.classLiteral(getClassBean(javaClass));
+    }
+
     public static <E> E _for(@NotNull CodeFactory<E> f, @NotNull TypeData indexType, @NotNull String indexName, @NotNull E range, @NotNull E... body) {
         return f._for(f.variableDeclaration(indexType, indexName, null), range, f.block(Arrays.asList(body)));
     }
